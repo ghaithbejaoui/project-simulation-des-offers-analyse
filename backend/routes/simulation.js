@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
 
     // Step 3: Calculate costs (from cahier des charges section 5)
     // Formula: Total = Coût_inclus + Dépassements - remises
-    
+
     // 1. Coût_inclus = prix
     let baseCost = offer.monthly_price || 0;
 
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
     const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
     const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
 
-    let overageCost = 
+    let overageCost =
       overMinutes * (offer.over_minute_price || 0.1000) +
       overSms * (offer.over_sms_price || 0.0500) +
       overData * (offer.over_data_price || 0.5000);

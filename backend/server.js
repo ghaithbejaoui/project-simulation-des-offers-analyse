@@ -19,6 +19,44 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
+
+// Swagger setup
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Telecom Offers API / API des Offres Télécom',
+      version: '1.0.0',
+      description: 'API for managing telecom offers and customer profiles. / API pour gérer les offres télécom et les profils clients.',
+      contact: {
+        name: 'API Support / Support API'
+      }
+    },
+    servers: [
+      {
+        url: 'http://localhost:5000',
+        description: 'Development server / Serveur de développement',
+      },
+    ],
+  },
+  apis: ['./routes/*.js'], // Path to your route files
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Serve Swagger JSON spec (for tools/frontend)
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
 // Routes
 // TODO: Import and use routes here
 // const offersRoutes = require('./routes/offers');

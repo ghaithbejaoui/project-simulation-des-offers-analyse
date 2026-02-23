@@ -1,46 +1,172 @@
 const express = require('express');
-const db = require('../config/database');  // Get the database key (from config folder, so '../' means "go up one folder").
+const db = require('../config/database');
 
-const router = express.Router();  // Make a mini-app just for this door (customer_profiles).
-// GET all customer profiles – Like "Show me all customers!"
-router.get('/',async (req,res) => {
-    try{
-        const[rows]= await db.query('SELECT * FROM customer_profiles');
-        res.json(rows);
-    }catch(error){
-        res.status(500).json({error:error.message});
-    }
-});
-// get one profile by id 
-router.get('/:id',async(req,res)=>{
-    try{
-        const[rows]=await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?',[req.params.id]);
-        if (rows.length === 0){
-            return res.status(404).json({ message: 'profile not found'});
-        }
-        res.json(rows[0]);
-    }catch(error){
-        res.status(500).json({error:error.message});
-    }
+const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CustomerProfile:
+ *       type: object
+ *       properties:
+ *         profile_id:
+ *           type: integer
+ *           description: The auto-generated ID of the profile
+ *         label:
+ *           type: string
+ *           description: Name of the customer profile
+ *         minutes_avg:
+ *           type: integer
+ *           description: Average monthly minutes usage
+ *         sms_avg:
+ *           type: integer
+ *           description: Average monthly SMS usage
+ *         data_avg_gb:
+ *           type: integer
+ *           description: Average monthly data usage in GB
+ *         night_usage_pct:
+ *           type: number
+ *           description: Percentage of usage during night hours
+ *         roaming_days:
+ *           type: integer
+ *           description: Average roaming days per year
+ *         budget_max:
+ *           type: number
+ *           description: Maximum monthly budget
+ *         priority:
+ *           type: string
+ *           enum: [BALANCED, PRICE, QUALITY]
+ *           description: Customer priority preference
+ */
+
+/**
+ * @swagger
+ * /api/customer-profiles:
+ *   get:
+ *     summary: Returns all customer profiles
+ *     tags: [Customer Profiles]
+ *     description: "EN: Get all customer profiles - FR: Obtenir tous les profils clients"
+ *     responses:
+ *       200:
+ *         description: A list of all customer profiles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CustomerProfile'
+ */
+
+router.get('/', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM customer_profiles');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// POST new profile (you can make many fields optional with defaults)
+/**
+ * @swagger
+ * /api/customer-profiles/{id}:
+ *   get:
+ *     summary: Get a customer profile by ID
+ *     tags: [Customer Profiles]
+ *     description: "EN: Get a specific customer profile by its ID - FR: Obtenir un profil client spécifique par son ID"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The profile ID
+ *     responses:
+ *       200:
+ *         description: A customer profile object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CustomerProfile'
+ *       404:
+ *         description: Profile not found
+ */
+
+router.get('/:id', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/customer-profiles:
+ *   post:
+ *     summary: Create a new customer profile
+ *     tags: [Customer Profiles]
+ *     description: "EN: Create a new customer profile - FR: Créer un nouveau profil client"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - label
+ *             properties:
+ *               label:
+ *                 type: string
+ *               minutes_avg:
+ *                 type: integer
+ *                 default: 0
+ *               sms_avg:
+ *                 type: integer
+ *                 default: 0
+ *               data_avg_gb:
+ *                 type: integer
+ *                 default: 0
+ *               night_usage_pct:
+ *                 type: number
+ *                 default: 0
+ *               roaming_days:
+ *                 type: integer
+ *                 default: 0
+ *               budget_max:
+ *                 type: number
+ *                 default: 0
+ *               priority:
+ *                 type: string
+ *                 enum: [BALANCED, PRICE, QUALITY]
+ *                 default: BALANCED
+ *     responses:
+ *       201:
+ *         description: Profile created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 profile_id:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ */
+
 router.post('/', async (req, res) => {
   const {
     label,
-    minutes_avg = 0,
-    sms_avg = 0,
-    data_avg_gb = 0,
-    night_usage_pct = 0,
-    roaming_days = 0,
-    budget_max = 0,
+    minutes_avg = 0, sms_avg = 0, data_avg_gb = 0,
+    night_usage_pct = 0, roaming_days = 0, budget_max = 0,
     priority = 'BALANCED'
   } = req.body;
 
   try {
     const [result] = await db.query(
-      `INSERT INTO customer_profiles 
-       (label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority)
+      `INSERT INTO customer_profiles (label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority]
     );
@@ -50,47 +176,72 @@ router.post('/', async (req, res) => {
   }
 });
 
-// You can add PUT and DELETE later if needed
-// PUT - Update a customer profile by ID
-router.put('/:id', async (req, res) => {
-  const {
-    label,
-    minutes_avg,
-    sms_avg,
-    data_avg_gb,
-    night_usage_pct,
-    roaming_days,
-    budget_max,
-    priority
-  } = req.body;
+/**
+ * @swagger
+ * /api/customer-profiles/{id}:
+ *   put:
+ *     summary: Update a customer profile
+ *     tags: [Customer Profiles]
+ *     description: "EN: Update an existing customer profile - FR: Mettre à jour un profil client existant"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The profile ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       404:
+ *         description: Profile not found
+ */
 
+router.put('/:id', async (req, res) => {
+  const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = req.body;
   try {
     const [result] = await db.query(
-      `UPDATE customer_profiles SET 
-        label = ?, minutes_avg = ?, sms_avg = ?, data_avg_gb = ?, 
-        night_usage_pct = ?, roaming_days = ?, budget_max = ?, priority = ?
-      WHERE profile_id = ?`,
-      [label, minutes_avg, sms_avg, data_avg_gb, 
-       night_usage_pct, roaming_days, budget_max, 
-       priority, req.params.id]
+      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=?`,
+      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id]
     );
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
     res.json({ message: 'Profile updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// DELETE - Delete a customer profile by ID
+/**
+ * @swagger
+ * /api/customer-profiles/{id}:
+ *   delete:
+ *     summary: Delete a customer profile
+ *     tags: [Customer Profiles]
+ *     description: "EN: Delete an existing customer profile - FR: Supprimer un profil client existant"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The profile ID
+ *     responses:
+ *       200:
+ *         description: Profile deleted successfully
+ *       404:
+ *         description: Profile not found
+ */
+
 router.delete('/:id', async (req, res) => {
   try {
     const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ?', [req.params.id]);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
     res.json({ message: 'Profile deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

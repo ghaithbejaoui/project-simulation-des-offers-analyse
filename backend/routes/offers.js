@@ -1,37 +1,199 @@
-const express = require('express');  // Get the LEGO blocks.
-const db = require('../config/database');  // Get the database key (from config folder, so '../' means "go up one folder").
+const express = require('express');
+const db = require('../config/database');
 
-const router = express.Router();  // Make a mini-app just for this door (offers).
+const router = express.Router();
 
-// GET all offers – Like "Show me all toys!"
-router.get('/', async (req, res) => {  // When someone knocks at /api/offers with GET.
-  try {  // Try to do this (like trying to open a box).
-    const [rows] = await db.query('SELECT * FROM offers');  // Ask database: "Give me everything from offers table." Await means "wait for answer."
-    res.json(rows);  // Send back the list as JSON (easy to read).
-  } catch (error) {  // If something breaks...
-    res.status(500).json({ error: error.message });  // Say "Oops, error!" with details.
-  }
-});
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Offer:
+ *       type: object
+ *       properties:
+ *         offer_id:
+ *           type: integer
+ *           description: The auto-generated ID of the offer
+ *         name:
+ *           type: string
+ *           description: Name of the offer
+ *         segment:
+ *           type: string
+ *           enum: [PREPAID, POSTPAID, BUSINESS]
+ *           description: Customer segment
+ *         monthly_price:
+ *           type: number
+ *           description: Monthly subscription price
+ *         quota_minutes:
+ *           type: integer
+ *           description: Included minutes
+ *         quota_sms:
+ *           type: integer
+ *           description: Included SMS
+ *         quota_data_gb:
+ *           type: integer
+ *           description: Included data in GB
+ *         validity_days:
+ *           type: integer
+ *           description: Plan validity in days
+ *         fair_use_gb:
+ *           type: integer
+ *           description: Fair use data limit
+ *         over_minute_price:
+ *           type: number
+ *           description: Price per extra minute
+ *         over_sms_price:
+ *           type: number
+ *           description: Price per extra SMS
+ *         over_data_price:
+ *           type: number
+ *           description: Price per extra GB
+ *         roaming_included_days:
+ *           type: integer
+ *           description: Included roaming days
+ *         status:
+ *           type: string
+ *           enum: [PUBLISHED, DRAFT, ARCHIVED]
+ *           description: Offer status
+ */
 
-// GET single offer by ID – Like "Show me toy number 5!"
-router.get('/:id', async (req, res) => {  // :id means "any number here," like /api/offers/1.
+/**
+ * @swagger
+ * /api/offers:
+ *   get:
+ *     summary: Returns all offers
+ *     tags: [Offers]
+ *     description: "EN: Get all telecom offers - FR: Obtenir toutes les offres telecom"
+ *     responses:
+ *       200:
+ *         description: A list of all offers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Offer'
+ */
+
+router.get('/', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);  // Ask database for that specific one. ? is safe placeholder.
-    if (rows.length === 0) return res.status(404).json({ message: 'Offer not found' });  // If nothing found, say "Not here!"
-    res.json(rows[0]);  // Send back the one item.
+    const [rows] = await db.query('SELECT * FROM offers');
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST new offer – Like "Add a new phone plan!"
+/**
+ * @swagger
+ * /api/offers/{id}:
+ *   get:
+ *     summary: Get an offer by ID
+ *     tags: [Offers]
+ *     description: "EN: Get a specific offer by its ID - FR: Obtenir une offre spécifique par son ID"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The offer ID
+ *     responses:
+ *       200:
+ *         description: An offer object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Offer'
+ *       404:
+ *         description: Offer not found
+ */
+
+router.get('/:id', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Offer not found' });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/offers:
+ *   post:
+ *     summary: Create a new offer
+ *     tags: [Offers]
+ *     description: "EN: Create a new telecom offer - FR: Créer une nouvelle offre telecom"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - segment
+ *               - monthly_price
+ *             properties:
+ *               name:
+ *                 type: string
+ *               segment:
+ *                 type: string
+ *                 enum: [PREPAID, POSTPAID, BUSINESS]
+ *               monthly_price:
+ *                 type: number
+ *               quota_minutes:
+ *                 type: integer
+ *                 default: 0
+ *               quota_sms:
+ *                 type: integer
+ *                 default: 0
+ *               quota_data_gb:
+ *                 type: integer
+ *                 default: 0
+ *               validity_days:
+ *                 type: integer
+ *                 default: 30
+ *               fair_use_gb:
+ *                 type: integer
+ *                 default: 0
+ *               over_minute_price:
+ *                 type: number
+ *                 default: 0.10
+ *               over_sms_price:
+ *                 type: number
+ *                 default: 0.05
+ *               over_data_price:
+ *                 type: number
+ *                 default: 0.50
+ *               roaming_included_days:
+ *                 type: integer
+ *                 default: 0
+ *               status:
+ *                 type: string
+ *                 enum: [PUBLISHED, DRAFT, ARCHIVED]
+ *                 default: PUBLISHED
+ *     responses:
+ *       201:
+ *         description: Offer created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 offer_id:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ */
+
 router.post('/', async (req, res) => {
-  // Unpack EVERYTHING from the gift box (req.body). No dots needed if we list them all!
   const {
-    name,  // Required
-    segment,  // Required (PREPAID, POSTPAID, BUSINESS)
-    monthly_price,  // Required
-    quota_minutes = 0,  // Default to 0 if not sent
+    name,
+    segment,
+    monthly_price,
+    quota_minutes = 0,
     quota_sms = 0,
     quota_data_gb = 0,
     validity_days = 30,
@@ -40,122 +202,152 @@ router.post('/', async (req, res) => {
     over_sms_price = 0.0500,
     over_data_price = 0.5000,
     roaming_included_days = 0,
-    status = 'PUBLISHED'  // Default
+    status = 'PUBLISHED'
   } = req.body;
 
   try {
-    // The FULL SQL spell – list EVERY column (except offer_id, database makes it auto).
     const [result] = await db.query(
       `INSERT INTO offers (
         name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
         validity_days, fair_use_gb, over_minute_price, over_sms_price,
         over_data_price, roaming_included_days, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,  // ? for each value (safe from bad guys).
-      // The FULL list of values – match the order above!
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        name,
-        segment,
-        monthly_price,
-        quota_minutes,
-        quota_sms,
-        quota_data_gb,
-        validity_days,
-        fair_use_gb,
-        over_minute_price,
-        over_sms_price,
-        over_data_price,
-        roaming_included_days,
-        status
+        name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
+        validity_days, fair_use_gb, over_minute_price, over_sms_price,
+        over_data_price, roaming_included_days, status
       ]
     );
-    res.status(201).json({ offer_id: result.insertId, message: 'Offer created' });  // Yay! Send new ID.
+    res.status(201).json({ offer_id: result.insertId, message: 'Offer created' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// GET offer with its options
+/**
+ * @swagger
+ * /api/offers/{id}/with-options:
+ *   get:
+ *     summary: Get an offer with its options
+ *     tags: [Offers]
+ *     description: "EN: Get an offer along with all its associated options - FR: Obtenir une offre avec toutes ses options associées"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The offer ID
+ *     responses:
+ *       200:
+ *         description: An offer with its options
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       404:
+ *         description: Offer not found
+ */
+
 router.get('/:id/with-options', async (req, res) => {
   try {
-    const [offerRows] = await db.query(
-      'SELECT * FROM offers WHERE offer_id = ?',
-      [req.params.id]
-    );
-
+    const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
     if (offerRows.length === 0) {
       return res.status(404).json({ message: 'Offer not found' });
     }
 
     const [optionsRows] = await db.query(
-      `SELECT o.*
-       FROM options o
-       JOIN offer_options oo ON o.option_id = oo.option_id
-       WHERE oo.offer_id = ?`,
+      `SELECT o.* FROM options o JOIN offer_options oo ON o.option_id = oo.option_id WHERE oo.offer_id = ?`,
       [req.params.id]
     );
 
     const offer = offerRows[0];
     offer.options = optionsRows;
-
     res.json(offer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// TODO: Add PUT /:id for update, DELETE /:id for delete (similar structure)  // We'll add these later, like editing or removing toys.
+/**
+ * @swagger
+ * /api/offers/{id}:
+ *   put:
+ *     summary: Update an offer
+ *     tags: [Offers]
+ *     description: "EN: Update an existing offer - FR: Mettre à jour une offre existante"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The offer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Offer updated successfully
+ *       404:
+ *         description: Offer not found
+ */
+
 router.put('/:id', async (req, res) => {
   const {
-    name,
-    segment,
-    monthly_price,
-    quota_minutes,
-    quota_sms,
-    quota_data_gb,
-    validity_days,
-    fair_use_gb,
-    over_minute_price,
-    over_sms_price,
-    over_data_price ,
-    roaming_included_days,
-    status
+    name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
+    validity_days, fair_use_gb, over_minute_price, over_sms_price,
+    over_data_price, roaming_included_days, status
   } = req.body;
 
   try {
     const [result] = await db.query(
-      `UPDATE offers SET
-        name = ?, segment = ?, monthly_price = ?, quota_minutes = ?, quota_sms = ?,
-        quota_data_gb = ?, validity_days = ?, fair_use_gb = ?, over_minute_price = ?,
-        over_sms_price = ?, over_data_price = ?, roaming_included_days = ?, status = ?
-        WHERE offer_id = ?`,
-      [
-        name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
-        validity_days, fair_use_gb, over_minute_price, over_sms_price, over_data_price,
-        roaming_included_days, status, req.params.id
-      ]
+      `UPDATE offers SET name=?, segment=?, monthly_price=?, quota_minutes=?, quota_sms=?,
+       quota_data_gb=?, validity_days=?, fair_use_gb=?, over_minute_price=?, over_sms_price=?,
+       over_data_price=?, roaming_included_days=?, status=? WHERE offer_id=?`,
+      [name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
+       validity_days, fair_use_gb, over_minute_price, over_sms_price,
+       over_data_price, roaming_included_days, status, req.params.id]
     );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Offer not found' });
-    }
-
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
     res.json({ message: 'Offer updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/offers/{id}:
+ *   delete:
+ *     summary: Delete an offer
+ *     tags: [Offers]
+ *     description: "EN: Delete an existing offer - FR: Supprimer une offre existante"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The offer ID
+ *     responses:
+ *       200:
+ *         description: Offer deleted successfully
+ *       404:
+ *         description: Offer not found
+ */
+
 router.delete('/:id', async (req, res) => {
   try {
     const [result] = await db.query('DELETE FROM offers WHERE offer_id = ?', [req.params.id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Offer not found' });
-    }
-
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
     res.json({ message: 'Offer deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-module.exports = router;  // Share this mini-app with server.js.
+module.exports = router;

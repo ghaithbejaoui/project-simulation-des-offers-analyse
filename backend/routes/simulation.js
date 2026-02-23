@@ -3,98 +3,142 @@ const db = require('../config/database');
 
 const router = express.Router();
 
-// POST /api/simulation (basic: one profile + one offer)
-// Body example: { "profile_id": 1, "offer_id": 1 }
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SimulationInput:
+ *       type: object
+ *       required:
+ *         - profile_id
+ *         - offer_id
+ *       properties:
+ *         profile_id:
+ *           type: integer
+ *           description: The customer profile ID
+ *         offer_id:
+ *           type: integer
+ *           description: The offer ID
+ * 
+ *     SimulationResult:
+ *       type: object
+ *       properties:
+ *         input:
+ *           type: object
+ *         profile:
+ *           type: object
+ *         offer:
+ *           type: object
+ *         calculation:
+ *           type: object
+ * 
+ *     RecommendationInput:
+ *       type: object
+ *       properties:
+ *         profile_id:
+ *           type: integer
+ *           description: The customer profile ID (optional)
+ *         limit:
+ *           type: integer
+ *           default: 5
+ *         segment:
+ *           type: string
+ *           enum: [PREPAID, POSTPAID, BUSINESS]
+ * 
+ *     CompareInput:
+ *       type: object
+ *       required:
+ *         - profile_id
+ *         - offer_ids
+ *       properties:
+ *         profile_id:
+ *           type: integer
+ *         offer_ids:
+ *           type: array
+ *           items:
+ *             type: integer
+ * 
+ *     BatchInput:
+ *       type: object
+ *       required:
+ *         - offer_id
+ *       properties:
+ *         offer_id:
+ *           type: integer
+ *         profile_ids:
+ *           type: array
+ *           items:
+ *             type: integer
+ */
+
+/**
+ * @swagger
+ * /api/simulation:
+ *   post:
+ *     summary: Run a basic simulation (one profile + one offer)
+ *     tags: [Simulation]
+ *     description: "EN: Run a basic simulation comparing one customer profile with one offer - FR: Exécuter une simulation de base comparant un profil client avec une offre"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SimulationInput'
+ *     responses:
+ *       200:
+ *         description: Simulation results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SimulationResult'
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Profile or offer not found
+ */
+
 router.post('/', async (req, res) => {
   const { profile_id, offer_id } = req.body;
-
-  if (!profile_id || !offer_id) {
-    return res.status(400).json({ message: 'profile_id and offer_id are required' });
-  }
+  if (!profile_id || !offer_id) return res.status(400).json({ message: 'profile_id and offer_id are required' });
 
   try {
-    // Step 1: Get the customer profile
     const [profileRows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
-    if (profileRows.length === 0) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
+    if (profileRows.length === 0) return res.status(404).json({ message: 'Profile not found' });
     const profile = profileRows[0];
 
-    // Step 2: Get the offer + its linked options
     const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [offer_id]);
-    if (offerRows.length === 0) {
-      return res.status(404).json({ message: 'Offer not found' });
-    }
+    if (offerRows.length === 0) return res.status(404).json({ message: 'Offer not found' });
     let offer = offerRows[0];
 
-    // Get options for this offer
-    const [optionRows] = await db.query(`
-      SELECT opt.* FROM options opt
-      JOIN offer_options oo ON opt.option_id = oo.option_id
-      WHERE oo.offer_id = ?
-    `, [offer_id]);
+    const [optionRows] = await db.query(`SELECT opt.* FROM options opt JOIN offer_options oo ON opt.option_id = oo.option_id WHERE oo.offer_id = ?`, [offer_id]);
     offer.options = optionRows;
 
-    // Step 3: Calculate costs (from cahier des charges section 5)
-    // Formula: Total = Coût_inclus + Dépassements - remises
-
-    // 1. Coût_inclus = prix
     let baseCost = offer.monthly_price || 0;
-
-    // 2. Calculate overages (dépassements)
     const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (offer.quota_minutes || 0));
     const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
     const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
-
-    let overageCost =
-      overMinutes * (offer.over_minute_price || 0.1000) +
-      overSms * (offer.over_sms_price || 0.0500) +
-      overData * (offer.over_data_price || 0.5000);
-
-    // 3. Options cost (could be positive or negative for discounts)
+    let overageCost = overMinutes * (offer.over_minute_price || 0.1) + overSms * (offer.over_sms_price || 0.05) + overData * (offer.over_data_price || 0.5);
     let optionsCost = offer.options.reduce((sum, opt) => sum + (opt.price || 0), 0);
-
-    // 4. Roaming cost
     const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (offer.roaming_included_days || 0));
     let roamingCost = overRoamingDays * 5;
-
-    // 5. Remises (discounts) - options with negative price (like loyalty discounts)
     const discounts = Math.abs(Math.min(0, optionsCost));
-
-    // 6. Total = Coût_inclus + Dépassements - remises
     let totalCost = baseCost + overageCost + roamingCost - discounts;
 
-    // Step 4: Calculate Satisfaction Score
-    // Formula from cahier: f(prix, couverture, options, pénalités fair use)
     let score = 100;
-
-    // a) Price factor: cost vs budget
     const budgetRatio = totalCost / (profile.budget_max || 1);
     if (budgetRatio <= 0.7) score += 10;
     else if (budgetRatio <= 1.0) score += 0;
     else score -= 30;
-
-    // b) Couverture: segment quality (BUSINESS > POSTPAID > PREPAID)
     if (offer.segment === 'BUSINESS') score += 10;
     else if (offer.segment === 'POSTPAID') score += 5;
-
-    // c) Options bonus
-    const includedOptions = offer.options.length;
-    score += Math.min(includedOptions * 2, 10);
-
-    // d) Fair use penalty
+    score += Math.min(offer.options.length * 2, 10);
     const fairUseExceeded = (profile.data_avg_gb || 0) > (offer.fair_use_gb || 0);
     if (fairUseExceeded) score -= 20;
-
-    // e) Overage penalty
     if (overMinutes + overSms + overData > 0) score -= 10;
-
     let satisfactionScore = Math.max(0, Math.min(100, score));
 
     res.json({
-      input: { profile_id, offer_id },
-      profile,
-      offer,
+      input: { profile_id, offer_id }, profile, offer,
       calculation: {
         base_cost: parseFloat(baseCost.toFixed(2)),
         overage_cost: parseFloat(overageCost.toFixed(2)),
@@ -102,22 +146,7 @@ router.post('/', async (req, res) => {
         roaming_cost: parseFloat(roamingCost.toFixed(2)),
         discounts: parseFloat(discounts.toFixed(2)),
         total_cost: parseFloat(totalCost.toFixed(2)),
-        satisfaction_score: satisfactionScore,
-        score_breakdown: {
-          base_score: 100,
-          price_factor: budgetRatio <= 0.7 ? '+10' : (budgetRatio <= 1.0 ? '0' : '-30'),
-          couverture_bonus: offer.segment === 'BUSINESS' ? '+10' : (offer.segment === 'POSTPAID' ? '+5' : '0'),
-          options_bonus: `+${Math.min(includedOptions * 2, 10)}`,
-          fair_use_penalty: fairUseExceeded ? '-20' : '0',
-          overage_penalty: (overMinutes + overSms + overData > 0) ? '-10' : '0'
-        },
-        details: {
-          over_minutes: overMinutes,
-          over_sms: overSms,
-          over_data_gb: overData,
-          over_roaming_days: overRoamingDays,
-          fair_use_exceeded: fairUseExceeded
-        }
+        satisfaction_score: satisfactionScore
       }
     });
   } catch (error) {
@@ -125,8 +154,26 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /api/simulation/recommend - Smart recommendations
-// Input: { "profile_id": 1, "limit": 5 } OR { "minutes_avg": 500, "budget_max": 50, "priority": "BALANCED" }
+/**
+ * @swagger
+ * /api/simulation/recommend:
+ *   post:
+ *     summary: Get smart offer recommendations
+ *     tags: [Simulation]
+ *     description: "EN: Get intelligent offer recommendations based on customer profile or usage parameters - FR: Obtenir des recommandations d'offres intelligentes basées sur le profil client"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RecommendationInput'
+ *     responses:
+ *       200:
+ *         description: List of recommended offers
+ *       404:
+ *         description: Profile not found
+ */
+
 router.post('/recommend', async (req, res) => {
   const { profile_id, limit = 5, segment } = req.body;
   let profile;
@@ -138,12 +185,9 @@ router.post('/recommend', async (req, res) => {
       profile = rows[0];
     } else {
       profile = {
-        minutes_avg: req.body.minutes_avg || 0,
-        sms_avg: req.body.sms_avg || 0,
-        data_avg_gb: req.body.data_avg_gb || 0,
-        roaming_days: req.body.roaming_days || 0,
-        budget_max: req.body.budget_max || Infinity,
-        priority: req.body.priority || 'BALANCED'
+        minutes_avg: req.body.minutes_avg || 0, sms_avg: req.body.sms_avg || 0,
+        data_avg_gb: req.body.data_avg_gb || 0, roaming_days: req.body.roaming_days || 0,
+        budget_max: req.body.budget_max || Infinity, priority: req.body.priority || 'BALANCED'
       };
     }
   } catch (error) {
@@ -156,13 +200,9 @@ router.post('/recommend', async (req, res) => {
     if (segment) { query += ' AND segment = ?'; params.push(segment); }
     const [offers] = await db.query(query, params);
 
-    // Get all options for offers
     const [allOptionRows] = await db.query(`SELECT oo.offer_id, opt.* FROM options opt JOIN offer_options oo ON opt.option_id = oo.option_id`);
     const optionsByOffer = {};
-    allOptionRows.forEach(opt => {
-      if (!optionsByOffer[opt.offer_id]) optionsByOffer[opt.offer_id] = [];
-      optionsByOffer[opt.offer_id].push(opt);
-    });
+    allOptionRows.forEach(opt => { if (!optionsByOffer[opt.offer_id]) optionsByOffer[opt.offer_id] = []; optionsByOffer[opt.offer_id].push(opt); });
 
     const recommendations = offers.map(offer => {
       const offerOptions = optionsByOffer[offer.offer_id] || [];
@@ -178,39 +218,54 @@ router.post('/recommend', async (req, res) => {
       const totalCost = baseCost + overageCost + roamingCost - discounts;
 
       let score = 100;
-      const matchReasons = [];
       const budgetRatio = totalCost / (profile.budget_max || 1);
-      if (budgetRatio <= 0.7) { score += 10; matchReasons.push('Excellent price'); }
-      else if (budgetRatio <= 1.0) matchReasons.push('Within budget');
-      else { score -= 30; matchReasons.push('Over budget'); }
-      if (offer.segment === 'BUSINESS') { score += 10; matchReasons.push('Premium segment'); }
-      else if (offer.segment === 'POSTPAID') { score += 5; matchReasons.push('Postpaid segment'); }
-      const optionsBonus = Math.min(offerOptions.length * 2, 10);
-      score += optionsBonus;
-      if (offerOptions.length > 0) matchReasons.push(`${offerOptions.length} included options`);
-      if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) { score -= 20; matchReasons.push('Fair use exceeded'); }
-      if (overMinutes + overSms + overData > 0) { score -= 10; matchReasons.push('Usage over quotas'); }
+      if (budgetRatio <= 0.7) score += 10;
+      else if (budgetRatio <= 1.0) score += 0;
+      else score -= 30;
+      if (offer.segment === 'BUSINESS') score += 10;
+      else if (offer.segment === 'POSTPAID') score += 5;
+      score += Math.min(offerOptions.length * 2, 10);
+      if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
+      if (overMinutes + overSms + overData > 0) score -= 10;
       score = Math.max(0, Math.min(100, score));
 
-      return { offer: { ...offer, options: offerOptions }, score, estimated_cost: parseFloat(totalCost.toFixed(2)), match_reasons: matchReasons };
+      return { offer: { ...offer, options: offerOptions }, score, estimated_cost: parseFloat(totalCost.toFixed(2)) };
     });
 
     if (profile.priority === 'PRICE') recommendations.sort((a, b) => a.estimated_cost - b.estimated_cost);
     else if (profile.priority === 'QUALITY') recommendations.sort((a, b) => b.score - a.score);
     else recommendations.sort((a, b) => (b.score / b.estimated_cost) - (a.score / a.estimated_cost));
 
-    const topRecommendations = recommendations.slice(0, limit);
-    res.json({ profile, count: topRecommendations.length, recommendations: topRecommendations });
+    res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/simulation/compare - Compare multiple offers for one profile
-// Input: { "profile_id": 1, "offer_ids": [1, 2, 3] }
+/**
+ * @swagger
+ * /api/simulation/compare:
+ *   post:
+ *     summary: Compare multiple offers
+ *     tags: [Simulation]
+ *     description: "EN: Compare multiple offers side by side for a specific customer profile - FR: Comparer plusieurs offres côte à côte pour un profil client spécifique"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CompareInput'
+ *     responses:
+ *       200:
+ *         description: Comparison results
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Profile or offers not found
+ */
+
 router.post('/compare', async (req, res) => {
   const { profile_id, offer_ids } = req.body;
-
   if (!profile_id || !offer_ids || !Array.isArray(offer_ids) || offer_ids.length === 0) {
     return res.status(400).json({ message: 'profile_id and offer_ids (array) are required' });
   }
@@ -224,13 +279,9 @@ router.post('/compare', async (req, res) => {
     const [offerRows] = await db.query(`SELECT * FROM offers WHERE offer_id IN (${placeholders})`, offer_ids);
     if (offerRows.length === 0) return res.status(404).json({ message: 'No offers found' });
 
-    // Get all options for offers
     const [allOptionRows] = await db.query(`SELECT oo.offer_id, opt.* FROM options opt JOIN offer_options oo ON opt.option_id = oo.option_id WHERE oo.offer_id IN (${placeholders})`, offer_ids);
     const optionsByOffer = {};
-    allOptionRows.forEach(opt => {
-      if (!optionsByOffer[opt.offer_id]) optionsByOffer[opt.offer_id] = [];
-      optionsByOffer[opt.offer_id].push(opt);
-    });
+    allOptionRows.forEach(opt => { if (!optionsByOffer[opt.offer_id]) optionsByOffer[opt.offer_id] = []; optionsByOffer[opt.offer_id].push(opt); });
 
     const comparisons = offerRows.map(offer => {
       const offerOptions = optionsByOffer[offer.offer_id] || [];
@@ -256,32 +307,41 @@ router.post('/compare', async (req, res) => {
       if (overMinutes + overSms + overData > 0) score -= 10;
       score = Math.max(0, Math.min(100, score));
 
-      return {
-        offer_id: offer.offer_id, offer_name: offer.name, segment: offer.segment, monthly_price: offer.monthly_price,
-        calculation: { base_cost: parseFloat(baseCost.toFixed(2)), overage_cost: parseFloat(overageCost.toFixed(2)), roaming_cost: parseFloat(roamingCost.toFixed(2)), discounts: parseFloat(discounts.toFixed(2)), total_cost: parseFloat(totalCost.toFixed(2)), satisfaction_score: score, overages: { minutes: overMinutes, sms: overSms, data_gb: parseFloat(overData.toFixed(2)), roaming_days: overRoamingDays } }
-      };
+      return { offer_id: offer.offer_id, offer_name: offer.name, segment: offer.segment, monthly_price: offer.monthly_price, calculation: { total_cost: parseFloat(totalCost.toFixed(2)), satisfaction_score: score } };
     });
 
     const sortedByCost = [...comparisons].sort((a, b) => a.calculation.total_cost - b.calculation.total_cost);
     const sortedByScore = [...comparisons].sort((a, b) => b.calculation.satisfaction_score - a.calculation.satisfaction_score);
-    comparisons.forEach(comp => {
-      comp.rank_by_cost = sortedByCost.findIndex(c => c.offer_id === comp.offer_id) + 1;
-      comp.rank_by_score = sortedByScore.findIndex(c => c.offer_id === comp.offer_id) + 1;
-    });
-    comparisons.sort((a, b) => a.rank_by_cost - b.rank_by_cost);
+    comparisons.forEach(comp => { comp.rank_by_cost = sortedByCost.findIndex(c => c.offer_id === comp.offer_id) + 1; comp.rank_by_score = sortedByScore.findIndex(c => c.offer_id === comp.offer_id) + 1; });
 
-    res.json({
-      profile: { profile_id: profile.profile_id, label: profile.label, budget_max: profile.budget_max, priority: profile.priority },
-      count: comparisons.length, comparisons,
-      summary: { cheapest: sortedByCost[0]?.offer_name, best_score: sortedByScore[0]?.offer_name, average_cost: parseFloat((comparisons.reduce((sum, c) => sum + c.calculation.total_cost, 0) / comparisons.length).toFixed(2)) }
-    });
+    res.json({ profile, count: comparisons.length, comparisons, summary: { cheapest: sortedByCost[0]?.offer_name, best_score: sortedByScore[0]?.offer_name } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/simulation/batch - Analyze one offer across multiple profiles
-// Input: { "offer_id": 1 } OR { "offer_id": 1, "profile_ids": [1, 2, 3] }
+/**
+ * @swagger
+ * /api/simulation/batch:
+ *   post:
+ *     summary: Analyze one offer across multiple profiles
+ *     tags: [Simulation]
+ *     description: "EN: Analyze how a single offer performs across multiple customer profiles - FR: Analyser comment une seule offre se comporte sur plusieurs profils clients"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BatchInput'
+ *     responses:
+ *       200:
+ *         description: Batch analysis results
+ *       400:
+ *         description: Missing offer_id
+ *       404:
+ *         description: Offer or profiles not found
+ */
+
 router.post('/batch', async (req, res) => {
   const { offer_id, profile_ids } = req.body;
   if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
@@ -291,7 +351,6 @@ router.post('/batch', async (req, res) => {
     if (offerRows.length === 0) return res.status(404).json({ message: 'Offer not found' });
     const offer = offerRows[0];
 
-    // Get options for this offer
     const [optionRows] = await db.query(`SELECT opt.* FROM options opt JOIN offer_options oo ON opt.option_id = oo.option_id WHERE oo.offer_id = ?`, [offer_id]);
     const offerOptions = optionRows;
 
@@ -334,25 +393,14 @@ router.post('/batch', async (req, res) => {
       else if (score >= 50) recommendation = 'okay_match';
       else recommendation = 'not_recommended';
 
-      let budgetFit;
-      if (totalCost <= profile.budget_max * 0.8) budgetFit = 'under';
-      else if (totalCost <= profile.budget_max) budgetFit = 'at_limit';
-      else budgetFit = 'over';
-
-      return { profile_id: profile.profile_id, label: profile.label, priority: profile.priority, estimated_cost: parseFloat(totalCost.toFixed(2)), budget_max: profile.budget_max, satisfaction_score: score, budget_fit: budgetFit, recommendation };
+      return { profile_id: profile.profile_id, label: profile.label, estimated_cost: parseFloat(totalCost.toFixed(2)), budget_max: profile.budget_max, satisfaction_score: score, recommendation };
     });
 
     const goodMatches = results.filter(r => r.recommendation === 'good_match').length;
     const okayMatches = results.filter(r => r.recommendation === 'okay_match').length;
-    const notRecommended = results.filter(r => r.recommendation === 'not_recommended').length;
     const totalCostSum = results.reduce((sum, r) => sum + r.estimated_cost, 0);
-    const totalScoreSum = results.reduce((sum, r) => sum + r.satisfaction_score, 0);
 
-    res.json({
-      offer: { offer_id: offer.offer_id, name: offer.name, segment: offer.segment, monthly_price: offer.monthly_price },
-      results,
-      summary: { total_profiles: results.length, good_matches: goodMatches, okay_matches: okayMatches, not_recommended: notRecommended, match_rate: parseFloat(((goodMatches / results.length) * 100).toFixed(1)), average_cost: parseFloat((totalCostSum / results.length).toFixed(2)), average_score: Math.round(totalScoreSum / results.length) }
-    });
+    res.json({ offer: { offer_id: offer.offer_id, name: offer.name }, results, summary: { total_profiles: results.length, good_matches: goodMatches, okay_matches: okayMatches, average_cost: parseFloat((totalCostSum / results.length).toFixed(2)) } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

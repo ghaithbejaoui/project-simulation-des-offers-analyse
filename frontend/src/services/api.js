@@ -10,7 +10,9 @@ export const api = {
   // Customer Profiles
   getProfiles: () => axios.get(`${API_URL}/customer-profiles`),
   getProfile: (id) => axios.get(`${API_URL}/customer-profiles/${id}`),
-  
+  // Stats
+  getStats: () => axios.get(`${API_URL}/stats`),
+
   // Simulation
   simulate: (profileId, offerId) => 
     axios.post(`${API_URL}/simulation`, { profile_id: profileId, offer_id: offerId }),

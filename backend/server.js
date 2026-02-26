@@ -77,6 +77,9 @@ app.use('/api/offer-options', offerOptionsRoutes);
 const simulationRoutes = require('./routes/simulation');
 app.use('/api/simulation', simulationRoutes);
 
+const statsRoutes = require('./routes/stats');
+app.use('/api/stats', statsRoutes);
+
 
 // Health check endpoint
 app.get('/', (req, res) => {

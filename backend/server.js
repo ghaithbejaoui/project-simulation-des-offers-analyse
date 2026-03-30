@@ -80,6 +80,9 @@ app.use('/api/simulation', simulationRoutes);
 const statsRoutes = require('./routes/stats');
 app.use('/api/stats', statsRoutes);
 
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
 
 // Health check endpoint
 app.get('/', (req, res) => {

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Offers from './pages/Offers';
@@ -10,6 +10,7 @@ import Login from './pages/Login';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,6 +19,7 @@ function App() {
       setIsAuthenticated(true);
       setUser(JSON.parse(userData));
     }
+    setLoading(false);
   }, []);
 
   const handleLogout = () => {
@@ -25,7 +27,9 @@ function App() {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
+    window.location.replace('/login');
   };
+
 
   return (
     <BrowserRouter>
@@ -48,17 +52,20 @@ function App() {
           </div>
         </nav>
       )}
-      
-      <div className="container mx-auto p-6">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-          <Route path="/offers" element={isAuthenticated ? <Offers /> : <Navigate to="/login" />} />
-          <Route path="/profiles" element={isAuthenticated ? <Profiles /> : <Navigate to="/login" />} />
-          <Route path="/simulation" element={isAuthenticated ? <Simulation /> : <Navigate to="/login" />} />
-          <Route path="/compare" element={isAuthenticated ? <Compare /> : <Navigate to="/login" />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        {loading ? (
+          <Route path="/" element={<div className="p-4">Loading...</div>} />
+        ) : (
+          <>
+            <Route path="/" element={isAuthenticated ? <div className="container mx-auto p-6"><Home /></div> : <Navigate to="/login" />} />
+            <Route path="/offers" element={isAuthenticated ? <div className="container mx-auto p-6"><Offers /></div> : <Navigate to="/login" />} />
+            <Route path="/profiles" element={isAuthenticated ? <div className="container mx-auto p-6"><Profiles /></div> : <Navigate to="/login" />} />
+            <Route path="/simulation" element={isAuthenticated ? <div className="container mx-auto p-6"><Simulation /></div> : <Navigate to="/login" />} />
+            <Route path="/compare" element={isAuthenticated ? <div className="container mx-auto p-6"><Compare /></div> : <Navigate to="/login" />} />
+          </>
+        )}
+      </Routes>
     </BrowserRouter>
   );
 }

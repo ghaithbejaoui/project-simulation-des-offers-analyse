@@ -5,30 +5,107 @@ const db = require('../config/database');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           description: The auto-generated ID of the user
+ *         username:
+ *           type: string
+ *           description: Login username
+ *         email:
+ *           type: string
+ *           description: User email
+ *         role:
+ *           type: string
+ *           enum: [ADMIN, ANALYST]
+ *           description: User role
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User email
+ *         password:
+ *           type: string
+ *           format: password
+ *           description: User password
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: JWT authentication token
+ *         user:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: integer
+ *             username:
+ *               type: string
+ *             role:
+ *               type: string
+ */
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Authenticate user and get JWT token
+ *     tags: [Authentication]
+ *     description: "EN: Login with email and password - FR: Connexion avec email et mot de passe"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Server error
+ */
+
 // Login route
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  
+  const { email, password } = req.body;
+
   try {
-    const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    
+    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+
     if (rows.length === 0) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     const user = rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    
+
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     const token = jwt.sign(
       { user_id: user.user_id, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
-    
+
     res.json({
       token,
       user: { user_id: user.user_id, username: user.username, role: user.role }

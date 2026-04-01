@@ -6,9 +6,8 @@ import Layout           from "./components/Layout";
 import Dashboard        from "./pages/Dashboard";
 import Offers           from "./pages/Offers";
 import Options          from "./pages/Options";
-import CustomerProfiles from "./pages/Profiles";
+import CustomerProfiles from "./pages/CustomerProfiles";
 import Simulation       from "./pages/Simulation";
-import Compare          from "./pages/Compare";
 
 // ─── Route guard ──────────────────────────────────────────────────────────────
 function Protected({ children }) {
@@ -32,7 +31,6 @@ export default function App() {
         <Route path="/options"   element={<Protected><Layout><Options /></Layout></Protected>} />
         <Route path="/profiles"  element={<Protected><Layout><CustomerProfiles /></Layout></Protected>} />
         <Route path="/simulation"element={<Protected><Layout><Simulation /></Layout></Protected>} />
-        <Route path="/compare"    element={<Protected><Layout><Compare /></Layout></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

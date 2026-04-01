@@ -112,7 +112,7 @@ export default function Simulation() {
 
   const getProfile = () => {
     if (useCustom) return customProfile;
-    return profiles.find(p => String(p.profile_id || p.id) === String(selectedProfile));
+    return profiles.find(p => String(p.id) === String(selectedProfile));
   };
 
   const run = async () => {
@@ -135,7 +135,7 @@ export default function Simulation() {
       } else if (mode === "batch") {
         if (!batchOfferId) { setError("Select an offer for batch analysis."); setLoading(false); return; }
         url = `${API}/simulation/batch`;
-        body = { offer_id: batchOfferId, profile_ids: profiles.slice(0, 20).map(p => p.profile_id || p.id) };
+        body = { offer_id: batchOfferId, profile_ids: profiles.slice(0, 20).map(p => p.id) };
       }
       const res  = await fetch(url, { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
       const data = await res.json();
@@ -230,7 +230,7 @@ export default function Simulation() {
                 style={{ ...input, height: 40, fontSize: 13 }}>
                 <option value="">— Select a profile —</option>
                 {profiles.map(p => (
-                  <option key={p.profile_id || p.id} value={p.profile_id || p.id}>{p.name || p.label || "Profile " + (p.profile_id || p.id)} ({p.segment?.replace("_"," ")})</option>
+                  <option key={p.id} value={p.id}>{p.name} ({p.segment?.replace("_"," ")})</option>
                 ))}
               </select>
             )}

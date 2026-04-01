@@ -94,7 +94,8 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [req.params.id]);
+    // Support both profile_id and id for backward compatibility
+    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
     res.json(rows[0]);
   } catch (error) {
@@ -206,9 +207,10 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = req.body;
   try {
+    // Support both profile_id and id for backward compatibility
     const [result] = await db.query(
-      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=?`,
-      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id]
+      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=? OR id=?`,
+      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
     res.json({ message: 'Profile updated successfully' });
@@ -240,7 +242,8 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ?', [req.params.id]);
+    // Support both profile_id and id for backward compatibility
+    const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
     res.json({ message: 'Profile deleted successfully' });
   } catch (error) {

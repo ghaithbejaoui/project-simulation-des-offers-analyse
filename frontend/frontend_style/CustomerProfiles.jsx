@@ -22,15 +22,9 @@ function UsageBar({ value, max, color }) {
 
 // ─── Profile card ─────────────────────────────────────────────────────────────
 function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
-  // Map API fields to display fields
-  const displayName = profile.label || profile.name || "Unknown";
-  const displayMinutes = profile.minutes_avg ?? profile.avg_minutes ?? 0;
-  const displaySms = profile.sms_avg ?? profile.avg_sms ?? 0;
-  const displayData = profile.data_avg_gb ?? profile.avg_data_gb ?? 0;
-  
   const segColors = { POSTPAID: colors.blue, PREPAID: colors.green, BUSINESS: colors.orange, DATA_ONLY: colors.yellow };
   const color = segColors[profile.segment] || colors.textMuted;
-  const initials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "P";
+  const initials = profile.name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "P";
 
   return (
     <div style={{ ...card, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", transition: "border-color 0.2s" }}
@@ -42,7 +36,7 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
           {initials}
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 500, color: colors.text }}>{displayName}</p>
+          <p style={{ fontSize: 14, fontWeight: 500, color: colors.text }}>{profile.name}</p>
           <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: `${color}15`, color, fontWeight: 500 }}>
             {profile.segment?.replace("_", " ")}
           </span>
@@ -56,23 +50,23 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 11, color: colors.textDim }}>Data</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displayData} GB/mo</span>
+            <span style={{ fontSize: 11, color: colors.textMuted }}>{profile.avg_data_gb} GB/mo</span>
           </div>
-          <UsageBar value={displayData} max={100} color={colors.blue} />
+          <UsageBar value={profile.avg_data_gb} max={100} color={colors.blue} />
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 11, color: colors.textDim }}>Voice</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displayMinutes} min/mo</span>
+            <span style={{ fontSize: 11, color: colors.textMuted }}>{profile.avg_minutes} min/mo</span>
           </div>
-          <UsageBar value={displayMinutes} max={1000} color={colors.green} />
+          <UsageBar value={profile.avg_minutes} max={1000} color={colors.green} />
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 11, color: colors.textDim }}>SMS</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displaySms} /mo</span>
+            <span style={{ fontSize: 11, color: colors.textMuted }}>{profile.avg_sms} /mo</span>
           </div>
-          <UsageBar value={displaySms} max={500} color={colors.yellow} />
+          <UsageBar value={profile.avg_sms} max={500} color={colors.yellow} />
         </div>
       </div>
 
@@ -97,7 +91,7 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
           Simulate
         </button>
         <button onClick={() => onEdit(profile)} style={{ ...btnGhost, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
-        <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDanger, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
+        <button onClick={() => onDelete(profile.id)} style={{ ...btnDanger, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
       </div>
     </div>
   );
@@ -132,7 +126,7 @@ function ProfileModal({ profile, onClose, onSave }) {
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, margin: "auto", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
@@ -174,7 +168,7 @@ function ProfileModal({ profile, onClose, onSave }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function Profiles() {
+export default function CustomerProfiles() {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -196,9 +190,8 @@ export default function Profiles() {
 
   const handleDelete = async (id) => {
     try {
-      const deleteId = id || id; // Handle both profile_id and id
-      await fetch(`${API}/customer-profiles/${deleteId}`, { method: "DELETE", headers: getHeaders() });
-      setProfiles(p => p.filter(x => (x.profile_id || x.id) !== deleteId));
+      await fetch(`${API}/customer-profiles/${id}`, { method: "DELETE", headers: getHeaders() });
+      setProfiles(p => p.filter(x => x.id !== id));
     } catch {}
   };
 
@@ -208,8 +201,7 @@ export default function Profiles() {
   };
 
   const filtered = profiles.filter(p => {
-    const displayName = p.label || p.name || "";
-    const matchSearch = displayName.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
     const matchSeg    = segment === "ALL" || p.segment === segment;
     return matchSearch && matchSeg;
   });
@@ -283,13 +275,13 @@ export default function Profiles() {
                 <tr key={p.id} style={{ borderBottom: `0.5px solid rgba(26,143,255,0.06)`, background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(26,143,255,0.05)"}
                   onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)"}>
-                  <td style={{ padding: "11px 16px", color: colors.text, fontWeight: 500 }}>{p.label || p.name}</td>
+                  <td style={{ padding: "11px 16px", color: colors.text, fontWeight: 500 }}>{p.name}</td>
                   <td style={{ padding: "11px 16px" }}>
                     <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: "rgba(26,143,255,0.1)", color: colors.blue }}>{p.segment?.replace("_"," ")}</span>
                   </td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.data_avg_gb ?? p.avg_data_gb}</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.minutes_avg ?? p.avg_minutes}</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.sms_avg ?? p.avg_sms}</td>
+                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.avg_data_gb}</td>
+                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.avg_minutes}</td>
+                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.avg_sms}</td>
                   <td style={{ padding: "11px 16px", color: colors.blue, fontWeight: 600 }}>{Number(p.budget_max).toFixed(2)}</td>
                   <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.night_usage_pct}%</td>
                   <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.roaming_days}d</td>

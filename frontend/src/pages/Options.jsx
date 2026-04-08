@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { isAdmin } from "../App";
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -29,7 +30,7 @@ function TypeBadge({ type }) {
 }
 
 // ─── Option card ──────────────────────────────────────────────────────────────
-function OptionCard({ option, onEdit, onDelete }) {
+function OptionCard({ option, onEdit, onDelete, showActions }) {
   const perks = [];
   if (option.data_bonus_gb > 0)  perks.push(`+${option.data_bonus_gb} GB data`);
   if (option.minutes_bonus > 0)  perks.push(`+${option.minutes_bonus} min`);
@@ -63,10 +64,12 @@ function OptionCard({ option, onEdit, onDelete }) {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, paddingTop: 4, borderTop: `0.5px solid rgba(26,143,255,0.08)` }}>
-        <button onClick={() => onEdit(option)} style={{ ...btnGhost, flex: 1, height: 32, fontSize: 12, justifyContent: "center" }}>Edit</button>
-        <button onClick={() => onDelete(option.id)} style={{ ...btnDanger, height: 32, padding: "0 14px", fontSize: 12 }}>Delete</button>
-      </div>
+      {showActions && (
+        <div style={{ display: "flex", gap: 8, paddingTop: 4, borderTop: `0.5px solid rgba(26,143,255,0.08)` }}>
+          <button onClick={() => onEdit(option)} style={{ ...btnGhost, flex: 1, height: 32, fontSize: 12, justifyContent: "center" }}>Edit</button>
+          <button onClick={() => onDelete(option.id)} style={{ ...btnDanger, height: 32, padding: "0 14px", fontSize: 12 }}>Delete</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -182,10 +185,12 @@ export default function Options() {
           <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Options & Add-ons</h2>
           <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>Supplementary services that can be bundled with any offer</p>
         </div>
-        <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Option
-        </button>
+        {isAdmin() && (
+          <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Option
+          </button>
+        )}
       </div>
 
       {/* Type summary pills */}
@@ -218,7 +223,7 @@ export default function Options() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
           {filtered.map(o => (
-            <OptionCard key={o.id} option={o} onEdit={setModal} onDelete={handleDelete} />
+            <OptionCard key={o.id} option={o} onEdit={setModal} onDelete={handleDelete} showActions={isAdmin()} />
           ))}
           {filtered.length === 0 && (
             <div style={{ ...card, padding: 40, textAlign: "center", gridColumn: "span 3" }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { isAdmin } from "../App";
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -21,7 +22,7 @@ function UsageBar({ value, max, color }) {
 }
 
 // ─── Profile card ─────────────────────────────────────────────────────────────
-function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
+function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
   // Map API fields to display fields
   const displayName = profile.label || profile.name || "Unknown";
   const displayMinutes = profile.minutes_avg ?? profile.avg_minutes ?? 0;
@@ -96,8 +97,12 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate }) {
         <button onClick={() => onSimulate(profile)} style={{ ...btnPrimary, flex: 1, height: 34, fontSize: 12, justifyContent: "center" }}>
           Simulate
         </button>
-        <button onClick={() => onEdit(profile)} style={{ ...btnGhost, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
-        <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDanger, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
+        {showActions && (
+          <>
+            <button onClick={() => onEdit(profile)} style={{ ...btnGhost, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
+            <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDanger, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -223,10 +228,12 @@ export default function Profiles() {
             {profiles.length} profiles · Manage usage patterns and budgets
           </p>
         </div>
-        <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Profile
-        </button>
+        {isAdmin() && (
+          <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Profile
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -265,7 +272,7 @@ export default function Profiles() {
       ) : view === "grid" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {filtered.map(p => (
-            <ProfileCard key={p.id} profile={p} onEdit={setModal} onDelete={handleDelete} onSimulate={handleSimulate} />
+            <ProfileCard key={p.id} profile={p} onEdit={setModal} onDelete={handleDelete} onSimulate={handleSimulate} showActions={isAdmin()} />
           ))}
         </div>
       ) : (
@@ -296,8 +303,12 @@ export default function Profiles() {
                   <td style={{ padding: "11px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button onClick={() => handleSimulate(p)} style={{ ...btnPrimary, height: 30, padding: "0 10px", fontSize: 12 }}>Simulate</button>
-                      <button onClick={() => setModal(p)} style={{ ...btnGhost, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
-                      <button onClick={() => handleDelete(p.id)} style={{ ...btnDanger, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
+                      {isAdmin() && (
+                        <>
+                          <button onClick={() => setModal(p)} style={{ ...btnGhost, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
+                          <button onClick={() => handleDelete(p.id)} style={{ ...btnDanger, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

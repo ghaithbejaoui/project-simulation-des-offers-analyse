@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { isAdmin } from "../App";
 
 const API = "http://localhost:5000/api";
 const getToken = () => localStorage.getItem("token");
@@ -176,10 +177,12 @@ export default function Offers() {
           <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Offers Catalog</h2>
           <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>Manage telecom offer definitions, pricing and quotas</p>
         </div>
-        <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Offer
-        </button>
+        {isAdmin() && (
+          <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Offer
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -243,11 +246,15 @@ export default function Offers() {
                 <td style={{ padding: "12px 16px" }}><StatusBadge status={o.status} /></td>
                 <td style={{ padding: "12px 16px" }}>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => setModal(o)} style={{ ...btnGhost, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => handleDelete(o.id)} disabled={deleting === o.id}
-                      style={{ ...btnDanger, height: 30, padding: "0 10px", fontSize: 12, opacity: deleting === o.id ? 0.6 : 1 }}>
-                      {deleting === o.id ? "…" : "Delete"}
-                    </button>
+                    {isAdmin() && (
+                      <>
+                        <button onClick={() => setModal(o)} style={{ ...btnGhost, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
+                        <button onClick={() => handleDelete(o.id)} disabled={deleting === o.id}
+                          style={{ ...btnDanger, height: 30, padding: "0 10px", fontSize: 12, opacity: deleting === o.id ? 0.6 : 1 }}>
+                          {deleting === o.id ? "…" : "Delete"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>

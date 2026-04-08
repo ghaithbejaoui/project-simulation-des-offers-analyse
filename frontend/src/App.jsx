@@ -10,6 +10,28 @@ import CustomerProfiles from "./pages/Profiles";
 import Simulation       from "./pages/Simulation";
 import Compare          from "./pages/Compare";
 
+export const isAdmin = () => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return false;
+  try {
+    const user = JSON.parse(userStr);
+    return user.role === "ADMIN";
+  } catch {
+    return false;
+  }
+};
+
+export const isAnalyst = () => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return false;
+  try {
+    const user = JSON.parse(userStr);
+    return user.role === "ANALYST";
+  } catch {
+    return false;
+  }
+};
+
 // ─── Route guard ──────────────────────────────────────────────────────────────
 function Protected({ children }) {
   const token = localStorage.getItem("token");

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 31, 2026 at 12:12 AM
+-- Generation Time: Apr 08, 2026 at 03:03 PM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -20,6 +20,23 @@ SET time_zone = "+00:00";
 --
 -- Database: `bd_pfe`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `audit_logs`
+--
+
+CREATE TABLE `audit_logs` (
+  `log_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `action` varchar(100) NOT NULL,
+  `entity` varchar(100) DEFAULT NULL,
+  `entity_id` int(11) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -617,6 +634,7 @@ CREATE TABLE `options` (
 --
 
 INSERT INTO `options` (`option_id`, `name`, `type`, `price`, `data_gb`, `minutes`, `sms`, `validity_days`) VALUES
+(0, 'Option 1', 'DATA_ADDON', '12.96', '2.06', 0, 0, 7),
 (1, 'Option 1', 'DATA_ADDON', '12.95', '2.06', 0, 0, 7),
 (2, 'Option 2', 'DATA_ADDON', '4.25', '6.96', 0, 0, 7),
 (3, 'Option 3', 'SMS_ADDON', '1.09', '0.00', 0, 767, 30),
@@ -661,6 +679,65 @@ INSERT INTO `options` (`option_id`, `name`, `type`, `price`, `data_gb`, `minutes
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `scenarios`
+--
+
+CREATE TABLE `scenarios` (
+  `scenario_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `scenario_simulations`
+--
+
+CREATE TABLE `scenario_simulations` (
+  `scenario_id` int(11) NOT NULL,
+  `simulation_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `simulations`
+--
+
+CREATE TABLE `simulations` (
+  `simulation_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `profile_id` int(11) NOT NULL,
+  `run_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('PENDING','COMPLETED','FAILED') NOT NULL DEFAULT 'COMPLETED'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `simulation_results`
+--
+
+CREATE TABLE `simulation_results` (
+  `result_id` int(11) NOT NULL,
+  `simulation_id` int(11) NOT NULL,
+  `offer_id` int(11) NOT NULL,
+  `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_minutes_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_sms_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_data_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `roaming_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `satisfaction_score` int(11) NOT NULL DEFAULT 0,
+  `rank_position` int(11) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -679,12 +756,19 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `username`, `email`, `password_hash`, `role`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'admin@telecom.com', '$2b$10$YourHashHere', 'ADMIN', '2026-03-30 21:47:23', '2026-03-30 21:47:23'),
-(2, 'analyst', 'analyst@telecom.com', '$2b$10$YourHashHere', 'ANALYST', '2026-03-30 21:54:48', '2026-03-30 21:54:48');
+(1, 'admin', 'admin@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ADMIN', '2026-03-30 21:47:23', '2026-03-30 22:39:41'),
+(2, 'analyst', 'analyst@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ANALYST', '2026-03-30 21:54:48', '2026-03-30 22:39:46');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`log_id`),
+  ADD KEY `fk_log_user` (`user_id`);
 
 --
 -- Indexes for table `customer_profiles`
@@ -712,6 +796,36 @@ ALTER TABLE `options`
   ADD PRIMARY KEY (`option_id`);
 
 --
+-- Indexes for table `scenarios`
+--
+ALTER TABLE `scenarios`
+  ADD PRIMARY KEY (`scenario_id`),
+  ADD KEY `fk_scen_user` (`user_id`);
+
+--
+-- Indexes for table `scenario_simulations`
+--
+ALTER TABLE `scenario_simulations`
+  ADD PRIMARY KEY (`scenario_id`,`simulation_id`),
+  ADD KEY `fk_ss_simulation` (`simulation_id`);
+
+--
+-- Indexes for table `simulations`
+--
+ALTER TABLE `simulations`
+  ADD PRIMARY KEY (`simulation_id`),
+  ADD KEY `fk_sim_user` (`user_id`),
+  ADD KEY `fk_sim_profile` (`profile_id`);
+
+--
+-- Indexes for table `simulation_results`
+--
+ALTER TABLE `simulation_results`
+  ADD PRIMARY KEY (`result_id`),
+  ADD KEY `fk_res_simulation` (`simulation_id`),
+  ADD KEY `fk_res_offer` (`offer_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -724,6 +838,30 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `scenarios`
+--
+ALTER TABLE `scenarios`
+  MODIFY `scenario_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `simulations`
+--
+ALTER TABLE `simulations`
+  MODIFY `simulation_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `simulation_results`
+--
+ALTER TABLE `simulation_results`
+  MODIFY `result_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -734,11 +872,44 @@ ALTER TABLE `users`
 --
 
 --
+-- Constraints for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `fk_log_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `offer_options`
 --
 ALTER TABLE `offer_options`
   ADD CONSTRAINT `fk_oo_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`offer_id`),
   ADD CONSTRAINT `fk_oo_option` FOREIGN KEY (`option_id`) REFERENCES `options` (`option_id`);
+
+--
+-- Constraints for table `scenarios`
+--
+ALTER TABLE `scenarios`
+  ADD CONSTRAINT `fk_scen_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `scenario_simulations`
+--
+ALTER TABLE `scenario_simulations`
+  ADD CONSTRAINT `fk_ss_scenario` FOREIGN KEY (`scenario_id`) REFERENCES `scenarios` (`scenario_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_ss_simulation` FOREIGN KEY (`simulation_id`) REFERENCES `simulations` (`simulation_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `simulations`
+--
+ALTER TABLE `simulations`
+  ADD CONSTRAINT `fk_sim_profile` FOREIGN KEY (`profile_id`) REFERENCES `customer_profiles` (`profile_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_sim_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `simulation_results`
+--
+ALTER TABLE `simulation_results`
+  ADD CONSTRAINT `fk_res_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`offer_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_res_simulation` FOREIGN KEY (`simulation_id`) REFERENCES `simulations` (`simulation_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

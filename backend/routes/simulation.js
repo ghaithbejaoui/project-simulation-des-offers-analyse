@@ -285,29 +285,54 @@ router.post('/compare', async (req, res) => {
 
     const comparisons = offerRows.map(offer => {
       const offerOptions = optionsByOffer[offer.offer_id] || [];
-      const baseCost = offer.monthly_price || 0;
-      const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (offer.quota_minutes || 0));
-      const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
-      const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
-      const overageCost = overMinutes * (offer.over_minute_price || 0.1) + overSms * (offer.over_sms_price || 0.05) + overData * (offer.over_data_price || 0.5);
-      const optionsCost = offerOptions.reduce((sum, opt) => sum + (opt.price || 0), 0);
+      const baseCost = Number(offer.monthly_price) || 0;
+      const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (Number(offer.quota_minutes) || 0));
+      const overSms = Math.max(0, (profile.sms_avg || 0) - (Number(offer.quota_sms) || 0));
+      const overData = Math.max(0, (Number(profile.data_avg_gb) || 0) - (Number(offer.quota_data_gb) || 0));
+      const overageMinutesCost = overMinutes * (Number(offer.over_minute_price) || 0.1);
+      const overageSmsCost = overSms * (Number(offer.over_sms_price) || 0.05);
+      const overageDataCost = overData * (Number(offer.over_data_price) || 0.5);
+      const overageCost = overageMinutesCost + overageSmsCost + overageDataCost;
+      const optionsCost = offerOptions.reduce((sum, opt) => sum + (Number(opt.price) || 0), 0);
       const discounts = Math.abs(Math.min(0, optionsCost));
-      const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (offer.roaming_included_days || 0));
+      const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
       const roamingCost = overRoamingDays * 5;
       const totalCost = baseCost + overageCost + roamingCost - discounts;
 
       let score = 100;
-      const budgetRatio = totalCost / (profile.budget_max || 1);
+      const budgetRatio = totalCost / (Number(profile.budget_max) || 1);
       if (budgetRatio <= 0.7) score += 10;
       else if (budgetRatio > 1.0) score -= 30;
       if (offer.segment === 'BUSINESS') score += 10;
       else if (offer.segment === 'POSTPAID') score += 5;
       score += Math.min(offerOptions.length * 2, 10);
-      if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
+      if ((Number(profile.data_avg_gb) || 0) > (Number(offer.fair_use_gb) || 0)) score -= 20;
       if (overMinutes + overSms + overData > 0) score -= 10;
       score = Math.max(0, Math.min(100, score));
 
-      return { offer_id: offer.offer_id, offer_name: offer.name, segment: offer.segment, monthly_price: offer.monthly_price, calculation: { total_cost: parseFloat(totalCost.toFixed(2)), satisfaction_score: score } };
+      return { 
+        offer_id: offer.offer_id, 
+        offer_name: offer.name, 
+        segment: offer.segment, 
+        monthly_price: Number(offer.monthly_price),
+        offer: {
+          offer_id: offer.offer_id,
+          name: offer.name,
+          segment: offer.segment,
+          quota_data_gb: Number(offer.quota_data_gb),
+          quota_minutes: Number(offer.quota_minutes),
+          quota_sms: Number(offer.quota_sms),
+        },
+        overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
+        overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
+        overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
+        roaming_cost: parseFloat(roamingCost.toFixed(2)),
+        calculation: { 
+          base_cost: parseFloat(baseCost.toFixed(2)),
+          total_cost: parseFloat(totalCost.toFixed(2)), 
+          satisfaction_score: score 
+        } 
+      };
     });
 
     const sortedByCost = [...comparisons].sort((a, b) => a.calculation.total_cost - b.calculation.total_cost);

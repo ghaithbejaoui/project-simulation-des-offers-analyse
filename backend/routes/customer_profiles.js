@@ -61,7 +61,18 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM customer_profiles');
-    res.json(rows);
+    const profiles = rows.map(p => {
+      let segment = 'POSTPAID';
+      if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
+        segment = 'DATA_ONLY';
+      } else if (p.budget_max <= 30) {
+        segment = 'PREPAID';
+      } else if (p.budget_max >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
+        segment = 'BUSINESS';
+      }
+      return { ...p, segment };
+    });
+    res.json(profiles);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -171,7 +182,17 @@ router.post('/', async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority]
     );
-    res.status(201).json({ profile_id: result.insertId, message: 'Profile created' });
+    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [result.insertId]);
+    const p = rows[0];
+    let segment = 'POSTPAID';
+    if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
+      segment = 'DATA_ONLY';
+    } else if (Number(p.budget_max) <= 30) {
+      segment = 'PREPAID';
+    } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
+      segment = 'BUSINESS';
+    }
+    res.status(201).json({ ...p, segment, message: 'Profile created' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -213,7 +234,17 @@ router.put('/:id', async (req, res) => {
       [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
-    res.json({ message: 'Profile updated successfully' });
+    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
+    const p = rows[0];
+    let segment = 'POSTPAID';
+    if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
+      segment = 'DATA_ONLY';
+    } else if (Number(p.budget_max) <= 30) {
+      segment = 'PREPAID';
+    } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
+      segment = 'BUSINESS';
+    }
+    res.json({ ...p, segment, message: 'Profile updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

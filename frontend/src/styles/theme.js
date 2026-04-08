@@ -47,6 +47,24 @@ export const input = {
   padding:      '0 14px',
 };
 
+// Shared select style
+export const select = {
+  width:        '100%',
+  height:       42,
+  background:   'rgba(255,255,255,0.04)',
+  border:       `0.5px solid ${colors.border}`,
+  borderRadius: 10,
+  color:        colors.text,
+  fontSize:     14,
+  fontFamily:   fonts.body,
+  padding:      '0 14px',
+  cursor:       'pointer',
+  appearance:   'none',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c8d4e8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 12px center',
+};
+
 // Shared primary button
 export const btnPrimary = {
   display:        'inline-flex',
@@ -91,6 +109,7 @@ export const globalStyles = `
   a { text-decoration: none; }
   button { font-family: 'DM Sans', sans-serif; }
   input, select, textarea { font-family: 'DM Sans', sans-serif; }
+  select option { background: #0d1628; color: #e8f0ff; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: rgba(26,143,255,0.55) !important; background: rgba(26,143,255,0.06) !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }

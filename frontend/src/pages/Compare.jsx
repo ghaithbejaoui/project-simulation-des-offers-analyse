@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, input } from "../styles/theme";
+import { colors, fonts, card, btnPrimary, btnGhost, input, select } from "../styles/theme";
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -61,27 +61,42 @@ export default function Compare() {
     loadData();
   }, []);
 
-  const toggleOffer = (id) => {
-    setSelectedOffers(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+  const toggleOffer = (index) => {
+    setSelectedOffers(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(x => x !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
   };
+
+  const isOfferSelected = (index) => selectedOffers.includes(index);
 
   const runComparison = async () => {
     if (selectedOffers.length < 2 || !selectedProfile) return;
     setComparing(true);
     try {
-      const profile = profiles.find(p => String(p.id) === String(selectedProfile));
+      const offerIds = selectedOffers.map(index => offers[index].offer_id || offers[index].id);
+      console.log("Sending request:", { profile_id: Number(selectedProfile), offer_ids: offerIds });
+      console.log("Profile found:", profiles.find(p => String(p.profile_id ?? p.id) === String(selectedProfile)));
       const res = await fetch(`${API}/simulation/compare`, {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ offer_ids: selectedOffers, customer_profile: profile }),
+        body: JSON.stringify({ profile_id: Number(selectedProfile), offer_ids: offerIds }),
       });
+      console.log("Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log("Response data:", data);
         setComparison(data.comparisons || data);
+      } else {
+        const errorData = await res.json();
+        console.error("Error response:", errorData);
       }
-    } catch {}
+    } catch (err) {
+      console.error("Comparison error:", err);
+    }
     setComparing(false);
   };
 
@@ -90,8 +105,22 @@ export default function Compare() {
     if (!comparison || comparison.length === 0) return -1;
     let bestIdx = 0;
     for (let i = 1; i < comparison.length; i++) {
-      const curr = parseFloat(comparison[i][key]) || 0;
-      const best = parseFloat(comparison[bestIdx][key]) || 0;
+      let curr, best;
+      if (key === 'total_cost') {
+        curr = parseFloat(comparison[i].calculation?.total_cost || comparison[i].total_cost) || 0;
+        best = parseFloat(comparison[bestIdx].calculation?.total_cost || comparison[bestIdx].total_cost) || 0;
+      } else if (key === 'satisfaction_score') {
+        curr = parseFloat(comparison[i].calculation?.satisfaction_score || comparison[i].satisfaction_score) || 0;
+        best = parseFloat(comparison[bestIdx].calculation?.satisfaction_score || comparison[bestIdx].satisfaction_score) || 0;
+      } else if (key === 'monthly_price') {
+        curr = parseFloat(comparison[i].monthly_price || 0);
+        best = parseFloat(comparison[bestIdx].monthly_price || 0);
+      } else if (key === 'quota_data_gb') {
+        curr = parseFloat(comparison[i].offer?.quota_data_gb || 0);
+        best = parseFloat(comparison[bestIdx].offer?.quota_data_gb || 0);
+      } else {
+        continue;
+      }
       if (higher ? curr < best : curr > best) bestIdx = i;
     }
     return bestIdx;
@@ -114,11 +143,11 @@ export default function Compare() {
             <select 
               value={selectedProfile} 
               onChange={e => setSelectedProfile(e.target.value)}
-              style={{ ...input, height: 40, fontSize: 13 }}
+              style={{ ...select, height: 40 }}
             >
-              <option value="">— Select a profile —</option>
-              {profiles.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+              <option value="" style={{ background: colors.bgCard, color: colors.text }}>— Select a profile —</option>
+              {profiles.map((p, index) => (
+                <option key={index} value={p.profile_id ?? p.id} style={{ background: colors.bgCard, color: colors.text }}>{p.label || p.name}</option>
               ))}
             </select>
           </div>
@@ -130,25 +159,25 @@ export default function Compare() {
               <span style={{ fontSize: 12, color: colors.textDim }}>{selectedOffers.length} selected</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
-              {offers.map(o => (
+              {offers.map((o, index) => (
                 <label 
-                  key={o.id} 
+                  key={index}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
                     gap: 10, 
                     padding: "10px 12px", 
                     borderRadius: 8,
-                    background: selectedOffers.includes(o.id) ? colors.blueDim : "rgba(255,255,255,0.02)",
-                    border: `0.5px solid ${selectedOffers.includes(o.id) ? colors.blue : colors.border}`,
+                    background: isOfferSelected(index) ? colors.blueDim : "rgba(255,255,255,0.02)",
+                    border: `0.5px solid ${isOfferSelected(index) ? colors.blue : colors.border}`,
                     cursor: "pointer",
                     transition: "all 0.15s"
                   }}
                 >
                   <input 
                     type="checkbox" 
-                    checked={selectedOffers.includes(o.id)} 
-                    onChange={() => toggleOffer(o.id)}
+                    checked={isOfferSelected(index)} 
+                    onChange={() => toggleOffer(index)}
                     style={{ accentColor: colors.blue, flexShrink: 0 }} 
                   />
                   <div style={{ flex: 1 }}>
@@ -213,17 +242,17 @@ export default function Compare() {
               {/* Data Rows */}
               <ComparisonRow 
                 label="Monthly Price" 
-                values={comparison.map(c => `${Number(c.base_cost || c.monthly_price || 0).toFixed(2)} TND`)} 
-                highlight={getWinner("base_cost", true)} 
+                values={comparison.map(c => `${Number(c.monthly_price || c.calculation?.monthly_price || 0).toFixed(2)} TND`)} 
+                highlight={getWinner("monthly_price", true)} 
               />
               <ComparisonRow 
                 label="Total Cost" 
-                values={comparison.map(c => `${Number(c.total_cost || 0).toFixed(2)} TND`)} 
+                values={comparison.map(c => `${Number(c.calculation?.total_cost || c.total_cost || 0).toFixed(2)} TND`)} 
                 highlight={getWinner("total_cost", true)} 
               />
               <ComparisonRow 
                 label="Satisfaction Score" 
-                values={comparison.map(c => `${Math.round(c.satisfaction_score || 0)}/100`)} 
+                values={comparison.map(c => `${Math.round(c.calculation?.satisfaction_score || c.satisfaction_score || 0)}/100`)} 
                 highlight={getWinner("satisfaction_score", false)} 
               />
               <ComparisonRow 
@@ -233,19 +262,27 @@ export default function Compare() {
               />
               <ComparisonRow 
                 label="Minutes Quota" 
-                values={comparison.map(c => c.offer?.quota_minutes || c.quota_minutes || "Unlimited")} 
+                values={comparison.map(c => c.offer?.quota_minutes ? `${c.offer.quota_minutes} min` : "Unlimited")} 
               />
               <ComparisonRow 
                 label="SMS Quota" 
-                values={comparison.map(c => c.offer?.quota_sms || c.quota_sms || "Unlimited")} 
+                values={comparison.map(c => c.offer?.quota_sms ? `${c.offer.quota_sms} SMS` : "Unlimited")} 
               />
               <ComparisonRow 
                 label="Voice Overage" 
                 values={comparison.map(c => `${Number(c.overage_minutes_cost || 0).toFixed(2)} TND`)} 
               />
               <ComparisonRow 
+                label="SMS Overage" 
+                values={comparison.map(c => `${Number(c.overage_sms_cost || 0).toFixed(2)} TND`)} 
+              />
+              <ComparisonRow 
                 label="Data Overage" 
                 values={comparison.map(c => `${Number(c.overage_data_cost || 0).toFixed(2)} TND`)} 
+              />
+              <ComparisonRow 
+                label="Roaming Cost" 
+                values={comparison.map(c => `${Number(c.roaming_cost || 0).toFixed(2)} TND`)} 
               />
 
               {/* Justification Row */}
@@ -266,7 +303,7 @@ export default function Compare() {
                   <p style={{ fontSize: 13, fontWeight: 500, color: colors.green }}>
                     🏆 Best Match: {comparison[0].offer_name || comparison[0].offer?.name} 
                     <span style={{ color: colors.textMuted, fontWeight: 400, marginLeft: 8 }}>
-                      Score: {Math.round(comparison[0].satisfaction_score || 0)}/100 · {Number(comparison[0].total_cost || 0).toFixed(2)} TND
+                      Score: {Math.round(comparison[0].calculation?.satisfaction_score || comparison[0].satisfaction_score || 0)}/100 · {Number(comparison[0].calculation?.total_cost || comparison[0].total_cost || 0).toFixed(2)} TND
                     </span>
                   </p>
                 </div>

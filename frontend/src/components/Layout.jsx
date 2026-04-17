@@ -178,27 +178,35 @@ export default function Layout({ children }) {
           })}
         </nav>
 
-        {/* User info */}
-        <div style={{ ...s.userBox, padding: collapsed ? "12px 8px" : "12px 14px" }}>
-          <div style={s.avatar}>
-            {user?.name?.[0]?.toUpperCase() || "U"}
-          </div>
-          {!collapsed && (
-            <div style={s.userInfo}>
-              <p style={s.userName}>{user?.name || "User"}</p>
-              <p style={s.userRole}>{user?.role || "analyst"}</p>
-            </div>
-          )}
-          {!collapsed && (
-            <button onClick={handleLogout} style={s.logoutBtn} title="Sign out">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
-          )}
-        </div>
+         {/* User info */}
+         <div style={{ ...s.userBox, padding: collapsed ? "12px 8px" : "12px 14px" }}>
+           <div style={s.avatar}>
+             {user?.role?.[0]?.toUpperCase() || "A"}
+           </div>
+           {!collapsed && (
+             <div style={s.userInfo}>
+               <p style={s.userName}>
+                 {user?.role
+                   ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
+                   : "User"}
+               </p>
+               <p style={s.userRole}>
+                 {user?.role
+                   ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
+                   : "Analyst"}
+               </p>
+             </div>
+           )}
+           {!collapsed && (
+             <button onClick={handleLogout} style={s.logoutBtn} title="Sign out">
+               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                 <polyline points="16 17 21 12 16 7" />
+                 <line x1="21" y1="12" x2="9" y2="12" />
+               </svg>
+             </button>
+           )}
+         </div>
       </aside>
 
       {/* Main content */}
@@ -217,9 +225,11 @@ export default function Layout({ children }) {
             </div>
             <div style={s.userChip}>
               <div style={{ ...s.avatar, width: 30, height: 30, fontSize: 12 }}>
-                {user?.name?.[0]?.toUpperCase() || "U"}
+                {user?.role?.[0]?.toUpperCase() || "A"}
               </div>
-              <span style={{ fontSize: 13, color: colors.textMuted }}>{user?.name || "User"}</span>
+              <span style={{ fontSize: 13, color: colors.textMuted }}>
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase() : "Analyst"}
+              </span>
             </div>
           </div>
         </header>

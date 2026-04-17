@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
 import { isAdmin } from "../App";
@@ -137,7 +138,7 @@ function ProfileModal({ profile, onClose, onSave }) {
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, margin: "auto", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
@@ -197,9 +198,19 @@ export default function Profiles() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (id) => {
+   // Disable body scroll when modal is open
+   useEffect(() => {
+     if (modal) {
+       document.body.style.overflow = "hidden";
+     } else {
+       document.body.style.overflow = "";
+     }
+     return () => { document.body.style.overflow = ""; };
+   }, [modal]);
+
+   const handleDelete = async (id) => {
     try {
       const deleteId = id || id; // Handle both profile_id and id
       await fetch(`${API}/customer-profiles/${deleteId}`, { method: "DELETE", headers: getHeaders() });
@@ -318,13 +329,14 @@ export default function Profiles() {
         </div>
       )}
 
-      {modal && (
-        <ProfileModal
-          profile={modal === "new" ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); load(); }}
-        />
-      )}
+       {modal && ReactDOM.createPortal(
+         <ProfileModal
+           profile={modal === "new" ? null : modal}
+           onClose={() => setModal(null)}
+           onSave={() => { setModal(null); load(); }}
+         />,
+         document.body
+       )}
     </div>
   );
 }

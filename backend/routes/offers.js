@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-
+const { logAction } = require('./audit');
 const router = express.Router();
 
 /**
@@ -218,6 +218,19 @@ router.post('/', async (req, res) => {
         over_data_price, roaming_included_days, status
       ]
     );
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'CREATE',
+      entity: 'offer',
+      entity_id: result.insertId,
+      ip_address,
+      details: { name, segment, monthly_price }
+    });
+
     res.status(201).json({ offer_id: result.insertId, message: 'Offer created' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -312,7 +325,21 @@ router.put('/:id', async (req, res) => {
        validity_days, fair_use_gb, over_minute_price, over_sms_price,
        over_data_price, roaming_included_days, status, req.params.id]
     );
+
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'UPDATE',
+      entity: 'offer',
+      entity_id: parseInt(req.params.id),
+      ip_address,
+      details: { name, segment, monthly_price, status }
+    });
+
     res.json({ message: 'Offer updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -344,6 +371,18 @@ router.delete('/:id', async (req, res) => {
   try {
     const [result] = await db.query('DELETE FROM offers WHERE offer_id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'DELETE',
+      entity: 'offer',
+      entity_id: parseInt(req.params.id),
+      ip_address
+    });
+
     res.json({ message: 'Offer deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

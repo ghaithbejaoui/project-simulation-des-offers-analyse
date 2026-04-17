@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, input, select } from "../styles/theme";
+import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input, select } from "../styles/theme";
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -126,6 +126,8 @@ export default function Compare() {
     return bestIdx;
   };
 
+  const bestMatchIndex = comparison ? getWinner('satisfaction_score', false) : -1;
+
   return (
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       {/* Header */}
@@ -189,24 +191,43 @@ export default function Compare() {
             </div>
           </div>
 
-          {/* Action Button */}
-          <button 
-            onClick={runComparison} 
-            disabled={comparing || selectedOffers.length < 2 || !selectedProfile}
-            style={{ 
-              ...btnPrimary, 
-              height: 46, 
-              fontSize: 14, 
-              justifyContent: "center", 
-              opacity: (comparing || selectedOffers.length < 2 || !selectedProfile) ? 0.5 : 1 
-            }}
-          >
-            {comparing ? (
-              <><span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} /> Comparing...</>
-            ) : (
-              <>Compare {selectedOffers.length} Offers</>
-            )}
-          </button>
+           {/* Action Button */}
+           <button
+             onClick={runComparison}
+             disabled={comparing || selectedOffers.length < 2 || !selectedProfile}
+             style={{
+               ...btnPrimary,
+               height: 46,
+               fontSize: 14,
+               justifyContent: "center",
+               opacity: (comparing || selectedOffers.length < 2 || !selectedProfile) ? 0.5 : 1
+             }}
+           >
+             {comparing ? (
+               <><span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} /> Comparing...</>
+             ) : (
+               <>Compare {selectedOffers.length} Offers</>
+             )}
+           </button>
+
+           {/* Clear Selection Button */}
+           <button
+             onClick={() => {
+               setSelectedOffers([]);
+               setComparison(null);
+             }}
+             disabled={selectedOffers.length === 0}
+             style={{
+               ...btnDanger,
+               height: 46,
+               fontSize: 14,
+               justifyContent: "center",
+               opacity: selectedOffers.length === 0 ? 0.4 : 1,
+               marginTop: 10
+             }}
+           >
+             Clear Selection
+           </button>
         </div>
 
         {/* Right Panel - Results */}
@@ -291,23 +312,23 @@ export default function Compare() {
                 {comparison.map((c, i) => (
                   <div key={i} style={{ padding: "12px 16px", textAlign: "center" }}>
                     <p style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>
-                      {c.justification || (i === 0 ? "✓ Recommended" : "-")}
+                       {c.justification || (i === bestMatchIndex ? "✓ Recommended" : "-")}
                     </p>
                   </div>
                 ))}
               </div>
 
               {/* Winner Summary */}
-              {comparison[0] && (
-                <div style={{ padding: "16px 20px", background: "rgba(67,199,139,0.08)", borderTop: `0.5px solid ${colors.border}` }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: colors.green }}>
-                    🏆 Best Match: {comparison[0].offer_name || comparison[0].offer?.name} 
-                    <span style={{ color: colors.textMuted, fontWeight: 400, marginLeft: 8 }}>
-                      Score: {Math.round(comparison[0].calculation?.satisfaction_score || comparison[0].satisfaction_score || 0)}/100 · {Number(comparison[0].calculation?.total_cost || comparison[0].total_cost || 0).toFixed(2)} TND
-                    </span>
-                  </p>
-                </div>
-              )}
+{bestMatchIndex >= 0 && comparison[bestMatchIndex] && (
+  <div style={{ padding: "16px 20px", background: "rgba(67,199,139,0.08)", borderTop: `0.5px solid ${colors.border}` }}>
+    <p style={{ fontSize: 13, fontWeight: 500, color: colors.green }}>
+      🏆 Best Match: {comparison[bestMatchIndex].offer_name || comparison[bestMatchIndex].offer?.name}
+      <span style={{ color: colors.textMuted, fontWeight: 400, marginLeft: 8 }}>
+        Score: {Math.round(comparison[bestMatchIndex].calculation?.satisfaction_score || comparison[bestMatchIndex].satisfaction_score || 0)}/100 · {Number(comparison[bestMatchIndex].calculation?.total_cost || comparison[bestMatchIndex].total_cost || 0).toFixed(2)} TND
+      </span>
+    </p>
+  </div>
+)}
             </div>
           )}
         </div>

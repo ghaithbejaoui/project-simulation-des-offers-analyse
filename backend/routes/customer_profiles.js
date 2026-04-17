@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-
+const { logAction } = require('./audit');
 const router = express.Router();
 
 /**
@@ -192,6 +192,19 @@ router.post('/', async (req, res) => {
     } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
       segment = 'BUSINESS';
     }
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'CREATE',
+      entity: 'customer_profile',
+      entity_id: result.insertId,
+      ip_address,
+      details: { label, segment }
+    });
+
     res.status(201).json({ ...p, segment, message: 'Profile created' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -234,6 +247,7 @@ router.put('/:id', async (req, res) => {
       [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
+
     const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
     const p = rows[0];
     let segment = 'POSTPAID';
@@ -244,6 +258,19 @@ router.put('/:id', async (req, res) => {
     } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
       segment = 'BUSINESS';
     }
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'UPDATE',
+      entity: 'customer_profile',
+      entity_id: parseInt(req.params.id),
+      ip_address,
+      details: { label, priority }
+    });
+
     res.json({ ...p, segment, message: 'Profile updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -276,6 +303,18 @@ router.delete('/:id', async (req, res) => {
     // Support both profile_id and id for backward compatibility
     const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'DELETE',
+      entity: 'customer_profile',
+      entity_id: parseInt(req.params.id),
+      ip_address
+    });
+
     res.json({ message: 'Profile deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

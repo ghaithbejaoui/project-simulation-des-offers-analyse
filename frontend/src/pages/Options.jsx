@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
 import { isAdmin } from "../App";
 
@@ -103,7 +104,7 @@ function OptionModal({ option, onClose, onSave }) {
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, margin: "auto", background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 520, padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
@@ -159,9 +160,19 @@ export default function Options() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (id) => {
+   // Disable body scroll when modal is open
+   useEffect(() => {
+     if (modal) {
+       document.body.style.overflow = "hidden";
+     } else {
+       document.body.style.overflow = "";
+     }
+     return () => { document.body.style.overflow = ""; };
+   }, [modal]);
+
+   const handleDelete = async (id) => {
     try {
       await fetch(`${API}/options/${id}`, { method: "DELETE", headers: getHeaders() });
       setOptions(o => o.filter(x => x.id !== id));
@@ -233,13 +244,14 @@ export default function Options() {
         </div>
       )}
 
-      {modal && (
-        <OptionModal
-          option={modal === "new" ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); load(); }}
-        />
-      )}
+       {modal && ReactDOM.createPortal(
+         <OptionModal
+           option={modal === "new" ? null : modal}
+           onClose={() => setModal(null)}
+           onSave={() => { setModal(null); load(); }}
+         />,
+         document.body
+       )}
     </div>
   );
 }

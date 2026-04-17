@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, input } from "../styles/theme";
+import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -115,38 +115,62 @@ export default function Simulation() {
     return profiles.find(p => String(p.profile_id || p.id) === String(selectedProfile));
   };
 
-  const run = async () => {
-    const profile = getProfile();
-    if (!profile) { setError("Select a customer profile."); return; }
-    setLoading(true); setError(""); setResults(null);
-    try {
-      let url = "", body = {};
-      if (mode === "single") {
-        if (!selectedOffers[0]) { setError("Select an offer."); setLoading(false); return; }
-        url = `${API}/simulation`;
-        body = { offer_id: selectedOffers[0], customer_profile: profile };
-      } else if (mode === "compare") {
-        if (selectedOffers.length < 2) { setError("Select at least 2 offers."); setLoading(false); return; }
-        url = `${API}/simulation/compare`;
-        body = { offer_ids: selectedOffers, customer_profile: profile };
-      } else if (mode === "recommend") {
-        url = `${API}/simulation/recommend`;
-        body = { customer_profile: profile };
-      } else if (mode === "batch") {
-        if (!batchOfferId) { setError("Select an offer for batch analysis."); setLoading(false); return; }
-        url = `${API}/simulation/batch`;
-        body = { offer_id: batchOfferId, profile_ids: profiles.slice(0, 20).map(p => p.profile_id || p.id) };
-      }
-      const res  = await fetch(url, { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Simulation failed");
-      setResults(data);
-    } catch (e) {
-      setError(e.message);
-      // Demo fallback results
-      if (mode === "recommend") setResults(MOCK_RESULTS);
-    } finally { setLoading(false); }
-  };
+   const run = async () => {
+      const profile = getProfile();
+      if (!profile && mode !== "batch") { setError("Select a customer profile."); setLoading(false); return; }
+      setLoading(true); setError(""); setResults(null);
+     try {
+       let url = "", body = {};
+
+       // Helper to build profile data for custom profiles
+       const buildProfileData = (p) => ({
+         minutes_avg: p.minutes_avg || p.avg_minutes || 0,
+         sms_avg: p.sms_avg || p.avg_sms || 0,
+         data_avg_gb: p.data_avg_gb || p.avg_data_gb || 0,
+         roaming_days: p.roaming_days || 0,
+         budget_max: p.budget_max || 100,
+         priority: (p.priority || 'balanced').toUpperCase()
+       });
+
+       if (mode === "single") {
+         if (!selectedOffers[0]) { setError("Select an offer."); setLoading(false); return; }
+         url = `${API}/simulation`;
+         if (profile.profile_id || profile.id) {
+           body = { profile_id: profile.profile_id || profile.id, offer_id: selectedOffers[0] };
+         } else {
+           body = { ...buildProfileData(profile), offer_id: selectedOffers[0] };
+         }
+       } else if (mode === "compare") {
+         if (selectedOffers.length < 2) { setError("Select at least 2 offers."); setLoading(false); return; }
+         url = `${API}/simulation/compare`;
+         if (profile.profile_id || profile.id) {
+           body = { profile_id: profile.profile_id || profile.id, offer_ids: selectedOffers };
+         } else {
+           body = { ...buildProfileData(profile), offer_ids: selectedOffers };
+         }
+       } else if (mode === "recommend") {
+         url = `${API}/simulation/recommend`;
+         if (profile.profile_id || profile.id) {
+           body = { profile_id: profile.profile_id || profile.id, limit: 5 };
+         } else {
+           body = { ...buildProfileData(profile), limit: 5 };
+         }
+        } else if (mode === "batch") {
+          if (!batchOfferId) { setError("Select an offer for batch analysis."); setLoading(false); return; }
+          url = `${API}/simulation/batch`;
+          body = { offer_id: batchOfferId };
+        }
+
+       const res  = await fetch(url, { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
+       const data = await res.json();
+       if (!res.ok) throw new Error(data.message || "Simulation failed");
+       setResults(data);
+     } catch (e) {
+       setError(e.message);
+       // Demo fallback results
+       if (mode === "recommend") setResults(MOCK_RESULTS);
+     } finally { setLoading(false); }
+   };
 
   const toggleOffer = (id) => {
     setSelectedOffers(prev =>
@@ -172,7 +196,7 @@ export default function Simulation() {
     ? Array.isArray(results) ? results
     : results.recommendations ? results.recommendations
     : results.comparisons ? results.comparisons
-    : results.result ? [results.result]
+    : results.calculation ? [results]
     : []
     : [];
 
@@ -201,81 +225,98 @@ export default function Simulation() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "start" }}>
-        {/* Left panel: configuration */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Profile selector */}
-          <div style={{ ...card, padding: "18px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Customer Profile</p>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: colors.textMuted, cursor: "pointer" }}>
-                <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} style={{ accentColor: colors.blue }} />
-                Custom
-              </label>
-            </div>
+       <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "start" }}>
+         {/* Left panel: configuration */}
+         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+           {/* Profile selector - hidden in batch mode */}
+           {mode !== "batch" && (
+           <div style={{ ...card, padding: "18px 20px" }}>
+             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+               <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Customer Profile</p>
+               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: colors.textMuted, cursor: "pointer" }}>
+                 <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} style={{ accentColor: colors.blue }} />
+                 Custom
+               </label>
+             </div>
 
-            {useCustom ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <CpField label="Data (GB)" k="avg_data_gb" />
-                <CpField label="Minutes" k="avg_minutes" />
-                <CpField label="SMS" k="avg_sms" />
-                <CpField label="Budget (TND)" k="budget_max" />
-                <CpField label="Night %" k="night_usage_pct" />
-                <CpField label="Roaming (d)" k="roaming_days" />
-                <CpField label="Priority" k="priority" options={["price","quality","balanced"]} />
-                <CpField label="Segment" k="segment" options={["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"]} />
-              </div>
-            ) : (
-              <select value={selectedProfile} onChange={e => setSelectedProfile(e.target.value)}
-                style={{ ...input, height: 40, fontSize: 13 }}>
-                <option value="">— Select a profile —</option>
-                {profiles.map(p => (
-                  <option key={p.profile_id || p.id} value={p.profile_id || p.id}>{p.name || p.label || "Profile " + (p.profile_id || p.id)} ({p.segment?.replace("_"," ")})</option>
-                ))}
-              </select>
-            )}
-          </div>
+             {useCustom ? (
+               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                 <CpField label="Data (GB)" k="avg_data_gb" />
+                 <CpField label="Minutes" k="avg_minutes" />
+                 <CpField label="SMS" k="avg_sms" />
+                 <CpField label="Budget (TND)" k="budget_max" />
+                 <CpField label="Night %" k="night_usage_pct" />
+                 <CpField label="Roaming (d)" k="roaming_days" />
+                 <CpField label="Priority" k="priority" options={["price","quality","balanced"]} />
+                 <CpField label="Segment" k="segment" options={["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"]} />
+               </div>
+             ) : (
+               <select value={selectedProfile} onChange={e => setSelectedProfile(e.target.value)}
+                 style={{ ...input, height: 40, fontSize: 13 }}>
+                 <option value="">— Select a profile —</option>
+                 {profiles.map(p => (
+                   <option key={p.profile_id || p.id} value={p.profile_id || p.id}>{p.name || p.label || "Profile " + (p.profile_id || p.id)} ({p.segment?.replace("_"," ")})</option>
+                 ))}
+               </select>
+             )}
+           </div>
+           )}
 
-          {/* Offer selector (for single/compare/batch) */}
-          {(mode === "single" || mode === "compare") && (
-            <div style={{ ...card, padding: "18px 20px" }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 4 }}>
-                {mode === "single" ? "Select Offer" : "Select Offers to Compare"}
-              </p>
-              <p style={{ fontSize: 12, color: colors.textDim, marginBottom: 12 }}>
-                {mode === "compare" ? `${selectedOffers.length} selected` : selectedOffers.length === 1 ? "1 selected" : "None selected"}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
-                {offers.map(o => (
-                  <label key={o.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
-                    background: selectedOffers.includes(o.id) ? colors.blueDim : "rgba(255,255,255,0.02)",
-                    border: `0.5px solid ${selectedOffers.includes(o.id) ? colors.blue : colors.border}`,
-                    cursor: "pointer", transition: "all 0.15s" }}>
-                    <input type={mode === "single" ? "radio" : "checkbox"} name="offer"
-                      checked={selectedOffers.includes(o.id)} onChange={() => toggleOffer(o.id)}
-                      style={{ accentColor: colors.blue, flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 13, color: colors.text, fontWeight: 500 }}>{o.name}</p>
-                      <p style={{ fontSize: 11, color: colors.textDim }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
+           {/* Offer selector (for single/compare/batch) */}
+           {(mode === "single" || mode === "compare") && (
+             <div style={{ ...card, padding: "18px 20px" }}>
+               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                 <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>
+                   {mode === "single" ? "Select Offer" : "Select Offers to Compare"}
+                 </p>
+                 <span style={{ fontSize: 12, color: colors.textDim }}>{selectedOffers.length} selected</span>
+               </div>
+               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
+                 {offers.map(o => (
+                   <label key={o.offer_id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
+                     background: selectedOffers.includes(o.offer_id) ? colors.blueDim : "rgba(255,255,255,0.02)",
+                     border: `0.5px solid ${selectedOffers.includes(o.offer_id) ? colors.blue : colors.border}`,
+                     cursor: "pointer", transition: "all 0.15s" }}>
+                     <input type={mode === "single" ? "radio" : "checkbox"} name="offer"
+                       checked={selectedOffers.includes(o.offer_id)} onChange={() => toggleOffer(o.offer_id)}
+                       style={{ accentColor: colors.blue, flexShrink: 0 }} />
+                     <div style={{ flex: 1 }}>
+                       <p style={{ fontSize: 13, color: colors.text, fontWeight: 500 }}>{o.name}</p>
+                       <p style={{ fontSize: 11, color: colors.textDim }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
+                     </div>
+                   </label>
+                 ))}
+               </div>
+               {mode === "compare" && selectedOffers.length > 0 && (
+                 <button
+                   onClick={() => setSelectedOffers([])}
+                   style={{
+                     ...btnDanger,
+                     height: 38,
+                     fontSize: 13,
+                     marginTop: 12,
+                     opacity: 1,
+                     justifyContent: 'center'
+                   }}
+                 >
+                   Clear Selection
+                 </button>
+               )}
+             </div>
+           )}
 
-          {mode === "batch" && (
-            <div style={{ ...card, padding: "18px 20px" }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 12 }}>Offer to Analyze</p>
-              <select value={batchOfferId} onChange={e => setBatchOfferId(e.target.value)} style={{ ...input, height: 40, fontSize: 13 }}>
-                <option value="">— Select offer —</option>
-                {offers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <p style={{ fontSize: 12, color: colors.textDim, marginTop: 10 }}>
-                Will run across {profiles.length} profiles in database.
-              </p>
-            </div>
-          )}
+           {mode === "batch" && (
+             <div style={{ ...card, padding: "18px 20px" }}>
+               <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 12 }}>Offer to Analyze</p>
+               <select value={batchOfferId} onChange={e => setBatchOfferId(e.target.value)} style={{ ...input, height: 40, fontSize: 13 }}>
+                 <option value="">— Select offer —</option>
+                 {offers.map(o => <option key={o.offer_id} value={o.offer_id}>{o.name}</option>)}
+               </select>
+               <p style={{ fontSize: 12, color: colors.textDim, marginTop: 10 }}>
+                 Will run across {profiles.length} profiles in database.
+               </p>
+             </div>
+           )}
 
           {error && (
             <div style={{ padding: "12px 16px", background: "rgba(227,91,91,0.1)", border: "0.5px solid rgba(227,91,91,0.3)", borderRadius: 10, fontSize: 13, color: "#f09070" }}>

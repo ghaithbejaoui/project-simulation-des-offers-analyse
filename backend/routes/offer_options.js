@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-
+const { logAction } = require('./audit');
 const router = express.Router();
 
 /**
@@ -176,6 +176,19 @@ router.post('/', async (req, res) => {
       'INSERT INTO offer_options (offer_id, option_id) VALUES (?, ?)',
       [offer_id, option_id]
     );
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'LINK',
+      entity: 'offer_option',
+      entity_id: result.insertId,
+      ip_address,
+      details: { offer_id, option_id }
+    });
+
     res.status(201).json({ message: 'Option added to offer successfully', offer_id, option_id });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -218,6 +231,18 @@ router.delete('/', async (req, res) => {
       [offer_id, option_id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer-Option relationship not found' });
+
+    // Audit log
+    const user_id = req.user?.user_id || null;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id,
+      action: 'UNLINK',
+      entity: 'offer_option',
+      ip_address,
+      details: { offer_id, option_id }
+    });
+
     res.json({ message: 'Option removed from offer successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

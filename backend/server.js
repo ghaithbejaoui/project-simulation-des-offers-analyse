@@ -2,12 +2,16 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const db = require('./config/database');
+const { authMiddleware } = require('./middleware/auth');
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Attach user info from JWT to all requests
+app.use(authMiddleware);
 
 
 app.get('/test-db', async (req, res) => {
@@ -76,6 +80,9 @@ app.use('/api/offer-options', offerOptionsRoutes);
 
 const simulationRoutes = require('./routes/simulation');
 app.use('/api/simulation', simulationRoutes);
+
+const auditRoutes = require('./routes/audit').router;
+app.use('/api/audit', auditRoutes);
 
 const statsRoutes = require('./routes/stats');
 app.use('/api/stats', statsRoutes);

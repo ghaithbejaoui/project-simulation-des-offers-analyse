@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
 import { isAdmin } from "../App";
 
@@ -7,25 +8,29 @@ const getToken = () => localStorage.getItem("token");
 const headers = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` });
 
 const SEGMENTS = ["ALL", "PREPAID", "POSTPAID", "BUSINESS", "DATA_ONLY"];
-const STATUSES  = ["ALL", "active", "inactive", "draft"];
+const STATUSES  = ["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"];
 
 const EMPTY_FORM = {
   name: "", segment: "POSTPAID", monthly_price: "", quota_minutes: "", quota_sms: "",
   quota_data: "", validity_days: 30, cost_per_min_over: "", cost_per_sms_over: "",
-  cost_per_mb_over: "", fair_use_threshold: 100, status: "active", description: "",
+  cost_per_mb_over: "", fair_use_threshold: 100, status: "PUBLISHED", description: "",
 };
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
+  // Normalize status to uppercase for consistent mapping
+  const normalized = status?.toUpperCase();
   const map = {
-    active:   { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: colors.green },
-    inactive: { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim },
-    draft:    { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: colors.yellow },
+    PUBLISHED: { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: colors.green, label: "Active" },
+    ACTIVE:    { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: colors.green, label: "Active" },
+    DRAFT:     { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: colors.yellow, label: "Draft" },
+    ARCHIVED:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim, label: "Inactive" },
+    INACTIVE:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim, label: "Inactive" },
   };
-  const st = map[status] || map.draft;
+  const st = map[normalized] || { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim, label: status };
   return (
     <span style={{ fontSize: 11, fontWeight: 500, padding: "3px 9px", borderRadius: 6, background: st.bg, border: `0.5px solid ${st.border}`, color: st.color, textTransform: "capitalize" }}>
-      {status}
+      {st.label}
     </span>
   );
 }
@@ -77,7 +82,7 @@ function OfferModal({ offer, onClose, onSave }) {
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, margin: "auto", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
@@ -98,9 +103,13 @@ function OfferModal({ offer, onClose, onSave }) {
           </div>
           <div>
             <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Status</label>
-            <select value={form.status} onChange={e => set("status", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-              {["active","inactive","draft"].map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+             <select value={form.status} onChange={e => set("status", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
+               {["PUBLISHED","DRAFT","ARCHIVED"].map(s => (
+                 <option key={s} value={s}>
+                   {s === "PUBLISHED" ? "Active" : s === "DRAFT" ? "Draft" : "Inactive"}
+                 </option>
+               ))}
+             </select>
           </div>
           <Field label="Monthly Price (TND)" k="monthly_price" type="number" placeholder="0.00" />
           <Field label="Validity (days)" k="validity_days" type="number" placeholder="30" />
@@ -151,9 +160,19 @@ export default function Offers() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (id) => {
+   // Disable body scroll when modal is open
+   useEffect(() => {
+     if (modal) {
+       document.body.style.overflow = "hidden";
+     } else {
+       document.body.style.overflow = "";
+     }
+     return () => { document.body.style.overflow = ""; };
+   }, [modal]);
+
+   const handleDelete = async (id) => {
     setDeleting(id);
     try {
       await fetch(`${API}/offers/${id}`, { method: "DELETE", headers: headers() });
@@ -204,16 +223,21 @@ export default function Offers() {
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          {STATUSES.map(s => (
-            <button key={s} onClick={() => setStatus(s)}
-              style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${status === s ? colors.green : colors.border}`,
-                background: status === s ? "rgba(67,199,139,0.1)" : "transparent", color: status === s ? colors.green : colors.textMuted,
-                cursor: "pointer", fontSize: 12, fontWeight: status === s ? 500 : 400, transition: "all 0.18s" }}>
-              {s === "ALL" ? "All Status" : s}
-            </button>
-          ))}
-        </div>
+         <div style={{ display: "flex", gap: 6 }}>
+           {STATUSES.map(s => {
+             const label = s === "ALL" ? "All Status" :
+                           s === "PUBLISHED" ? "Active" :
+                           s === "DRAFT" ? "Draft" : "Inactive";
+             return (
+               <button key={s} onClick={() => setStatus(s)}
+                 style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${status === s ? colors.green : colors.border}`,
+                   background: status === s ? "rgba(67,199,139,0.1)" : "transparent", color: status === s ? colors.green : colors.textMuted,
+                   cursor: "pointer", fontSize: 12, fontWeight: status === s ? 500 : 400, transition: "all 0.18s" }}>
+                 {label}
+               </button>
+             );
+           })}
+         </div>
         <span style={{ fontSize: 12, color: colors.textDim, whiteSpace: "nowrap" }}>{filtered.length} offers</span>
       </div>
 
@@ -261,26 +285,27 @@ export default function Offers() {
             ))}
           </tbody>
         </table>
-      </div>
+       </div>
 
-      {/* Modal */}
-      {modal && (
-        <OfferModal
-          offer={modal === "new" ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); load(); }}
-        />
-      )}
-    </div>
-  );
+       {/* Modal (rendered via portal to viewport) */}
+       {modal && ReactDOM.createPortal(
+         <OfferModal
+           offer={modal === "new" ? null : modal}
+           onClose={() => setModal(null)}
+           onSave={() => { setModal(null); load(); }}
+         />,
+         document.body
+       )}
+     </div>
+   );
 }
 
 // Fallback mock data
 const MOCK_OFFERS = [
-  { id: 1, name: "PREPAID STARTER", segment: "PREPAID", monthly_price: 15, quota_data: 5, quota_minutes: 60, quota_sms: 100, validity_days: 30, status: "active" },
-  { id: 2, name: "POSTPAID CLASSIC", segment: "POSTPAID", monthly_price: 39, quota_data: 20, quota_minutes: 300, quota_sms: 500, validity_days: 30, status: "active" },
-  { id: 3, name: "POSTPAID PRO 50GB", segment: "POSTPAID", monthly_price: 69, quota_data: 50, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "active" },
-  { id: 4, name: "BUSINESS UNLIMITED", segment: "BUSINESS", monthly_price: 149, quota_data: 100, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "active" },
-  { id: 5, name: "DATA ONLY 30GB", segment: "DATA_ONLY", monthly_price: 29, quota_data: 30, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "active" },
-  { id: 6, name: "PREPAID NIGHT", segment: "PREPAID", monthly_price: 8, quota_data: 10, quota_minutes: 30, quota_sms: 50, validity_days: 15, status: "draft" },
+  { id: 1, name: "PREPAID STARTER", segment: "PREPAID", monthly_price: 15, quota_data: 5, quota_minutes: 60, quota_sms: 100, validity_days: 30, status: "PUBLISHED" },
+  { id: 2, name: "POSTPAID CLASSIC", segment: "POSTPAID", monthly_price: 39, quota_data: 20, quota_minutes: 300, quota_sms: 500, validity_days: 30, status: "PUBLISHED" },
+  { id: 3, name: "POSTPAID PRO 50GB", segment: "POSTPAID", monthly_price: 69, quota_data: 50, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { id: 4, name: "BUSINESS UNLIMITED", segment: "BUSINESS", monthly_price: 149, quota_data: 100, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { id: 5, name: "DATA ONLY 30GB", segment: "DATA_ONLY", monthly_price: 29, quota_data: 30, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { id: 6, name: "PREPAID NIGHT", segment: "PREPAID", monthly_price: 8, quota_data: 10, quota_minutes: 30, quota_sms: 50, validity_days: 15, status: "DRAFT" },
 ];

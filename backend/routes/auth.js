@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
-
+const { logAction } = require('./audit');
 const router = express.Router();
 
 /**
@@ -90,6 +90,15 @@ router.post('/login', async (req, res) => {
     const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
     if (rows.length === 0) {
+      // Audit log failed login
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id: null,
+        action: 'LOGIN_FAILED',
+        entity: 'auth',
+        ip_address,
+        details: { email, reason: 'user_not_found' }
+      });
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -97,6 +106,15 @@ router.post('/login', async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
+      // Audit log failed login
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id: user.user_id,
+        action: 'LOGIN_FAILED',
+        entity: 'auth',
+        ip_address,
+        details: { email, username: user.username, reason: 'invalid_password' }
+      });
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -106,6 +124,16 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // Audit log successful login
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id: user.user_id,
+      action: 'LOGIN',
+      entity: 'auth',
+      ip_address,
+      details: { username: user.username, role: user.role }
+    });
+
     res.json({
       token,
       user: { user_id: user.user_id, username: user.username, role: user.role }
@@ -113,6 +141,28 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user info
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user info
+ *       401:
+ *         description: Not authenticated
+ */
+router.get('/me', (req, res) => {
+  // The authMiddleware already attached user info to req.user
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+   res.json({ user_id: req.user.user_id, role: req.user.role });
 });
 
 module.exports = router;

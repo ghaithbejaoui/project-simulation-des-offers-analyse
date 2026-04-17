@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-
+const { logAction } = require('./audit');
 const router = express.Router();
 
 /**
@@ -98,13 +98,26 @@ const router = express.Router();
  */
 
 router.post('/', async (req, res) => {
-  const { profile_id, offer_id } = req.body;
-  if (!profile_id || !offer_id) return res.status(400).json({ message: 'profile_id and offer_id are required' });
+  const { profile_id, offer_id, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
+  if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
 
+  let profile;
   try {
-    const [profileRows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
-    if (profileRows.length === 0) return res.status(404).json({ message: 'Profile not found' });
-    const profile = profileRows[0];
+    if (profile_id) {
+      const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
+      if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
+      profile = rows[0];
+    } else {
+      // Build profile from direct fields
+      profile = {
+        minutes_avg: minutes_avg || 0,
+        sms_avg: sms_avg || 0,
+        data_avg_gb: data_avg_gb || 0,
+        roaming_days: roaming_days || 0,
+        budget_max: budget_max || Infinity,
+        priority: priority || 'BALANCED'
+      };
+    }
 
     const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [offer_id]);
     if (offerRows.length === 0) return res.status(404).json({ message: 'Offer not found' });
@@ -113,14 +126,17 @@ router.post('/', async (req, res) => {
     const [optionRows] = await db.query(`SELECT opt.* FROM options opt JOIN offer_options oo ON opt.option_id = oo.option_id WHERE oo.offer_id = ?`, [offer_id]);
     offer.options = optionRows;
 
-    let baseCost = offer.monthly_price || 0;
-    const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (offer.quota_minutes || 0));
-    const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
-    const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
-    let overageCost = overMinutes * (offer.over_minute_price || 0.1) + overSms * (offer.over_sms_price || 0.05) + overData * (offer.over_data_price || 0.5);
-    let optionsCost = offer.options.reduce((sum, opt) => sum + (opt.price || 0), 0);
-    const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (offer.roaming_included_days || 0));
-    let roamingCost = overRoamingDays * 5;
+    let baseCost = Number(offer.monthly_price) || 0;
+    const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (Number(offer.quota_minutes) || 0));
+    const overSms = Math.max(0, (profile.sms_avg || 0) - (Number(offer.quota_sms) || 0));
+    const overData = Math.max(0, (Number(profile.data_avg_gb) || 0) - (Number(offer.quota_data_gb) || 0));
+    const overageMinutesCost = overMinutes * (Number(offer.over_minute_price) || 0.1);
+    const overageSmsCost = overSms * (Number(offer.over_sms_price) || 0.05);
+    const overageDataCost = overData * (Number(offer.over_data_price) || 0.5);
+    const overageCost = overageMinutesCost + overageSmsCost + overageDataCost;
+    const optionsCost = offer.options.reduce((sum, opt) => sum + (Number(opt.price) || 0), 0);
+    const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
+    const roamingCost = overRoamingDays * 5;
     const discounts = Math.abs(Math.min(0, optionsCost));
     let totalCost = baseCost + overageCost + roamingCost - discounts;
 
@@ -135,10 +151,33 @@ router.post('/', async (req, res) => {
     const fairUseExceeded = (profile.data_avg_gb || 0) > (offer.fair_use_gb || 0);
     if (fairUseExceeded) score -= 20;
     if (overMinutes + overSms + overData > 0) score -= 10;
-    let satisfactionScore = Math.max(0, Math.min(100, score));
+     let satisfactionScore = Math.max(0, Math.min(100, score));
 
-    res.json({
-      input: { profile_id, offer_id }, profile, offer,
+     // Audit log
+     const user_id = req.user?.user_id || null;
+     const ip_address = req.ip || req.connection.remoteAddress;
+     await logAction({
+       user_id,
+       action: 'SIMULATE_SINGLE',
+       entity: 'simulation',
+       ip_address,
+       details: {
+         profile_id: profile.profile_id || null,
+         offer_id: offer.offer_id,
+         total_cost: totalCost.toFixed(2),
+         satisfaction_score: satisfactionScore
+       }
+     });
+
+     res.json({
+      profile,
+      offer: { ...offer, options: offer.options },
+      base_cost: parseFloat(baseCost.toFixed(2)),
+      monthly_price: Number(offer.monthly_price),
+      overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
+      overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
+      overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
+      roaming_cost: parseFloat(roamingCost.toFixed(2)),
       calculation: {
         base_cost: parseFloat(baseCost.toFixed(2)),
         overage_cost: parseFloat(overageCost.toFixed(2)),
@@ -147,7 +186,9 @@ router.post('/', async (req, res) => {
         discounts: parseFloat(discounts.toFixed(2)),
         total_cost: parseFloat(totalCost.toFixed(2)),
         satisfaction_score: satisfactionScore
-      }
+      },
+      total_cost: parseFloat(totalCost.toFixed(2)),
+      satisfaction_score: satisfactionScore
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -204,39 +245,82 @@ router.post('/recommend', async (req, res) => {
     const optionsByOffer = {};
     allOptionRows.forEach(opt => { if (!optionsByOffer[opt.offer_id]) optionsByOffer[opt.offer_id] = []; optionsByOffer[opt.offer_id].push(opt); });
 
-    const recommendations = offers.map(offer => {
-      const offerOptions = optionsByOffer[offer.offer_id] || [];
-      const baseCost = offer.monthly_price || 0;
-      const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (offer.quota_minutes || 0));
-      const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
-      const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
-      const overageCost = overMinutes * (offer.over_minute_price || 0.1) + overSms * (offer.over_sms_price || 0.05) + overData * (offer.over_data_price || 0.5);
-      const optionsCost = offerOptions.reduce((sum, opt) => sum + (opt.price || 0), 0);
-      const discounts = Math.abs(Math.min(0, optionsCost));
-      const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (offer.roaming_included_days || 0));
-      const roamingCost = overRoamingDays * 5;
-      const totalCost = baseCost + overageCost + roamingCost - discounts;
+     const recommendations = offers.map(offer => {
+        const offerOptions = optionsByOffer[offer.offer_id] || [];
+        const baseCost = Number(offer.monthly_price) || 0;
+        const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (Number(offer.quota_minutes) || 0));
+        const overSms = Math.max(0, (profile.sms_avg || 0) - (Number(offer.quota_sms) || 0));
+        const overData = Math.max(0, (Number(profile.data_avg_gb) || 0) - (Number(offer.quota_data_gb) || 0));
+        const overageMinutesCost = overMinutes * (Number(offer.over_minute_price) || 0.1);
+        const overageSmsCost = overSms * (Number(offer.over_sms_price) || 0.05);
+        const overageDataCost = overData * (Number(offer.over_data_price) || 0.5);
+        const overageCost = overageMinutesCost + overageSmsCost + overageDataCost;
+        const optionsCost = offerOptions.reduce((sum, opt) => sum + (Number(opt.price) || 0), 0);
+        const discounts = Math.abs(Math.min(0, optionsCost));
+        const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
+        const roamingCost = overRoamingDays * 5;
+        const totalCost = baseCost + overageCost + roamingCost - discounts;
 
-      let score = 100;
-      const budgetRatio = totalCost / (profile.budget_max || 1);
-      if (budgetRatio <= 0.7) score += 10;
-      else if (budgetRatio <= 1.0) score += 0;
-      else score -= 30;
-      if (offer.segment === 'BUSINESS') score += 10;
-      else if (offer.segment === 'POSTPAID') score += 5;
-      score += Math.min(offerOptions.length * 2, 10);
-      if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
-      if (overMinutes + overSms + overData > 0) score -= 10;
-      score = Math.max(0, Math.min(100, score));
+       let score = 100;
+       const budgetRatio = totalCost / (profile.budget_max || 1);
+       if (budgetRatio <= 0.7) score += 10;
+       else if (budgetRatio <= 1.0) score += 0;
+       else score -= 30;
+       if (offer.segment === 'BUSINESS') score += 10;
+       else if (offer.segment === 'POSTPAID') score += 5;
+       score += Math.min(offerOptions.length * 2, 10);
+       if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
+       if (overMinutes + overSms + overData > 0) score -= 10;
+       score = Math.max(0, Math.min(100, score));
 
-      return { offer: { ...offer, options: offerOptions }, score, estimated_cost: parseFloat(totalCost.toFixed(2)) };
-    });
+       return {
+         offer_id: offer.offer_id,
+         offer_name: offer.name,
+         segment: offer.segment,
+         monthly_price: Number(offer.monthly_price),
+         base_cost: parseFloat(baseCost.toFixed(2)), // for display
+         offer: { ...offer, options: offerOptions },
+         overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
+         overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
+         overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
+         roaming_cost: parseFloat(roamingCost.toFixed(2)),
+         calculation: {
+           base_cost: parseFloat(baseCost.toFixed(2)),
+           total_cost: parseFloat(totalCost.toFixed(2)),
+           satisfaction_score: score
+         },
+         // Also provide top-level aliases for convenience
+         total_cost: parseFloat(totalCost.toFixed(2)),
+         satisfaction_score: score,
+         estimated_cost: parseFloat(totalCost.toFixed(2)) // backward compatibility
+       };
+     });
 
     if (profile.priority === 'PRICE') recommendations.sort((a, b) => a.estimated_cost - b.estimated_cost);
-    else if (profile.priority === 'QUALITY') recommendations.sort((a, b) => b.score - a.score);
-    else recommendations.sort((a, b) => (b.score / b.estimated_cost) - (a.score / a.estimated_cost));
+     else if (profile.priority === 'QUALITY') recommendations.sort((a, b) => b.score - a.score);
+     else recommendations.sort((a, b) => (b.score / b.estimated_cost) - (a.score / a.estimated_cost));
 
-    res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
+     // Audit log - log the recommendation request
+     const user_id = req.user?.user_id || null;
+     const ip_address = req.ip || req.connection.remoteAddress;
+     await logAction({
+       user_id,
+       action: 'SIMULATE_RECOMMEND',
+       entity: 'simulation',
+       ip_address,
+       details: {
+         profile_id: profile.profile_id || null,
+         limit: limit,
+         segment: profile.segment || null,
+         recommended_offers: recommendations.slice(0, limit).map(r => ({
+           offer_id: r.offer_id,
+           total_cost: r.total_cost,
+           satisfaction_score: r.satisfaction_score
+         }))
+       }
+     });
+
+     res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -265,15 +349,28 @@ router.post('/recommend', async (req, res) => {
  */
 
 router.post('/compare', async (req, res) => {
-  const { profile_id, offer_ids } = req.body;
-  if (!profile_id || !offer_ids || !Array.isArray(offer_ids) || offer_ids.length === 0) {
-    return res.status(400).json({ message: 'profile_id and offer_ids (array) are required' });
+  const { profile_id, offer_ids, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
+  if (!offer_ids || !Array.isArray(offer_ids) || offer_ids.length === 0) {
+    return res.status(400).json({ message: 'offer_ids (array) are required' });
   }
 
+  let profile;
   try {
-    const [profileRows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
-    if (profileRows.length === 0) return res.status(404).json({ message: 'Profile not found' });
-    const profile = profileRows[0];
+    if (profile_id) {
+      const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
+      if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
+      profile = rows[0];
+    } else {
+      // Build profile from direct fields
+      profile = {
+        minutes_avg: minutes_avg || 0,
+        sms_avg: sms_avg || 0,
+        data_avg_gb: data_avg_gb || 0,
+        roaming_days: roaming_days || 0,
+        budget_max: budget_max || Infinity,
+        priority: priority || 'BALANCED'
+      };
+    }
 
     const placeholders = offer_ids.map(() => '?').join(',');
     const [offerRows] = await db.query(`SELECT * FROM offers WHERE offer_id IN (${placeholders})`, offer_ids);
@@ -310,36 +407,83 @@ router.post('/compare', async (req, res) => {
       if (overMinutes + overSms + overData > 0) score -= 10;
       score = Math.max(0, Math.min(100, score));
 
-      return { 
-        offer_id: offer.offer_id, 
-        offer_name: offer.name, 
-        segment: offer.segment, 
-        monthly_price: Number(offer.monthly_price),
-        offer: {
-          offer_id: offer.offer_id,
-          name: offer.name,
-          segment: offer.segment,
-          quota_data_gb: Number(offer.quota_data_gb),
-          quota_minutes: Number(offer.quota_minutes),
-          quota_sms: Number(offer.quota_sms),
-        },
-        overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
-        overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
-        overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
-        roaming_cost: parseFloat(roamingCost.toFixed(2)),
-        calculation: { 
-          base_cost: parseFloat(baseCost.toFixed(2)),
-          total_cost: parseFloat(totalCost.toFixed(2)), 
-          satisfaction_score: score 
-        } 
-      };
+       return {
+         offer_id: offer.offer_id,
+         offer_name: offer.name,
+         segment: offer.segment,
+         monthly_price: Number(offer.monthly_price),
+         base_cost: parseFloat(baseCost.toFixed(2)), // for display
+         offer: {
+           offer_id: offer.offer_id,
+           name: offer.name,
+           segment: offer.segment,
+           quota_data_gb: Number(offer.quota_data_gb),
+           quota_minutes: Number(offer.quota_minutes),
+           quota_sms: Number(offer.quota_sms),
+         },
+         overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
+         overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
+         overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
+         roaming_cost: parseFloat(roamingCost.toFixed(2)),
+         calculation: {
+           base_cost: parseFloat(baseCost.toFixed(2)),
+           total_cost: parseFloat(totalCost.toFixed(2)),
+           satisfaction_score: score
+         },
+         total_cost: parseFloat(totalCost.toFixed(2)),
+         satisfaction_score: score
+       };
     });
 
-    const sortedByCost = [...comparisons].sort((a, b) => a.calculation.total_cost - b.calculation.total_cost);
-    const sortedByScore = [...comparisons].sort((a, b) => b.calculation.satisfaction_score - a.calculation.satisfaction_score);
-    comparisons.forEach(comp => { comp.rank_by_cost = sortedByCost.findIndex(c => c.offer_id === comp.offer_id) + 1; comp.rank_by_score = sortedByScore.findIndex(c => c.offer_id === comp.offer_id) + 1; });
+    // Sort offers by total cost ascending (cheapest first) for cost ranking
+    const sortedByCost = [...comparisons].sort((a, b) => {
+      const diff = a.calculation.total_cost - b.calculation.total_cost;
+      return diff !== 0 ? diff : a.offer_id - b.offer_id;
+    });
 
-    res.json({ profile, count: comparisons.length, comparisons, summary: { cheapest: sortedByCost[0]?.offer_name, best_score: sortedByScore[0]?.offer_name } });
+    // Sort offers by satisfaction score descending (best first) for main ranking
+    // Tie-breaker: if scores equal, prefer lower total cost
+    const sortedByScore = [...comparisons].sort((a, b) => {
+      const scoreDiff = b.calculation.satisfaction_score - a.calculation.satisfaction_score;
+      if (scoreDiff !== 0) return scoreDiff;
+      return a.calculation.total_cost - b.calculation.total_cost;
+    });
+
+     comparisons.forEach(comp => {
+       comp.rank_by_cost = sortedByCost.findIndex(c => c.offer_id === comp.offer_id) + 1;
+       comp.rank_by_score = sortedByScore.findIndex(c => c.offer_id === comp.offer_id) + 1;
+     });
+
+     // Audit log
+     const user_id = req.user?.user_id || null;
+     const ip_address = req.ip || req.connection.remoteAddress;
+     await logAction({
+       user_id,
+       action: 'SIMULATE_COMPARE',
+       entity: 'simulation',
+       ip_address,
+       details: {
+         profile_id: profile.profile_id || null,
+         offer_ids: offer_ids,
+         comparisons: sortedByScore.map(c => ({
+           offer_id: c.offer_id,
+           total_cost: c.total_cost,
+           satisfaction_score: c.satisfaction_score,
+           rank_by_score: c.rank_by_score,
+           rank_by_cost: c.rank_by_cost
+         }))
+       }
+     });
+
+     res.json({
+      profile,
+      count: comparisons.length,
+      comparisons: sortedByScore, // Return sorted by score (descending) with tie-breaker
+      summary: {
+        cheapest: sortedByCost[0]?.offer_name,
+        best_score: sortedByScore[0]?.offer_name
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -390,17 +534,20 @@ router.post('/batch', async (req, res) => {
     }
     if (profiles.length === 0) return res.status(404).json({ message: 'No profiles found' });
 
-    const results = profiles.map(profile => {
-      const baseCost = offer.monthly_price || 0;
-      const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (offer.quota_minutes || 0));
-      const overSms = Math.max(0, (profile.sms_avg || 0) - (offer.quota_sms || 0));
-      const overData = Math.max(0, (profile.data_avg_gb || 0) - (offer.quota_data_gb || 0));
-      const overageCost = overMinutes * (offer.over_minute_price || 0.1) + overSms * (offer.over_sms_price || 0.05) + overData * (offer.over_data_price || 0.5);
-      const optionsCost = offerOptions.reduce((sum, opt) => sum + (opt.price || 0), 0);
-      const discounts = Math.abs(Math.min(0, optionsCost));
-      const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (offer.roaming_included_days || 0));
-      const roamingCost = overRoamingDays * 5;
-      const totalCost = baseCost + overageCost + roamingCost - discounts;
+     const results = profiles.map(profile => {
+       const baseCost = Number(offer.monthly_price) || 0;
+       const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (Number(offer.quota_minutes) || 0));
+       const overSms = Math.max(0, (profile.sms_avg || 0) - (Number(offer.quota_sms) || 0));
+       const overData = Math.max(0, (Number(profile.data_avg_gb) || 0) - (Number(offer.quota_data_gb) || 0));
+       const overageMinutesCost = overMinutes * (Number(offer.over_minute_price) || 0.1);
+       const overageSmsCost = overSms * (Number(offer.over_sms_price) || 0.05);
+       const overageDataCost = overData * (Number(offer.over_data_price) || 0.5);
+       const overageCost = overageMinutesCost + overageSmsCost + overageDataCost;
+       const optionsCost = offerOptions.reduce((sum, opt) => sum + (Number(opt.price) || 0), 0);
+       const discounts = Math.abs(Math.min(0, optionsCost));
+       const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
+       const roamingCost = overRoamingDays * 5;
+       const totalCost = baseCost + overageCost + roamingCost - discounts;
 
       let score = 100;
       const budgetRatio = totalCost / (profile.budget_max || 1);
@@ -418,14 +565,60 @@ router.post('/batch', async (req, res) => {
       else if (score >= 50) recommendation = 'okay_match';
       else recommendation = 'not_recommended';
 
-      return { profile_id: profile.profile_id, label: profile.label, estimated_cost: parseFloat(totalCost.toFixed(2)), budget_max: profile.budget_max, satisfaction_score: score, recommendation };
+       return {
+         profile_id: profile.profile_id,
+         label: profile.label,
+         base_cost: parseFloat(baseCost.toFixed(2)),
+         overage_cost: parseFloat(overageCost.toFixed(2)),
+         roaming_cost: parseFloat(roamingCost.toFixed(2)),
+         estimated_cost: parseFloat(totalCost.toFixed(2)),
+         budget_max: profile.budget_max,
+         satisfaction_score: score,
+         recommendation
+       };
     });
 
-    const goodMatches = results.filter(r => r.recommendation === 'good_match').length;
-    const okayMatches = results.filter(r => r.recommendation === 'okay_match').length;
-    const totalCostSum = results.reduce((sum, r) => sum + r.estimated_cost, 0);
+     const goodMatches = results.filter(r => r.recommendation === 'good_match').length;
+     const okayMatches = results.filter(r => r.recommendation === 'okay_match').length;
+     const totalCostSum = results.reduce((sum, r) => sum + r.estimated_cost, 0);
+     const avgSatisfaction = results.reduce((sum, r) => sum + r.satisfaction_score, 0) / results.length;
+     const profilesOverBudget = results.filter(r => r.estimated_cost > r.budget_max).length;
+      const totalOverageSum = results.reduce((sum, r) => {
+        return sum + (r.overage_cost || 0);
+      }, 0);
 
-    res.json({ offer: { offer_id: offer.offer_id, name: offer.name }, results, summary: { total_profiles: results.length, good_matches: goodMatches, okay_matches: okayMatches, average_cost: parseFloat((totalCostSum / results.length).toFixed(2)) } });
+      // Audit log
+      const user_id = req.user?.user_id || null;
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id,
+        action: 'SIMULATE_BATCH',
+        entity: 'simulation',
+        ip_address,
+        details: {
+          offer_id: offer.offer_id,
+          total_profiles: results.length,
+          good_matches,
+          okay_matches,
+          avg_total_cost: parseFloat((totalCostSum / results.length).toFixed(2)),
+          avg_satisfaction: parseFloat(avgSatisfaction.toFixed(2))
+        }
+      });
+
+      res.json({
+       offer: { offer_id: offer.offer_id, name: offer.name },
+       results,
+       summary: {
+         total_profiles: results.length,
+         good_matches: goodMatches,
+         okay_matches: okayMatches,
+         average_cost: parseFloat((totalCostSum / results.length).toFixed(2)),
+         avg_total_cost: parseFloat((totalCostSum / results.length).toFixed(2)),
+         avg_satisfaction: parseFloat(avgSatisfaction.toFixed(2)),
+         profiles_over_budget: profilesOverBudget,
+         avg_overage: parseFloat((totalOverageSum / results.length).toFixed(2))
+       }
+     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

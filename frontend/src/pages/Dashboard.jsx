@@ -57,6 +57,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ offers: 0, profiles: 0, simulations: 0, options: 0 });
   const [loading, setLoading] = useState(true);
+  const [activity, setActivity] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [costData] = useState([
     { label: "Jan", value: 42 }, { label: "Feb", value: 58 }, { label: "Mar", value: 51 },
     { label: "Apr", value: 74 }, { label: "May", value: 63 }, { label: "Jun", value: 89 },
@@ -67,28 +69,32 @@ export default function Dashboard() {
     { label: "Thu", value: 91 }, { label: "Fri", value: 79 }, { label: "Sat", value: 55 }, { label: "Sun", value: 60 },
   ]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-        const [offersRes, profilesRes, optionsRes] = await Promise.allSettled([
-          fetch("http://localhost:5000/api/offers", { headers }),
-          fetch("http://localhost:5000/api/customer-profiles", { headers }),
-          fetch("http://localhost:5000/api/options", { headers }),
-        ]);
-        const offers   = offersRes.status   === "fulfilled" && offersRes.value.ok   ? (await offersRes.value.json()).length   : 12;
-        const profiles = profilesRes.status === "fulfilled" && profilesRes.value.ok ? (await profilesRes.value.json()).length : 47;
-        const options  = optionsRes.status  === "fulfilled" && optionsRes.value.ok  ? (await optionsRes.value.json()).length  : 8;
-        setStats({ offers, profiles, options, simulations: 134 });
-      } catch {
-        setStats({ offers: 12, profiles: 47, options: 8, simulations: 134 });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
+   useEffect(() => {
+     const fetchStats = async () => {
+       try {
+         const token = localStorage.getItem("token");
+         const headers = { Authorization: `Bearer ${token}` };
+         const [offersRes, profilesRes, optionsRes, activityRes] = await Promise.allSettled([
+           fetch("http://localhost:5000/api/offers", { headers }),
+           fetch("http://localhost:5000/api/customer-profiles", { headers }),
+           fetch("http://localhost:5000/api/options", { headers }),
+           fetch("http://localhost:5000/api/audit/recent?limit=5", { headers }),
+         ]);
+         const offers   = offersRes.status   === "fulfilled" && offersRes.value.ok   ? (await offersRes.value.json()).length   : 12;
+         const profiles = profilesRes.status === "fulfilled" && profilesRes.value.ok ? (await profilesRes.value.json()).length : 47;
+         const options  = optionsRes.status  === "fulfilled" && optionsRes.value.ok  ? (await optionsRes.value.json()).length  : 8;
+         const activityData = activityRes.status === "fulfilled" && activityRes.value.ok ? (await activityRes.value.json()).activity : null;
+         setStats({ offers, profiles, options, simulations: 134 });
+         if (activityData) setActivity(activityData);
+       } catch {
+         setStats({ offers: 12, profiles: 47, options: 8, simulations: 134 });
+       } finally {
+         setLoading(false);
+         setActivityLoading(false);
+       }
+     };
+     fetchStats();
+   }, []);
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
@@ -206,13 +212,29 @@ export default function Dashboard() {
         <div style={{ ...card, padding: "20px 22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Recent Activity</p>
-            <button style={{ ...btnGhost, height: 30, padding: "0 12px", fontSize: 12 }}>View all</button>
+            <button onClick={() => navigate("/audit")} style={{ ...btnGhost, height: 30, padding: "0 12px", fontSize: 12 }}>
+              View all
+            </button>
           </div>
-          <ActivityItem icon="⚡" text="Simulation ran for Profile #42 — 3 offers compared" time="2m ago" color={colors.blue} />
-          <ActivityItem icon="📋" text="New offer 'POSTPAID PRO 50GB' created" time="18m ago" color={colors.green} />
-          <ActivityItem icon="👤" text="Customer profile updated — avg data: 18GB" time="1h ago" color={colors.yellow} />
-          <ActivityItem icon="📦" text="Option 'Night Data 5GB' added to 4 offers" time="3h ago" color={colors.orange} />
-          <ActivityItem icon="📊" text="Batch analysis completed — 300 profiles" time="5h ago" color={colors.textMuted} />
+          {activityLoading ? (
+            <div style={{ textAlign: "center", padding: "20px 0", color: colors.textDim }}>
+              Loading activity...
+            </div>
+          ) : activity.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "20px 0", color: colors.textDim }}>
+              No recent activity
+            </div>
+          ) : (
+            activity.map((item) => (
+              <ActivityItem
+                key={item.id}
+                icon={item.icon}
+                text={item.text}
+                time={item.time}
+                color={item.color}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>

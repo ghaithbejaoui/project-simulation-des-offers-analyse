@@ -85,6 +85,81 @@ export default function Simulation() {
   const [selectedProfile, setSelectedProfile] = useState("");
   const [selectedOffers, setSelectedOffers]   = useState([]);
   const [batchOfferId, setBatchOfferId]        = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  // Save to scenario handler
+  const handleSaveToScenario = async () => {
+    setSaveError("");
+    setSaveSuccess(false);
+    if (!saveName.trim()) { setSaveError("Please enter a scenario name"); return; }
+    try {
+      const profileId = selectedProfile || (customProfile ? null : null);
+      const offerIds = mode === "compare" ? selectedOffers : (mode === "single" ? selectedOffers : []);
+      
+      // Create scenario
+      const createRes = await fetch(`${API}/scenarios`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          name: saveName,
+          description: `Simulation: ${mode} mode`,
+          profile_id: profileId ? parseInt(profileId) : null,
+          offer_ids: offerIds,
+        }),
+      });
+      if (!createRes.ok) throw new Error("Failed to create scenario");
+      const { scenario_id } = await createRes.json();
+      
+      // Prepare results for saving
+      const resultsToSave = resultsArray.map((r, idx) => ({
+        profile_id: profileId ? parseInt(profileId) : null,
+        offer_id: r.offer_id,
+        base_cost: r.base_cost,
+        overage_cost: (r.overage_minutes_cost || 0) + (r.overage_sms_cost || 0) + (r.overage_data_cost || 0),
+        roaming_cost: r.roaming_cost,
+        total_cost: r.total_cost,
+        satisfaction_score: r.satisfaction_score,
+        recommendation: r.satisfaction_score >= 70 ? "good_match" : r.satisfaction_score >= 50 ? "okay_match" : "not_recommended",
+        rank_by_cost: r.rank_by_cost || null,
+        rank_by_score: idx + 1,
+      }));
+      
+      // Save results
+      const saveRes = await fetch(`${API}/scenarios/${scenario_id}/results`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ results: resultsToSave }),
+      });
+      if (!saveRes.ok) throw new Error("Failed to save results");
+      
+      setSaveSuccess(true);
+      setSaveName("");
+      setTimeout(() => { setShowSaveModal(false); setSaveSuccess(false); }, 1500);
+    } catch (e) { setSaveError(e.message); }
+  };
+
+  // Export results as CSV
+  const handleExportCSV = () => {
+    if (!resultsArray.length) return;
+    
+    let csv = 'Rank,Offer,Segment,Base Cost,Overage Cost,Roaming Cost,Total Cost,Satisfaction Score\n';
+    resultsArray.forEach((r, i) => {
+      const offerName = r.offer_name || r.offer?.name || `Offer ${r.offer_id}`;
+      const segment = r.offer?.segment || '';
+      csv += `${i + 1},"${offerName}","${segment}",${r.base_cost || 0},${Number(r.overage_minutes_cost || 0) + Number(r.overage_sms_cost || 0) + Number(r.overage_data_cost || 0)},${r.roaming_cost || 0},${r.total_cost || 0},${r.satisfaction_score || 0}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `simulation_results_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Form state for custom profile
   const [useCustom, setUseCustom] = useState(false);
@@ -379,7 +454,11 @@ export default function Simulation() {
                     </>
                   )}
                   <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                    <button style={{ ...btnGhost, height: 34, fontSize: 12 }}>
+                    <button onClick={() => setShowSaveModal(true)} style={{ ...btnPrimary, height: 34, fontSize: 12 }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                      Save to Scenario
+                    </button>
+                    <button onClick={handleExportCSV} style={{ ...btnGhost, height: 34, fontSize: 12 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                       Export CSV
                     </button>
@@ -415,6 +494,58 @@ export default function Simulation() {
           )}
         </div>
       </div>
+
+      {/* Save to Scenario Modal */}
+      {showSaveModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ ...card, width: "100%", maxWidth: 420, padding: 28 }}>
+            {saveSuccess ? (
+              <>
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(67,199,139,0.15)", border: "1px solid rgba(67,199,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.green} strokeWidth="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <h3 style={{ fontFamily: fonts.heading, fontSize: 18, fontWeight: 600, color: colors.text, marginBottom: 8 }}>Scenario Saved</h3>
+                  <p style={{ fontSize: 13, color: colors.textMuted }}>Your simulation results have been saved successfully.</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
+                  <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>Save to Scenario</h3>
+                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20 }}>×</button>
+                </div>
+                
+                <p style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>
+                  This will save your simulation results to a new scenario that you can view later.
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Scenario Name</label>
+                  <input
+                    type="text"
+                    value={saveName}
+                    onChange={e => { setSaveName(e.target.value); setSaveError(""); }}
+                    placeholder="My Comparison Scenario"
+                    style={{ ...input, height: 40, fontSize: 13, borderColor: saveError ? "rgba(227,91,91,0.5)" : undefined }}
+                    onKeyDown={e => e.key === "Enter" && handleSaveToScenario()}
+                  />
+                  {saveError && <p style={{ fontSize: 12, color: colors.red, marginTop: 4 }}>{saveError}</p>}
+                </div>
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ ...btnGhost, flex: 1 }}>Cancel</button>
+                  <button onClick={handleSaveToScenario} style={{ ...btnPrimary, flex: 1 }}>
+                    Save Scenario
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

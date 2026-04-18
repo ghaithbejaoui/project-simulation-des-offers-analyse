@@ -8,8 +8,8 @@ const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
 
 const EMPTY_FORM = {
-  name: "", segment: "POSTPAID", avg_minutes: "", avg_sms: "", avg_data_gb: "",
-  night_usage_pct: 0, roaming_days: 0, budget_max: "", priority: "price",
+  label: "", minutes_avg: "", sms_avg: "", data_avg_gb: "",
+  night_usage_pct: 0, roaming_days: 0, budget_max: "", priority: "BALANCED",
 };
 
 // ─── Usage bar ────────────────────────────────────────────────────────────────
@@ -109,6 +109,17 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
   );
 }
 
+// ─── Reusable Form Field ───────────────────────────────────────────────────────
+function FormField({ label, value, onChange, type = "text", placeholder }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
+      <input type={type} value={value ?? ""} placeholder={placeholder} onChange={e => onChange(e.target.value)}
+        style={{ ...input, height: 38, fontSize: 13 }} />
+    </div>
+  );
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function ProfileModal({ profile, onClose, onSave }) {
   const [form, setForm] = useState(profile || EMPTY_FORM);
@@ -117,11 +128,12 @@ function ProfileModal({ profile, onClose, onSave }) {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
-    if (!form.name || !form.budget_max) { setError("Name and budget are required."); return; }
+    if (!form.label || !form.budget_max) { setError("Label and budget are required."); return; }
     setSaving(true);
     try {
-      const method = profile?.id ? "PUT" : "POST";
-      const url = profile?.id ? `${API}/customer-profiles/${profile.id}` : `${API}/customer-profiles`;
+      const profileId = profile?.profile_id;
+      const method = profileId ? "PUT" : "POST";
+      const url = profileId ? `${API}/customer-profiles/${profileId}` : `${API}/customer-profiles`;
       const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(form) });
       if (!res.ok) throw new Error("Save failed");
       onSave();
@@ -129,43 +141,29 @@ function ProfileModal({ profile, onClose, onSave }) {
     finally { setSaving(false); }
   };
 
-  const Field = ({ label, k, type = "text", placeholder }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
-      <input type={type} value={form[k] ?? ""} placeholder={placeholder} onChange={e => set(k, e.target.value)}
-        style={{ ...input, height: 38, fontSize: 13 }} />
-    </div>
-  );
-
   return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
-            {profile?.id ? "Edit Profile" : "New Customer Profile"}
-          </h3>
+           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+             {profile?.profile_id ? "Edit Profile" : "New Customer Profile"}
+           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20 }}>×</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          <div style={{ gridColumn: "span 2" }}><Field label="Full Name" k="name" placeholder="e.g. Ahmed Bejaoui" /></div>
-          <div>
-            <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Segment</label>
-            <select value={form.segment} onChange={e => set("segment", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-              {["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"].map(s => <option key={s}>{s}</option>)}
-            </select>
-          </div>
+          <div style={{ gridColumn: "span 2" }}><FormField label="Profile Label" value={form.label} onChange={v => set("label", v)} placeholder="e.g. Ahmed Bejaoui" /></div>
           <div>
             <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Priority</label>
             <select value={form.priority} onChange={e => set("priority", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-              {["price","quality","balanced"].map(p => <option key={p}>{p}</option>)}
+              {["BALANCED","PRICE","QUALITY"].map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <Field label="Avg. Data (GB/mo)" k="avg_data_gb" type="number" placeholder="e.g. 20" />
-          <Field label="Avg. Minutes/mo" k="avg_minutes" type="number" placeholder="e.g. 200" />
-          <Field label="Avg. SMS/mo" k="avg_sms" type="number" placeholder="e.g. 50" />
-          <Field label="Max Budget (TND)" k="budget_max" type="number" placeholder="e.g. 60" />
-          <Field label="Night Usage %" k="night_usage_pct" type="number" placeholder="0–100" />
-          <Field label="Roaming Days/mo" k="roaming_days" type="number" placeholder="0" />
+          <FormField label="Avg. Data (GB/mo)" value={form.data_avg_gb} onChange={v => set("data_avg_gb", v)} type="number" placeholder="e.g. 20" />
+          <FormField label="Avg. Minutes/mo" value={form.minutes_avg} onChange={v => set("minutes_avg", v)} type="number" placeholder="e.g. 200" />
+          <FormField label="Avg. SMS/mo" value={form.sms_avg} onChange={v => set("sms_avg", v)} type="number" placeholder="e.g. 50" />
+          <FormField label="Max Budget (TND)" value={form.budget_max} onChange={v => set("budget_max", v)} type="number" placeholder="e.g. 60" />
+          <FormField label="Night Usage %" value={form.night_usage_pct} onChange={v => set("night_usage_pct", v)} type="number" placeholder="0–100" />
+          <FormField label="Roaming Days/mo" value={form.roaming_days} onChange={v => set("roaming_days", v)} type="number" placeholder="0" />
         </div>
         {error && <p style={{ marginTop: 12, fontSize: 13, color: colors.red }}>{error}</p>}
         <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>

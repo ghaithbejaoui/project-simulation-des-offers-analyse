@@ -12,8 +12,8 @@ const STATUSES  = ["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"];
 
 const EMPTY_FORM = {
   name: "", segment: "POSTPAID", monthly_price: "", quota_minutes: "", quota_sms: "",
-  quota_data: "", validity_days: 30, cost_per_min_over: "", cost_per_sms_over: "",
-  cost_per_mb_over: "", fair_use_threshold: 100, status: "PUBLISHED", description: "",
+  quota_data_gb: "", validity_days: 30, fair_use_gb: "", over_minute_price: "",
+  over_sms_price: "", over_data_price: "", roaming_included_days: 0, status: "PUBLISHED",
 };
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -49,6 +49,22 @@ function SegmentPill({ segment }) {
   );
 }
 
+// ─── Reusable Form Field ───────────────────────────────────────────────────────
+function FormField({ label, value, onChange, type = "text", placeholder }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
+      <input
+        type={type}
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={e => onChange(e.target.value)}
+        style={{ ...input, height: 38, fontSize: 13 }}
+      />
+    </div>
+  );
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function OfferModal({ offer, onClose, onSave }) {
   const [form, setForm] = useState(offer || EMPTY_FORM);
@@ -61,8 +77,9 @@ function OfferModal({ offer, onClose, onSave }) {
     if (!form.name || !form.monthly_price) { setError("Name and price are required."); return; }
     setSaving(true);
     try {
-      const method = offer?.id ? "PUT" : "POST";
-      const url    = offer?.id ? `${API}/offers/${offer.id}` : `${API}/offers`;
+      const offerId = offer?.offer_id;
+      const method = offerId ? "PUT" : "POST";
+      const url    = offerId ? `${API}/offers/${offerId}` : `${API}/offers`;
       const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(form) });
       if (!res.ok) throw new Error((await res.json()).message || "Save failed");
       onSave();
@@ -70,61 +87,46 @@ function OfferModal({ offer, onClose, onSave }) {
     finally { setSaving(false); }
   };
 
-  const Field = ({ label, k, type = "text", placeholder }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
-      <input
-        type={type} value={form[k] ?? ""} placeholder={placeholder}
-        onChange={e => set(k, type === "number" ? e.target.value : e.target.value)}
-        style={{ ...input, height: 38, fontSize: 13 }}
-      />
-    </div>
-  );
-
   return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
-            {offer?.id ? "Edit Offer" : "New Offer"}
-          </h3>
+           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+             {offer?.offer_id ? "Edit Offer" : "New Offer"}
+           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ gridColumn: "span 2" }}>
-            <Field label="Offer Name" k="name" placeholder="e.g. POSTPAID PRO 50GB" />
+            <FormField label="Offer Name" value={form.name} onChange={v => set("name", v)} placeholder="e.g. POSTPAID PRO 50GB" />
           </div>
           <div>
             <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Segment</label>
             <select value={form.segment} onChange={e => set("segment", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-              {["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"].map(s => <option key={s} value={s}>{s.replace("_"," ")}</option>)}
+              {["PREPAID","POSTPAID","BUSINESS"].map(s => <option key={s} value={s}>{s.replace("_"," ")}</option>)}
             </select>
           </div>
           <div>
             <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Status</label>
              <select value={form.status} onChange={e => set("status", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-               {["PUBLISHED","DRAFT","ARCHIVED"].map(s => (
+               {["PUBLISHED","DRAFT","RETIRED"].map(s => (
                  <option key={s} value={s}>
                    {s === "PUBLISHED" ? "Active" : s === "DRAFT" ? "Draft" : "Inactive"}
                  </option>
                ))}
              </select>
           </div>
-          <Field label="Monthly Price (TND)" k="monthly_price" type="number" placeholder="0.00" />
-          <Field label="Validity (days)" k="validity_days" type="number" placeholder="30" />
-          <Field label="Minutes Quota" k="quota_minutes" type="number" placeholder="Unlimited = 0" />
-          <Field label="SMS Quota" k="quota_sms" type="number" placeholder="Unlimited = 0" />
-          <Field label="Data Quota (GB)" k="quota_data" type="number" placeholder="e.g. 50" />
-          <Field label="Fair Use (%)" k="fair_use_threshold" type="number" placeholder="100" />
-          <Field label="Cost/min overage (TND)" k="cost_per_min_over" type="number" placeholder="0.00" />
-          <Field label="Cost/SMS overage (TND)" k="cost_per_sms_over" type="number" placeholder="0.00" />
-          <Field label="Cost/MB overage (TND)" k="cost_per_mb_over" type="number" placeholder="0.00" />
-          <div style={{ gridColumn: "span 2" }}>
-            <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Description</label>
-            <textarea value={form.description} onChange={e => set("description", e.target.value)} placeholder="Optional description..." rows={3}
-              style={{ ...input, height: "auto", padding: "10px 14px", resize: "vertical", fontSize: 13 }} />
-          </div>
+          <FormField label="Monthly Price (TND)" value={form.monthly_price} onChange={v => set("monthly_price", v)} type="number" placeholder="0.00" />
+          <FormField label="Validity (days)" value={form.validity_days} onChange={v => set("validity_days", v)} type="number" placeholder="30" />
+          <FormField label="Minutes Quota" value={form.quota_minutes} onChange={v => set("quota_minutes", v)} type="number" placeholder="Unlimited = 0" />
+          <FormField label="SMS Quota" value={form.quota_sms} onChange={v => set("quota_sms", v)} type="number" placeholder="Unlimited = 0" />
+          <FormField label="Data Quota (GB)" value={form.quota_data_gb} onChange={v => set("quota_data_gb", v)} type="number" placeholder="e.g. 50" />
+          <FormField label="Fair Use (GB)" value={form.fair_use_gb} onChange={v => set("fair_use_gb", v)} type="number" placeholder="0" />
+          <FormField label="Cost/min overage (TND)" value={form.over_minute_price} onChange={v => set("over_minute_price", v)} type="number" placeholder="0.10" />
+          <FormField label="Cost/SMS overage (TND)" value={form.over_sms_price} onChange={v => set("over_sms_price", v)} type="number" placeholder="0.05" />
+          <FormField label="Cost/GB overage (TND)" value={form.over_data_price} onChange={v => set("over_data_price", v)} type="number" placeholder="0.50" />
+          <FormField label="Roaming Days" value={form.roaming_included_days} onChange={v => set("roaming_included_days", v)} type="number" placeholder="0" />
         </div>
 
         {error && <p style={{ marginTop: 12, fontSize: 13, color: colors.red }}>{error}</p>}

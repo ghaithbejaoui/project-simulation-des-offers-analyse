@@ -155,6 +155,129 @@ router.get('/logs/summary', requireAdmin, async (req, res) => {
 });
 
 /**
+ * Get recent activity for dashboard display
+ * Shows last N actions with user names and relative timestamps
+ * Requires authentication (any role)
+ */
+router.get('/recent', async (req, res) => {
+  // Require authentication
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const limit = parseInt(req.query.limit) || 10;
+
+  try {
+    const [rows] = await db.query(
+      `SELECT al.*, u.username 
+       FROM audit_logs al
+       LEFT JOIN users u ON al.user_id = u.user_id
+       ORDER BY al.created_at DESC
+       LIMIT ?`,
+      [limit]
+    );
+
+    // Format for dashboard display
+    const activity = rows.map(log => {
+      let icon = '📋';
+      let color = '#1a8fff'; // colors.blue
+
+      // Determine icon and color based on action/entity
+      if (log.action === 'LOGIN' || log.action === 'LOGIN_FAILED') {
+        icon = log.action === 'LOGIN' ? '🔓' : '🔒';
+        color = log.action === 'LOGIN' ? '#43c78b' : '#e35b5b'; // green or red
+      } else if (log.action === 'SIMULATE_SINGLE' || log.action === 'SIMULATE_RECOMMEND') {
+        icon = '⚡';
+        color = '#1a8fff';
+      } else if (log.action === 'SIMULATE_COMPARE') {
+        icon = '⚖️';
+        color = '#f0b429';
+      } else if (log.action === 'SIMULATE_BATCH') {
+        icon = '📊';
+        color = '#e35b35';
+      } else if (log.action === 'CREATE') {
+        icon = log.entity === 'offer' ? '📋' : log.entity === 'customer_profile' ? '👤' : '⚙️';
+        color = '#43c78b';
+      } else if (log.action === 'UPDATE') {
+        icon = '✏️';
+        color = '#f0b429';
+      } else if (log.action === 'DELETE') {
+        icon = '🗑️';
+        color = '#e35b5b';
+      } else if (log.action === 'LINK' || log.action === 'UNLINK') {
+        icon = '🔗';
+        color = 'rgba(200,212,232,0.55)';
+      }
+
+      // Build descriptive text from details
+      let text = '';
+      try {
+        const detailsObj = log.details ? JSON.parse(log.details) : {};
+        if (log.action === 'SIMULATE_SINGLE') {
+          text = `Simulation: Offer #${detailsObj.offer_id} — Cost: ${detailsObj.total_cost} TND, Score: ${detailsObj.satisfaction_score}/100`;
+        } else if (log.action === 'SIMULATE_RECOMMEND') {
+          text = `Recommendations generated — ${detailsObj.limit || 5} offers`;
+        } else if (log.action === 'SIMULATE_COMPARE') {
+          text = `Compared ${detailsObj.offer_ids?.length || 0} offers`;
+        } else if (log.action === 'SIMULATE_BATCH') {
+          text = `Batch: ${detailsObj.total_profiles} profiles, ${detailsObj.good_matches} good matches`;
+        } else if (log.action === 'CREATE') {
+          if (log.entity === 'offer') text = `New offer: "${detailsObj.name}" (${detailsObj.segment})`;
+          else if (log.entity === 'customer_profile') text = `Profile created: "${detailsObj.label}"`;
+          else if (log.entity === 'option') text = `New option: "${detailsObj.name}"`;
+          else text = `${log.entity} created (ID: ${log.entity_id})`;
+        } else if (log.action === 'UPDATE') {
+          text = `${log.entity?.replace('_', ' ')} updated`;
+        } else if (log.action === 'DELETE') {
+          text = `${log.entity?.replace('_', ' ')} deleted`;
+        } else if (log.action === 'LINK') {
+          text = `Option linked to offer`;
+        } else if (log.action === 'UNLINK') {
+          text = `Option unlinked from offer`;
+        } else if (log.action === 'LOGIN') {
+          text = `User logged in: ${log.username}`;
+        } else if (log.action === 'LOGIN_FAILED') {
+          text = `Failed login${log.details?.includes('user_not_found') ? '' : ` for ${log.details?.username || 'unknown'}`}`;
+        } else {
+          text = `${log.action} on ${log.entity || 'system'}`;
+        }
+      } catch (e) {
+        text = `${log.action} - ${log.entity}`;
+      }
+
+      // Calculate relative time
+      const now = new Date();
+      const logTime = new Date(log.created_at);
+      const diffMs = now - logTime;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      let timeAgo;
+      if (diffMins < 1) timeAgo = 'Just now';
+      else if (diffMins < 60) timeAgo = `${diffMins}m ago`;
+      else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
+      else timeAgo = `${diffDays}d ago`;
+
+      return {
+        id: log.log_id,
+        icon,
+        text,
+        time: timeAgo,
+        color,
+        raw_time: log.created_at,
+        user: log.username || 'System',
+        action: log.action
+      };
+    });
+
+    res.json({ activity, count: activity.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+   }
+ });
+
+/**
  * Helper function to log audit entries
  * Should be called from other route handlers
  */

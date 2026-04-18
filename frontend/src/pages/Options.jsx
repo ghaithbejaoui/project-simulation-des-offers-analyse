@@ -6,71 +6,92 @@ import { isAdmin } from "../App";
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
 
-const OPTION_TYPES = ["roaming", "night_data", "social_pack", "loyalty", "data_boost", "voice_boost", "sms_pack", "other"];
+const OPTION_TYPES = ["DATA_ADDON", "VOICE_ADDON", "SMS_ADDON", "ROAMING", "LOYALTY"];
 
-const EMPTY_FORM = { name: "", type: "data_boost", price: "", data_bonus_gb: 0, minutes_bonus: 0, sms_bonus: 0, validity_days: 30, description: "" };
+const EMPTY_FORM = { name: "", type: "DATA_ADDON", price: "", data_gb: 0, minutes: 0, sms: 0, validity_days: 30 };
 
 // ─── Type badge ────────────────────────────────────────────────────────────────
 function TypeBadge({ type }) {
   const map = {
-    roaming:    { color: colors.yellow, icon: "✈" },
-    night_data: { color: colors.blue,   icon: "🌙" },
-    social_pack:{ color: "#a855f7",     icon: "📱" },
-    loyalty:    { color: colors.green,  icon: "⭐" },
-    data_boost: { color: colors.blue,   icon: "📶" },
-    voice_boost:{ color: colors.orange, icon: "🎙" },
-    sms_pack:   { color: colors.yellow, icon: "💬" },
-    other:      { color: colors.textDim,icon: "📦" },
+    DATA_ADDON:  { color: colors.blue,   icon: "📶", label: "Data Add-on" },
+    VOICE_ADDON: { color: colors.orange, icon: "🎙",  label: "Voice Add-on" },
+    SMS_ADDON:   { color: colors.yellow, icon: "💬",  label: "SMS Add-on" },
+    ROAMING:     { color: colors.green,  icon: "✈",   label: "Roaming" },
+    LOYALTY:     { color: colors.yellow, icon: "⭐",   label: "Loyalty" },
   };
-  const s = map[type] || map.other;
+  const s = map[type] || { color: colors.textDim, icon: "📦", label: type };
   return (
     <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 6, background: `${s.color}15`, border: `0.5px solid ${s.color}35`, color: s.color, fontWeight: 500 }}>
-      {s.icon} {type?.replace("_", " ")}
+      {s.icon} {s.label}
     </span>
   );
 }
 
 // ─── Option card ──────────────────────────────────────────────────────────────
 function OptionCard({ option, onEdit, onDelete, showActions }) {
-  const perks = [];
-  if (option.data_bonus_gb > 0)  perks.push(`+${option.data_bonus_gb} GB data`);
-  if (option.minutes_bonus > 0)  perks.push(`+${option.minutes_bonus} min`);
-  if (option.sms_bonus > 0)      perks.push(`+${option.sms_bonus} SMS`);
+  // option fields: option_id, name, type, price, data_gb, minutes, sms, validity_days
+  const stats = [
+    { label: "Data", value: option.data_gb > 0 ? `+${Number(option.data_gb).toFixed(1)} GB` : null, color: colors.blue },
+    { label: "Minutes", value: option.minutes > 0 ? `+${option.minutes} min` : null, color: colors.green },
+    { label: "SMS", value: option.sms > 0 ? `+${option.sms} SMS` : null, color: colors.yellow },
+    { label: "Validity", value: `${option.validity_days} days`, color: colors.textMuted },
+  ].filter(s => s.value !== null);
 
   return (
     <div style={{ ...card, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12, transition: "border-color 0.2s" }}
       onMouseEnter={e => e.currentTarget.style.borderColor = colors.borderHov}
       onMouseLeave={e => e.currentTarget.style.borderColor = colors.border}>
+      {/* Header: Type badge + Price */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <TypeBadge type={option.type} />
-        <span style={{ fontFamily: fonts.heading, fontSize: 18, fontWeight: 600, color: colors.blue }}>
+        <span style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.blue }}>
           {Number(option.price).toFixed(2)} TND
         </span>
       </div>
+
+      {/* Name */}
       <div>
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: colors.text, marginBottom: 4 }}>{option.name}</h3>
-        {option.description && <p style={{ fontSize: 12, color: colors.textDim, lineHeight: 1.5 }}>{option.description}</p>}
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: colors.text, marginBottom: 4, lineHeight: 1.3 }}>{option.name}</h3>
       </div>
 
-      {perks.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {perks.map(p => (
-            <span key={p} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 6, background: "rgba(67,199,139,0.1)", color: colors.green, border: "0.5px solid rgba(67,199,139,0.25)" }}>
-              ✓ {p}
-            </span>
-          ))}
-          <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 6, background: "rgba(255,255,255,0.04)", color: colors.textDim, border: `0.5px solid ${colors.border}` }}>
-            {option.validity_days}d validity
-          </span>
-        </div>
-      )}
+      {/* Stats grid - show all stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+        {[
+          { label: "Data", value: `${Number(option.data_gb || 0).toFixed(1)} GB`, color: colors.blue, highlight: option.data_gb > 0 },
+          { label: "Minutes", value: `${option.minutes || 0} min`, color: colors.green, highlight: option.minutes > 0 },
+          { label: "SMS", value: `${option.sms || 0} SMS`, color: colors.yellow, highlight: option.sms > 0 },
+          { label: "Validity", value: `${option.validity_days} days`, color: colors.textMuted, highlight: false },
+        ].map(stat => (
+          <div key={stat.label} style={{
+            padding: "8px 10px",
+            background: "rgba(255,255,255,0.03)",
+            borderRadius: 8,
+            border: `0.5px solid ${stat.highlight ? `${stat.color}40` : colors.border}`,
+          }}>
+            <p style={{ fontSize: 10, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.03em", marginBottom: 2 }}>{stat.label}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: stat.color, fontFamily: fonts.heading }}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
 
+      {/* Actions */}
       {showActions && (
         <div style={{ display: "flex", gap: 8, paddingTop: 4, borderTop: `0.5px solid rgba(26,143,255,0.08)` }}>
           <button onClick={() => onEdit(option)} style={{ ...btnGhost, flex: 1, height: 32, fontSize: 12, justifyContent: "center" }}>Edit</button>
-          <button onClick={() => onDelete(option.id)} style={{ ...btnDanger, height: 32, padding: "0 14px", fontSize: 12 }}>Delete</button>
+          <button onClick={() => onDelete(option.option_id)} style={{ ...btnDanger, height: 32, padding: "0 14px", fontSize: 12 }}>Delete</button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Reusable Form Field ───────────────────────────────────────────────────────
+function FormField({ label, value, onChange, type = "text", placeholder }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
+      <input type={type} value={value ?? ""} placeholder={placeholder} onChange={e => onChange(e.target.value)}
+        style={{ ...input, height: 38, fontSize: 13 }} />
     </div>
   );
 }
@@ -86,8 +107,8 @@ function OptionModal({ option, onClose, onSave }) {
     if (!form.name || !form.price) { setError("Name and price required."); return; }
     setSaving(true);
     try {
-      const method = option?.id ? "PUT" : "POST";
-      const url    = option?.id ? `${API}/options/${option.id}` : `${API}/options`;
+      const method = option?.option_id ? "PUT" : "POST";
+      const url    = option?.option_id ? `${API}/options/${option.option_id}` : `${API}/options`;
       const res    = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(form) });
       if (!res.ok) throw new Error("Save failed");
       onSave();
@@ -95,41 +116,37 @@ function OptionModal({ option, onClose, onSave }) {
     finally { setSaving(false); }
   };
 
-  const Field = ({ label, k, type = "text", placeholder }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
-      <input type={type} value={form[k] ?? ""} placeholder={placeholder} onChange={e => set(k, e.target.value)}
-        style={{ ...input, height: 38, fontSize: 13 }} />
-    </div>
-  );
-
   return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ ...card, width: "100%", maxWidth: 520, padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
-            {option?.id ? "Edit Option" : "New Option"}
-          </h3>
+           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+             {option?.option_id ? "Edit Option" : "New Option"}
+           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20 }}>×</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          <div style={{ gridColumn: "span 2" }}><Field label="Option Name" k="name" placeholder="e.g. Night Data 5GB" /></div>
+          <div style={{ gridColumn: "span 2" }}><FormField label="Option Name" value={form.name} onChange={v => set("name", v)} placeholder="e.g. Night Data 5GB" /></div>
           <div>
             <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Type</label>
             <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
-              {OPTION_TYPES.map(t => <option key={t}>{t}</option>)}
+              {OPTION_TYPES.map(t => (
+                <option key={t} value={t}>
+                  {t === "DATA_ADDON" ? "📶 Data Add-on" :
+                   t === "VOICE_ADDON" ? "🎙 Voice Add-on" :
+                   t === "SMS_ADDON" ? "💬 SMS Add-on" :
+                   t === "ROAMING" ? "✈ Roaming" :
+                   t === "LOYALTY" ? "⭐ Loyalty" :
+                   t.replace("_", " ")}
+                </option>
+              ))}
             </select>
           </div>
-          <Field label="Price (TND)" k="price" type="number" placeholder="0.00" />
-          <Field label="Data Bonus (GB)" k="data_bonus_gb" type="number" placeholder="0" />
-          <Field label="Minutes Bonus" k="minutes_bonus" type="number" placeholder="0" />
-          <Field label="SMS Bonus" k="sms_bonus" type="number" placeholder="0" />
-          <Field label="Validity (days)" k="validity_days" type="number" placeholder="30" />
-          <div style={{ gridColumn: "span 2" }}>
-            <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Description</label>
-            <textarea value={form.description} onChange={e => set("description", e.target.value)} rows={2} placeholder="Optional description…"
-              style={{ ...input, height: "auto", padding: "10px 14px", resize: "vertical", fontSize: 13 }} />
-          </div>
+          <FormField label="Price (TND)" value={form.price} onChange={v => set("price", v)} type="number" placeholder="0.00" />
+          <FormField label="Data Bonus (GB)" value={form.data_gb} onChange={v => set("data_gb", v)} type="number" placeholder="0" />
+          <FormField label="Minutes Bonus" value={form.minutes} onChange={v => set("minutes", v)} type="number" placeholder="0" />
+          <FormField label="SMS Bonus" value={form.sms} onChange={v => set("sms", v)} type="number" placeholder="0" />
+          <FormField label="Validity (days)" value={form.validity_days} onChange={v => set("validity_days", v)} type="number" placeholder="30" />
         </div>
         {error && <p style={{ marginTop: 12, fontSize: 13, color: colors.red }}>{error}</p>}
         <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
@@ -173,11 +190,11 @@ export default function Options() {
    }, [modal]);
 
    const handleDelete = async (id) => {
-    try {
-      await fetch(`${API}/options/${id}`, { method: "DELETE", headers: getHeaders() });
-      setOptions(o => o.filter(x => x.id !== id));
-    } catch {}
-  };
+     try {
+       await fetch(`${API}/options/${id}`, { method: "DELETE", headers: getHeaders() });
+       setOptions(o => o.filter(x => x.option_id !== id));
+     } catch {}
+   };
 
   const filtered = options.filter(o => {
     const matchSearch = o.name?.toLowerCase().includes(search.toLowerCase());
@@ -206,12 +223,17 @@ export default function Options() {
 
       {/* Type summary pills */}
       <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
-        {Object.entries(typeCounts).map(([type, count]) => (
+        <button onClick={() => setType("ALL")} style={{ height: 32, padding: "0 12px", borderRadius: 20, border: `0.5px solid ${typeFilter === "ALL" ? colors.blue : colors.border}`,
+          background: typeFilter === "ALL" ? colors.blueDim : "rgba(255,255,255,0.02)",
+          color: typeFilter === "ALL" ? colors.blue : colors.textMuted, cursor: "pointer", fontSize: 12, transition: "all 0.18s" }}>
+          All <span style={{ opacity: 0.6 }}>({options.length})</span>
+        </button>
+        {OPTION_TYPES.map(type => (
           <button key={type} onClick={() => setType(typeFilter === type ? "ALL" : type)}
             style={{ height: 32, padding: "0 12px", borderRadius: 20, border: `0.5px solid ${typeFilter === type ? colors.blue : colors.border}`,
               background: typeFilter === type ? colors.blueDim : "rgba(255,255,255,0.02)",
               color: typeFilter === type ? colors.blue : colors.textMuted, cursor: "pointer", fontSize: 12, transition: "all 0.18s" }}>
-            {type.replace("_", " ")} <span style={{ opacity: 0.6 }}>({count})</span>
+            {type.replace("_", " ")} <span style={{ opacity: 0.6 }}>({typeCounts[type] || 0})</span>
           </button>
         ))}
       </div>
@@ -232,10 +254,10 @@ export default function Options() {
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: colors.textDim }}>Loading options…</div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {filtered.map(o => (
-            <OptionCard key={o.id} option={o} onEdit={setModal} onDelete={handleDelete} showActions={isAdmin()} />
-          ))}
+         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+           {filtered.map(o => (
+             <OptionCard key={o.option_id} option={o} onEdit={setModal} onDelete={handleDelete} showActions={isAdmin()} />
+           ))}
           {filtered.length === 0 && (
             <div style={{ ...card, padding: 40, textAlign: "center", gridColumn: "span 3" }}>
               <p style={{ color: colors.textDim }}>No options found.</p>
@@ -257,10 +279,10 @@ export default function Options() {
 }
 
 const MOCK_OPTIONS = [
-  { id: 1, name: "Night Data 5GB", type: "night_data", price: 3.5, data_bonus_gb: 5, minutes_bonus: 0, sms_bonus: 0, validity_days: 30, description: "Extra 5GB active between 00:00 and 07:00" },
-  { id: 2, name: "Roaming Pack EU", type: "roaming", price: 12, data_bonus_gb: 2, minutes_bonus: 100, sms_bonus: 50, validity_days: 15, description: "Valid in EU zone countries" },
-  { id: 3, name: "Social Media Pack", type: "social_pack", price: 5, data_bonus_gb: 3, minutes_bonus: 0, sms_bonus: 0, validity_days: 30, description: "Unlimited data for WhatsApp, Facebook, Instagram" },
-  { id: 4, name: "Loyalty Bonus", type: "loyalty", price: 0, data_bonus_gb: 2, minutes_bonus: 60, sms_bonus: 100, validity_days: 30, description: "Free bonus for loyal subscribers (+12 months)" },
-  { id: 5, name: "Data Boost 10GB", type: "data_boost", price: 8, data_bonus_gb: 10, minutes_bonus: 0, sms_bonus: 0, validity_days: 30, description: "Top-up your data when running low" },
-  { id: 6, name: "Voice Extra 200min", type: "voice_boost", price: 6, data_bonus_gb: 0, minutes_bonus: 200, sms_bonus: 0, validity_days: 30, description: "Extra voice minutes for heavy callers" },
+  { option_id: 1, name: "Night Data 5GB", type: "DATA_ADDON", price: 3.5, data_gb: 5, minutes: 0, sms: 0, validity_days: 30 },
+  { option_id: 2, name: "Roaming Pack EU", type: "ROAMING", price: 12, data_gb: 2, minutes: 100, sms: 50, validity_days: 15 },
+  { option_id: 3, name: "SMS Pack 500", type: "SMS_ADDON", price: 5, data_gb: 0, minutes: 0, sms: 500, validity_days: 30 },
+  { option_id: 4, name: "Loyalty Bonus", type: "LOYALTY", price: 0, data_gb: 2, minutes: 60, sms: 100, validity_days: 30 },
+  { option_id: 5, name: "Data Boost 10GB", type: "DATA_ADDON", price: 8, data_gb: 10, minutes: 0, sms: 0, validity_days: 30 },
+  { option_id: 6, name: "Voice Extra 200min", type: "VOICE_ADDON", price: 6, data_gb: 0, minutes: 200, sms: 0, validity_days: 30 },
 ];

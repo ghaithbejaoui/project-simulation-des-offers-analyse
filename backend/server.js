@@ -90,6 +90,12 @@ app.use('/api/stats', statsRoutes);
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+const scenariosRoutes = require('./routes/scenarios');
+app.use('/api/scenarios', scenariosRoutes);
+
+const exportRoutes = require('./routes/export');
+app.use('/api/export', exportRoutes);
+
 
 // Health check endpoint
 app.get('/', (req, res) => {

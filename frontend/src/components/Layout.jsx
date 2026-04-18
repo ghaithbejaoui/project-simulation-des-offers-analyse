@@ -70,9 +70,6 @@ const NAV_ITEMS = [
     ),
     accent: true,
   },
-];
-
-const ADMIN_ONLY = [
   {
     path: "/scenarios",
     label: "Scenarios",
@@ -86,6 +83,9 @@ const ADMIN_ONLY = [
       </svg>
     ),
   },
+];
+
+const ADMIN_ONLY = [
   {
     path: "/audit",
     label: "Audit Log",
@@ -116,7 +116,7 @@ export default function Layout({ children }) {
     navigate("/login");
   };
 
-  const isAdmin = user?.role === "admin";
+   const isAdmin = user?.role === "ADMIN";
   const allItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ONLY] : NAV_ITEMS;
 
   return (

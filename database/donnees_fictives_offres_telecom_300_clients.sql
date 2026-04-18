@@ -45,7 +45,7 @@ CREATE TABLE `audit_logs` (
 --
 
 CREATE TABLE `customer_profiles` (
-  `profile_id` int(11) NOT NULL,
+  `profile_id` int(11) NOT NULL AUTO_INCREMENT,
   `label` varchar(100) NOT NULL,
   `minutes_avg` int(11) DEFAULT 0,
   `sms_avg` int(11) DEFAULT 0,
@@ -53,7 +53,8 @@ CREATE TABLE `customer_profiles` (
   `night_usage_pct` int(11) DEFAULT 0,
   `roaming_days` int(11) DEFAULT 0,
   `budget_max` decimal(10,2) DEFAULT 0.00,
-  `priority` enum('PRICE','QUALITY','BALANCED') DEFAULT 'BALANCED'
+  `priority` enum('PRICE','QUALITY','BALANCED') DEFAULT 'BALANCED',
+  PRIMARY KEY (`profile_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -369,7 +370,7 @@ INSERT INTO `customer_profiles` (`profile_id`, `label`, `minutes_avg`, `sms_avg`
 --
 
 CREATE TABLE `offers` (
-  `offer_id` int(11) NOT NULL,
+  `offer_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `segment` enum('PREPAID','POSTPAID','BUSINESS') NOT NULL,
   `monthly_price` decimal(10,2) NOT NULL,
@@ -382,7 +383,8 @@ CREATE TABLE `offers` (
   `over_sms_price` decimal(10,4) DEFAULT 0.0500,
   `over_data_price` decimal(10,4) DEFAULT 0.5000,
   `roaming_included_days` int(11) DEFAULT 0,
-  `status` enum('PUBLISHED','DRAFT','RETIRED') DEFAULT 'PUBLISHED'
+  `status` enum('PUBLISHED','DRAFT','RETIRED') DEFAULT 'PUBLISHED',
+  PRIMARY KEY (`offer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -619,14 +621,15 @@ INSERT INTO `offer_options` (`offer_id`, `option_id`) VALUES
 --
 
 CREATE TABLE `options` (
-  `option_id` int(11) NOT NULL,
+  `option_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `type` enum('DATA_ADDON','VOICE_ADDON','SMS_ADDON','ROAMING','LOYALTY') NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `data_gb` decimal(10,2) DEFAULT 0.00,
   `minutes` int(11) DEFAULT 0,
   `sms` int(11) DEFAULT 0,
-  `validity_days` int(11) DEFAULT 30
+  `validity_days` int(11) DEFAULT 30,
+  PRIMARY KEY (`option_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -773,14 +776,12 @@ ALTER TABLE `audit_logs`
 --
 -- Indexes for table `customer_profiles`
 --
-ALTER TABLE `customer_profiles`
-  ADD PRIMARY KEY (`profile_id`);
+-- (PRIMARY KEY already defined in CREATE TABLE)
 
 --
 -- Indexes for table `offers`
 --
-ALTER TABLE `offers`
-  ADD PRIMARY KEY (`offer_id`);
+-- (PRIMARY KEY already defined in CREATE TABLE)
 
 --
 -- Indexes for table `offer_options`
@@ -792,8 +793,7 @@ ALTER TABLE `offer_options`
 --
 -- Indexes for table `options`
 --
-ALTER TABLE `options`
-  ADD PRIMARY KEY (`option_id`);
+-- (PRIMARY KEY already defined in CREATE TABLE)
 
 --
 -- Indexes for table `scenarios`
@@ -842,6 +842,48 @@ ALTER TABLE `users`
 --
 ALTER TABLE `audit_logs`
   MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `scenarios`
+--
+ALTER TABLE `scenarios`
+  MODIFY `scenario_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `simulations`
+--
+ALTER TABLE `simulations`
+  MODIFY `simulation_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `simulation_results`
+--
+ALTER TABLE `simulation_results`
+  MODIFY `result_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `customer_profiles`
+--
+ALTER TABLE `customer_profiles`
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `offers`
+--
+ALTER TABLE `offers`
+  MODIFY `offer_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `options`
+--
+ALTER TABLE `options`
+  MODIFY `option_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `scenarios`

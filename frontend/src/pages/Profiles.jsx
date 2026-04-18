@@ -1,8 +1,76 @@
 import { useState, useEffect, useCallback } from "react";
 import ReactDOM from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { fonts } from "../styles/theme";
 import { isAdmin } from "../App";
+
+const cardStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const btnGhostStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const btnDangerStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #e35b5b 0%, #c0392b 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(227,91,91,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const inputStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -30,26 +98,26 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
   const displaySms = profile.sms_avg ?? profile.avg_sms ?? 0;
   const displayData = profile.data_avg_gb ?? profile.avg_data_gb ?? 0;
   
-  const segColors = { POSTPAID: colors.blue, PREPAID: colors.green, BUSINESS: colors.orange, DATA_ONLY: colors.yellow };
-  const color = segColors[profile.segment] || colors.textMuted;
+  const segColors = { POSTPAID: "var(--blue)", PREPAID: "var(--green)", BUSINESS: "var(--orange)", DATA_ONLY: "var(--yellow)" };
+  const color = segColors[profile.segment] || "var(--text-muted)";
   const initials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "P";
 
   return (
-    <div style={{ ...card, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", transition: "border-color 0.2s" }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = colors.borderHov}
-      onMouseLeave={e => e.currentTarget.style.borderColor = colors.border}>
+    <div style={{ ...cardStyle, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", transition: "border-color 0.2s" }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = "var(--border-hover)"}
+      onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
       <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: color, borderRadius: "0 0 0 0" }} />
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, border: `0.5px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color, flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color.replace('var(--', '').replace(')', '')}18`, border: `0.5px solid ${color.replace('var(--', '').replace(')', '')}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color, flexShrink: 0 }}>
           {initials}
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 500, color: colors.text }}>{displayName}</p>
-          <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: `${color}15`, color, fontWeight: 500 }}>
+          <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>{displayName}</p>
+          <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: `${color.replace('var(--', '').replace(')', '')}15`, color, fontWeight: 500 }}>
             {profile.segment?.replace("_", " ")}
           </span>
         </div>
-        <p style={{ fontSize: 16, fontWeight: 600, fontFamily: fonts.heading, color: colors.blue }}>
+        <p style={{ fontSize: 16, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>
           {Number(profile.budget_max).toFixed(0)} TND
         </p>
       </div>
@@ -57,51 +125,51 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 11, color: colors.textDim }}>Data</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displayData} GB/mo</span>
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>Data</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{displayData} GB/mo</span>
           </div>
-          <UsageBar value={displayData} max={100} color={colors.blue} />
+          <UsageBar value={displayData} max={100} color="var(--blue)" />
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 11, color: colors.textDim }}>Voice</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displayMinutes} min/mo</span>
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>Voice</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{displayMinutes} min/mo</span>
           </div>
-          <UsageBar value={displayMinutes} max={1000} color={colors.green} />
+          <UsageBar value={displayMinutes} max={1000} color="var(--green)" />
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 11, color: colors.textDim }}>SMS</span>
-            <span style={{ fontSize: 11, color: colors.textMuted }}>{displaySms} /mo</span>
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>SMS</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{displaySms} /mo</span>
           </div>
-          <UsageBar value={displaySms} max={500} color={colors.yellow} />
+          <UsageBar value={displaySms} max={500} color="var(--yellow)" />
         </div>
       </div>
 
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {profile.roaming_days > 0 && (
-          <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(240,180,41,0.1)", color: colors.yellow, border: "0.5px solid rgba(240,180,41,0.25)" }}>
+          <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(240,180,41,0.1)", color: "var(--yellow)", border: "0.5px solid rgba(240,180,41,0.25)" }}>
             ✈ {profile.roaming_days}d roaming
           </span>
         )}
         {profile.night_usage_pct > 0 && (
-          <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(26,143,255,0.1)", color: colors.blue, border: "0.5px solid rgba(26,143,255,0.25)" }}>
+          <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(26,143,255,0.1)", color: "var(--blue)", border: "0.5px solid rgba(26,143,255,0.25)" }}>
             🌙 {profile.night_usage_pct}% night
           </span>
         )}
-        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(200,212,232,0.06)", color: colors.textDim, border: `0.5px solid ${colors.border}` }}>
+        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(200,212,232,0.06)", color: "var(--text-dim)", border: `0.5px solid var(--border)` }}>
           Priority: {profile.priority}
         </span>
       </div>
 
       <div style={{ display: "flex", gap: 8, paddingTop: 4, borderTop: `0.5px solid rgba(26,143,255,0.08)` }}>
-        <button onClick={() => onSimulate(profile)} style={{ ...btnPrimary, flex: 1, height: 34, fontSize: 12, justifyContent: "center" }}>
+        <button onClick={() => onSimulate(profile)} style={{ ...btnPrimaryStyle, flex: 1, height: 34, fontSize: 12, justifyContent: "center" }}>
           Simulate
         </button>
         {showActions && (
           <>
-            <button onClick={() => onEdit(profile)} style={{ ...btnGhost, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
-            <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDanger, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
+            <button onClick={() => onEdit(profile)} style={{ ...btnGhostStyle, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
+            <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDangerStyle, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
           </>
         )}
       </div>
@@ -113,9 +181,9 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
 function FormField({ label, value, onChange, type = "text", placeholder }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
+      <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
       <input type={type} value={value ?? ""} placeholder={placeholder} onChange={e => onChange(e.target.value)}
-        style={{ ...input, height: 38, fontSize: 13 }} />
+        style={{ ...inputStyle, height: 38, fontSize: 13 }} />
     </div>
   );
 }
@@ -141,20 +209,20 @@ function ProfileModal({ profile, onClose, onSave }) {
     finally { setSaving(false); }
   };
 
-  return (
+return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ ...card, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
              {profile?.profile_id ? "Edit Profile" : "New Customer Profile"}
            </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20 }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20 }}>×</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ gridColumn: "span 2" }}><FormField label="Profile Label" value={form.label} onChange={v => set("label", v)} placeholder="e.g. Ahmed Bejaoui" /></div>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Priority</label>
-            <select value={form.priority} onChange={e => set("priority", e.target.value)} style={{ ...input, height: 38, fontSize: 13 }}>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Priority</label>
+            <select value={form.priority} onChange={e => set("priority", e.target.value)} style={{ ...inputStyle, height: 38, fontSize: 13 }}>
               {["BALANCED","PRICE","QUALITY"].map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
@@ -165,10 +233,10 @@ function ProfileModal({ profile, onClose, onSave }) {
           <FormField label="Night Usage %" value={form.night_usage_pct} onChange={v => set("night_usage_pct", v)} type="number" placeholder="0–100" />
           <FormField label="Roaming Days/mo" value={form.roaming_days} onChange={v => set("roaming_days", v)} type="number" placeholder="0" />
         </div>
-        {error && <p style={{ marginTop: 12, fontSize: 13, color: colors.red }}>{error}</p>}
+        {error && <p style={{ marginTop: 12, fontSize: 13, color: "var(--red)" }}>{error}</p>}
         <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={btnGhost}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
+          <button onClick={onClose} style={btnGhostStyle}>Cancel</button>
+          <button onClick={handleSave} disabled={saving} style={{ ...btnPrimaryStyle, opacity: saving ? 0.7 : 1 }}>
             {saving ? "Saving…" : "Save Profile"}
           </button>
         </div>
@@ -232,13 +300,13 @@ export default function Profiles() {
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
         <div>
-          <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Customer Profiles</h2>
-          <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>
+          <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Customer Profiles</h2>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
             {profiles.length} profiles · Manage usage patterns and budgets
           </p>
         </div>
         {isAdmin() && (
-          <button onClick={() => setModal("new")} style={{ ...btnPrimary, height: 40 }}>
+          <button onClick={() => setModal("new")} style={{ ...btnPrimaryStyle, height: 40 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Profile
           </button>
@@ -246,38 +314,38 @@ export default function Profiles() {
       </div>
 
       {/* Filters */}
-      <div style={{ ...card, padding: "14px 18px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ ...cardStyle, padding: "14px 18px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-          <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: colors.textDim }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-dim)" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search profiles…"
-            style={{ ...input, height: 36, paddingLeft: 36, fontSize: 13 }} />
+            style={{ ...inputStyle, height: 36, paddingLeft: 36, fontSize: 13 }} />
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           {["ALL","PREPAID","POSTPAID","BUSINESS","DATA_ONLY"].map(s => (
             <button key={s} onClick={() => setSegment(s)}
-              style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${segment === s ? colors.blue : colors.border}`,
-                background: segment === s ? colors.blueDim : "transparent", color: segment === s ? colors.blue : colors.textMuted,
+              style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${segment === s ? "var(--blue)" : "var(--border)"}`,
+                background: segment === s ? "rgba(26,143,255,0.15)" : "transparent", color: segment === s ? "var(--blue)" : "var(--text-muted)",
                 cursor: "pointer", fontSize: 12, transition: "all 0.18s" }}>
               {s === "ALL" ? "All" : s.replace("_"," ")}
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 3, border: `0.5px solid ${colors.border}` }}>
+        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 3, border: `0.5px solid var(--border)` }}>
           {["grid","table"].map(v => (
             <button key={v} onClick={() => setView(v)}
               style={{ height: 28, padding: "0 12px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, transition: "all 0.18s",
-                background: view === v ? colors.blueDim : "transparent", color: view === v ? colors.blue : colors.textDim }}>
+                background: view === v ? "rgba(26,143,255,0.15)" : "transparent", color: view === v ? "var(--blue)" : "var(--text-dim)" }}>
               {v === "grid" ? "⊞ Grid" : "☰ List"}
             </button>
           ))}
         </div>
-        <span style={{ fontSize: 12, color: colors.textDim }}>{filtered.length} results</span>
+        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{filtered.length} results</span>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: colors.textDim }}>Loading profiles…</div>
+        <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>Loading profiles…</div>
       ) : view === "grid" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {filtered.map(p => (
@@ -285,12 +353,12 @@ export default function Profiles() {
           ))}
         </div>
       ) : (
-        <div style={{ ...card, overflow: "hidden" }}>
+        <div style={{ ...cardStyle, overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: `0.5px solid ${colors.border}` }}>
+              <tr style={{ borderBottom: `0.5px solid var(--border)` }}>
                 {["Name","Segment","Data (GB)","Minutes","SMS","Budget (TND)","Night %","Roaming","Actions"].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 500, color: colors.textDim, letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</th>
+                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -299,23 +367,23 @@ export default function Profiles() {
                 <tr key={p.id} style={{ borderBottom: `0.5px solid rgba(26,143,255,0.06)`, background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(26,143,255,0.05)"}
                   onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)"}>
-                  <td style={{ padding: "11px 16px", color: colors.text, fontWeight: 500 }}>{p.label || p.name}</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text)", fontWeight: 500 }}>{p.label || p.name}</td>
                   <td style={{ padding: "11px 16px" }}>
-                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: "rgba(26,143,255,0.1)", color: colors.blue }}>{p.segment?.replace("_"," ")}</span>
+                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: "rgba(26,143,255,0.1)", color: "var(--blue)" }}>{p.segment?.replace("_"," ")}</span>
                   </td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.data_avg_gb ?? p.avg_data_gb}</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.minutes_avg ?? p.avg_minutes}</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.sms_avg ?? p.avg_sms}</td>
-                  <td style={{ padding: "11px 16px", color: colors.blue, fontWeight: 600 }}>{Number(p.budget_max).toFixed(2)}</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.night_usage_pct}%</td>
-                  <td style={{ padding: "11px 16px", color: colors.textMuted }}>{p.roaming_days}d</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.data_avg_gb ?? p.avg_data_gb}</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.minutes_avg ?? p.avg_minutes}</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.sms_avg ?? p.avg_sms}</td>
+                  <td style={{ padding: "11px 16px", color: "var(--blue)", fontWeight: 600 }}>{Number(p.budget_max).toFixed(2)}</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.night_usage_pct}%</td>
+                  <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.roaming_days}d</td>
                   <td style={{ padding: "11px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => handleSimulate(p)} style={{ ...btnPrimary, height: 30, padding: "0 10px", fontSize: 12 }}>Simulate</button>
+                      <button onClick={() => handleSimulate(p)} style={{ ...btnPrimaryStyle, height: 30, padding: "0 10px", fontSize: 12 }}>Simulate</button>
                       {isAdmin() && (
                         <>
-                          <button onClick={() => setModal(p)} style={{ ...btnGhost, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
-                          <button onClick={() => handleDelete(p.id)} style={{ ...btnDanger, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
+                          <button onClick={() => setModal(p)} style={{ ...btnGhostStyle, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
+                          <button onClick={() => handleDelete(p.id)} style={{ ...btnDangerStyle, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
                         </>
                       )}
                     </div>

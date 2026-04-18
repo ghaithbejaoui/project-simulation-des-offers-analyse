@@ -1,6 +1,68 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { colors, fonts, card, btnPrimary, btnGhost, input, select } from "../styles/theme";
+import { fonts } from "../styles/theme";
+
+const cardStyleStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const btnGhostStyleStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const inputStyleStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const selectStyleStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
 
 const API = "http://localhost:5000/api";
 
@@ -12,8 +74,8 @@ function ActivityRow({ icon, text, time, user, color }) {
         {icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, color: colors.text, fontWeight: 500, lineHeight: 1.4 }}>{text}</p>
-        <p style={{ fontSize: 11, color: colors.textDim, marginTop: 2 }}>{user} · {time}</p>
+        <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 500, lineHeight: 1.4 }}>{text}</p>
+        <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>{user} · {time}</p>
       </div>
     </div>
   );
@@ -85,7 +147,7 @@ export default function Audit() {
     if (action === 'CREATE') return '#43c78b';
     if (action === 'UPDATE') return '#f0b429';
     if (action === 'DELETE') return '#e35b5b';
-    return colors.textMuted;
+    return "var(--text-muted)";
   };
 
   const formatDetails = (details, action) => {
@@ -122,21 +184,21 @@ export default function Audit() {
       <div style={{ marginBottom: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Audit Trail</h2>
-            <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>Full system activity log — traceability & compliance</p>
+            <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Audit Trail</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Full system activity log — traceability & compliance</p>
           </div>
-          <button onClick={() => navigate("/")} style={{ ...btnGhost, height: 38, fontSize: 13 }}>
+          <button onClick={() => navigate("/")} style={{ ...btnGhostStyleStyle, height: 38, fontSize: 13 }}>
             ← Back
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ ...card, padding: "18px 20px", marginBottom: 20 }}>
+      <div style={{ ...cardStyleStyle, padding: "18px 20px", marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Entity</label>
-            <select value={filters.entity} onChange={(e) => setFilters({ ...filters, entity: e.target.value })} style={{ ...select, height: 36, fontSize: 13 }}>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Entity</label>
+            <select value={filters.entity} onChange={(e) => setFilters({ ...filters, entity: e.target.value })} style={{ ...selectStyleStyle, height: 36, fontSize: 13 }}>
               <option value="">All entities</option>
               <option value="offer">Offers</option>
               <option value="customer_profile">Profiles</option>
@@ -145,8 +207,8 @@ export default function Audit() {
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Action</label>
-            <select value={filters.action} onChange={(e) => setFilters({ ...filters, action: e.target.value })} style={{ ...select, height: 36, fontSize: 13 }}>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Action</label>
+            <select value={filters.action} onChange={(e) => setFilters({ ...filters, action: e.target.value })} style={{ ...selectStyleStyle, height: 36, fontSize: 13 }}>
               <option value="">All actions</option>
               <option value="CREATE">Create</option>
               <option value="UPDATE">Update</option>
@@ -160,51 +222,51 @@ export default function Audit() {
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>User ID</label>
-            <input type="number" value={filters.user_id} onChange={(e) => setFilters({ ...filters, user_id: e.target.value })} placeholder="Filter by user..." style={{ ...input, height: 36, fontSize: 13 }} />
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>User ID</label>
+            <input type="number" value={filters.user_id} onChange={(e) => setFilters({ ...filters, user_id: e.target.value })} placeholder="Filter by user..." style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>From</label>
-            <input type="date" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} style={{ ...input, height: 36, fontSize: 13 }} />
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>From</label>
+            <input type="date" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>To</label>
-            <input type="date" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} style={{ ...input, height: 36, fontSize: 13 }} />
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>To</label>
+            <input type="date" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <span style={{ fontSize: 12, color: colors.textDim }}>Show:</span>
+            <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Show:</span>
             {[25, 50, 100].map(n => (
               <button
                 key={n}
                 onClick={() => setLimit(n)}
                 style={{
-                  ...btnGhost,
+                  ...btnGhostStyleStyle,
                   height: 28,
                   fontSize: 12,
                   padding: "0 10px",
-                  background: limit === n ? colors.blueDim : "transparent",
-                  color: limit === n ? colors.blue : colors.textMuted,
-                  border: limit === n ? `0.5px solid ${colors.blue}` : `0.5px solid ${colors.border}`
+                  background: limit === n ? "var(--blue-dim)" : "transparent",
+                  color: limit === n ? "var(--blue)" : "var(--text-muted)",
+                  border: limit === n ? `0.5px solid ${"var(--blue)"}` : `0.5px solid ${"var(--border)"}`
                 }}
               >
                 {n}
               </button>
             ))}
           </div>
-          <span style={{ fontSize: 12, color: colors.textDim }}>{total} total entries</span>
+          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{total} total entries</span>
         </div>
       </div>
 
       {/* Activity list */}
-      <div style={{ ...card, padding: "20px 22px" }}>
+      <div style={{ ...cardStyleStyle, padding: "20px 22px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "40px 0", color: colors.textDim }}>
+          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-dim)" }}>
             Loading audit logs...
           </div>
         ) : logs.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 0", color: colors.textDim }}>
+          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-dim)" }}>
             No audit entries match your filters.
           </div>
         ) : (
@@ -217,24 +279,24 @@ export default function Audit() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                      <p style={{ fontSize: 14, color: colors.text, fontWeight: 500 }}>
+                      <p style={{ fontSize: 14, color: "var(--text)", fontWeight: 500 }}>
                         {log.action?.replace(/_/g, ' ')}
-                        {log.entity && <span style={{ color: colors.textDim, fontWeight: 400 }}> — {log.entity?.replace('_', ' ')}</span>}
+                        {log.entity && <span style={{ color: "var(--text-dim)", fontWeight: 400 }}> — {log.entity?.replace('_', ' ')}</span>}
                       </p>
-                      <span style={{ fontSize: 12, color: colors.textDim, whiteSpace: "nowrap", flexShrink: 0 }}>
+                      <span style={{ fontSize: 12, color: "var(--text-dim)", whiteSpace: "nowrap", flexShrink: 0 }}>
                         {new Date(log.created_at).toLocaleString()}
                       </span>
                     </div>
                     {log.username && (
-                      <p style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>
                         User: {log.username} {log.user_id && `(ID: ${log.user_id})`}
                       </p>
                     )}
                     {log.details && (() => {
                       const detailsText = formatDetails(log.details, log.action);
-                      return detailsText ? <p style={{ fontSize: 13, color: colors.textDim, fontFamily: fonts.body, lineHeight: 1.5 }}>{detailsText}</p> : null;
+                      return detailsText ? <p style={{ fontSize: 13, color: "var(--text-dim)", fontFamily: fonts.body, lineHeight: 1.5 }}>{detailsText}</p> : null;
                     })()}
-                    <p style={{ fontSize: 11, color: colors.textDim, marginTop: 4, fontFamily: 'monospace' }}>
+                    <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4, fontFamily: 'monospace' }}>
                       IP: {log.ip_address || 'N/A'} · ID: {log.log_id}
                     </p>
                   </div>
@@ -244,14 +306,14 @@ export default function Audit() {
 
             {/* Pagination */}
             {total > limit && (
-              <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 20, paddingTop: 16, borderTop: `0.5px solid ${colors.border}` }}>
-                <button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - limit))} style={{ ...btnGhost, height: 32, fontSize: 12, opacity: offset === 0 ? 0.4 : 1 }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 20, paddingTop: 16, borderTop: `0.5px solid ${"var(--border)"}` }}>
+                <button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - limit))} style={{ ...btnGhostStyleStyle, height: 32, fontSize: 12, opacity: offset === 0 ? 0.4 : 1 }}>
                   ← Previous
                 </button>
-                <span style={{ fontSize: 12, color: colors.textDim, alignSelf: "center", padding: "0 12px" }}>
+                <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "center", padding: "0 12px" }}>
                   Showing {offset + 1}-{Math.min(offset + limit, total)} of {total}
                 </span>
-                <button disabled={offset + limit >= total} onClick={() => setOffset(offset + limit)} style={{ ...btnGhost, height: 32, fontSize: 12, opacity: offset + limit >= total ? 0.4 : 1 }}>
+                <button disabled={offset + limit >= total} onClick={() => setOffset(offset + limit)} style={{ ...btnGhostStyleStyle, height: 32, fontSize: 12, opacity: offset + limit >= total ? 0.4 : 1 }}>
                   Next →
                 </button>
               </div>

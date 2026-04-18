@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 /**
@@ -54,7 +55,8 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/Option'
  */
 
-router.get('/', async (req, res) => {
+// GET / - List all options (all authenticated users)
+router.get('/', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM options');
     res.json(rows);
@@ -88,7 +90,8 @@ router.get('/', async (req, res) => {
  *         description: Option not found
  */
 
-router.get('/:id', async (req, res) => {
+// GET /:id - Get single option (all authenticated users)
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM options WHERE option_id = ?', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: 'Option not found' });
@@ -134,21 +137,13 @@ router.get('/:id', async (req, res) => {
  *               validity_days:
  *                 type: integer
  *                 default: 30
- *     responses:
+*     responses:
  *       201:
- *         description: Option created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 option_id:
- *                   type: integer
- *                 message:
- *                   type: string
+ *         description: Option created
  */
 
-router.post('/', async (req, res) => {
+// POST / - Create option (Admin/Analyst only)
+router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const { name, type, price, data_gb = 0, minutes = 0, sms = 0, validity_days = 30 } = req.body;
   try {
     const [result] = await db.query(
@@ -201,7 +196,8 @@ router.post('/', async (req, res) => {
  *         description: Option not found
  */
 
-router.put('/:id', async (req, res) => {
+// PUT /:id - Update option (Admin/Analyst only)
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const { name, type, price, data_gb, minutes, sms, validity_days } = req.body;
   try {
     const [result] = await db.query(
@@ -249,7 +245,8 @@ router.put('/:id', async (req, res) => {
  *         description: Option not found
  */
 
-router.delete('/:id', async (req, res) => {
+// DELETE /:id - Delete option (Admin only)
+router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
   try {
     const [result] = await db.query('DELETE FROM options WHERE option_id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Option not found' });

@@ -1,0 +1,255 @@
+{
+  "app": {
+    "name": "SimTelecom",
+    "connected": "API Connectée"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "offers": "Offres",
+    "options": "Options",
+    "profiles": "Profils clients",
+    "compare": "Comparer",
+    "simulation": "Simulation",
+    "scenarios": "Scénarios",
+    "users": "Utilisateurs",
+    "audit": "Journal d'audit"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "noData": "Aucune donnée disponible",
+    "noResults": "Aucun résultat trouvé",
+    "all": "Tous",
+    "actions": "Actions",
+    "name": "Nom",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "draft": "Brouillon",
+    "saveSuccess": "Enregistré avec succès",
+    "required": "obligatoire"
+  },
+  "dashboard": {
+    "welcome": "Bonjour 👋",
+    "welcomeSubtitle": "Voici votre aperçu de simulation télécom pour aujourd'hui.",
+    "runSimulation": "Lancer la simulation",
+    "activeOffers": "Offres actives",
+    "customerProfiles": "Profils clients",
+    "simulationsRun": "Simulations exécutées",
+    "avgSatisfaction": "Satisfaction moyenne",
+    "subOffers": "2 ajoutées cette semaine",
+    "subProfiles": "300 en base de données",
+    "subSimulations": "Ce mois-ci",
+    "subSatisfaction": "Score / 100",
+    "costTrend": "Tendance des coûts simulés",
+    "costTrendSubtitle": "Coût mensuel moyen par profil (TND)",
+    "satisfactionScores": "Scores de satisfaction",
+    "satisfactionSubtitle": "Moyenne quotidienne cette semaine",
+    "vsLastWeek": "vs semaine dernière",
+    "offersBySegment": "Offres par segment",
+    "recentActivity": "Activité récente",
+    "viewAll": "Voir tout",
+    "loading": "Chargement de l'activité...",
+    "noActivity": "Aucune activité récente"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Entrez vos identifiants pour accéder à la plateforme",
+    "email": "Email",
+    "password": "Mot de passe",
+    "login": "Se connecter",
+    "loggingIn": "Connexion en cours...",
+    "error": "Email ou mot de passe invalide"
+  },
+  "user": {
+    "logout": "Se déconnecter",
+    "role": {
+      "ADMIN": "Administrateur",
+      "ANALYST": "Analyste"
+    }
+  },
+  "theme": {
+    "switchToLight": "Passer en mode clair",
+    "switchToDark": "Passer en mode sombre"
+  },
+  "language": {
+    "select": "Langue",
+    "en": "English",
+    "fr": "Français"
+  },
+  "offers": {
+    "title": "Catalogue d'offres",
+    "subtitle": "Gérer les définitions d'offres télécom, tarification et quotas",
+    "newOffer": "Nouvelle offre",
+    "editOffer": "Modifier l'offre",
+    "searchPlaceholder": "Rechercher des offres...",
+    "allSegments": "Tous les segments",
+    "allStatuses": "Tous les statuts",
+    "offersFound": "{count} offres",
+    "table": {
+      "name": "Nom",
+      "segment": "Segment",
+      "price": "Prix",
+      "data": "Data",
+      "minutes": "Minutes",
+      "sms": "SMS",
+      "validity": "Durée",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "form": {
+      "offerName": "Nom de l'offre",
+      "segment": "Segment",
+      "status": "Statut",
+      "monthlyPrice": "Prix mensuel (TND)",
+      "validity": "Validité (jours)",
+      "minutesQuota": "Quota de minutes",
+      "smsQuota": "Quota SMS",
+      "dataQuota": "Quota Data (Go)",
+      "fairUse": "Usage équitable (Go)",
+      "overMinute": "Coût/min excédent (TND)",
+      "overSms": "Coût/SMS excédent (TND)",
+      "overData": "Coût/Go excédent (TND)",
+      "roamingDays": "Jours de roaming"
+    },
+    "status": {
+      "published": "Actif",
+      "draft": "Brouillon",
+      "archived": "Inactif",
+      "retired": "Inactif"
+    },
+    "segment": {
+      "prepaid": "Prépayé",
+      "postpaid": "Postpayé",
+      "business": "Business",
+      "dataOnly": "Data Only"
+    },
+    "noOffers": "Aucune offre trouvée.",
+    "loading": "Chargement des offres..."
+  },
+  "options": {
+    "title": "Options & Add-ons",
+    "subtitle": "Services supplémentaires pouvant être regroupés avec n'importe quelle offre",
+    "newOption": "Nouvelle option",
+    "editOption": "Modifier l'option",
+    "searchPlaceholder": "Rechercher des options...",
+    "optionsFound": "{count} options",
+    "form": {
+      "optionName": "Nom de l'option",
+      "type": "Type",
+      "price": "Prix (TND)",
+      "dataBonus": "Bonus Data (Go)",
+      "minutesBonus": "Bonus Minutes",
+      "smsBonus": "Bonus SMS",
+      "validity": "Validité (jours)"
+    },
+    "type": {
+      "dataAddon": "Add-on Data",
+      "voiceAddon": "Add-on Voice",
+      "smsAddon": "Add-on SMS",
+      "roaming": "Roaming",
+      "loyalty": "Fidélité"
+    },
+    "stats": {
+      "data": "Data",
+      "minutes": "Minutes",
+      "sms": "SMS",
+      "validity": "Validité"
+    },
+    "noOptions": "Aucune option trouvée.",
+    "loading": "Chargement des options..."
+  },
+  "profiles": {
+    "title": "Profils clients",
+    "subtitle": "{count} profils · Gérer les patterns d'utilisation et budgets",
+    "newProfile": "Nouveau profil client",
+    "editProfile": "Modifier le profil",
+    "searchPlaceholder": "Rechercher des profils...",
+    "results": "{count} résultats",
+    "form": {
+      "profileLabel": "Nom du profil",
+      "priority": "Priorité",
+      "avgData": "Data moy. (Go/mois)",
+      "avgMinutes": "Minutes moy./mois",
+      "avgSms": "SMS moy./mois",
+      "maxBudget": "Budget max (TND)",
+      "nightUsage": "Usage nuit %",
+      "roamingDays": "Jours de roaming/mois"
+    },
+    "priority": {
+      "balanced": "Équilibré",
+      "price": "Prix",
+      "quality": "Qualité"
+    },
+    "table": {
+      "name": "Nom",
+      "segment": "Segment",
+      "data": "Data (Go)",
+      "minutes": "Minutes",
+      "sms": "SMS",
+      "budget": "Budget (TND)",
+      "nightPercent": "Nuit %",
+      "roaming": "Roaming",
+      "actions": "Actions"
+    },
+    "view": {
+      "grid": "Grille",
+      "list": "Liste"
+    },
+    "card": {
+      "simulate": "Simuler"
+    },
+    "noProfiles": "Aucun profil trouvé.",
+    "loading": "Chargement des profils..."
+  },
+  "simulation": {
+    "title": "Simulation",
+    "selectProfile": "Sélectionner un profil client à simuler",
+    "selectOffer": "Sélectionner une offre à évaluer",
+    "runSimulation": "Lancer la simulation",
+    "modes": {
+      "single": "Offre unique",
+      "compare": "Comparer",
+      "recommend": "Recommander",
+      "batch": "Lot"
+    },
+    "results": {
+      "basePrice": "Prix de base",
+      "totalCost": "Coût total",
+      "voiceOverage": "Excédent voix",
+      "dataOverage": "Excédent data",
+      "satisfaction": "Score de satisfaction"
+    },
+    "rank": {
+      "best": "Meilleur",
+      "second": "2ème",
+      "third": "3ème"
+    },
+    "saveSuccess": "Scénario enregistré !"
+  },
+  "scenarios": {
+    "title": "Scénarios",
+    "newScenario": "Nouveau scénario",
+    "lastRun": "Dernière exécution",
+    "results": "Résultats"
+  },
+  "compare": {
+    "title": "Comparer les offres"
+  },
+  "audit": {
+    "title": "Journal d'audit",
+    "user": "Utilisateur",
+    "action": "Action",
+    "timestamp": "Horodatage",
+    "details": "Détails"
+  },
+  "users": {
+    "title": "Gestion des utilisateurs"
+  }
+}

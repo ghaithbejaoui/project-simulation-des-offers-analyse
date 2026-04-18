@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 /**
@@ -58,7 +59,8 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/CustomerProfile'
  */
 
-router.get('/', async (req, res) => {
+// GET / - List all profiles (all authenticated users)
+router.get('/', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM customer_profiles');
     const profiles = rows.map(p => {
@@ -103,7 +105,8 @@ router.get('/', async (req, res) => {
  *         description: Profile not found
  */
 
-router.get('/:id', async (req, res) => {
+// GET /:id - Get single profile (all authenticated users)
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     // Support both profile_id and id for backward compatibility
     const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
@@ -154,21 +157,13 @@ router.get('/:id', async (req, res) => {
  *                 type: string
  *                 enum: [BALANCED, PRICE, QUALITY]
  *                 default: BALANCED
- *     responses:
+*     responses:
  *       201:
- *         description: Profile created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 profile_id:
- *                   type: integer
- *                 message:
- *                   type: string
+ *         description: Profile created
  */
 
-router.post('/', async (req, res) => {
+// POST / - Create profile (Admin/Analyst only)
+router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const {
     label,
     minutes_avg = 0, sms_avg = 0, data_avg_gb = 0,
@@ -238,7 +233,8 @@ router.post('/', async (req, res) => {
  *         description: Profile not found
  */
 
-router.put('/:id', async (req, res) => {
+// PUT /:id - Update profile (Admin/Analyst only)
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = req.body;
   try {
     // Support both profile_id and id for backward compatibility
@@ -298,7 +294,8 @@ router.put('/:id', async (req, res) => {
  *         description: Profile not found
  */
 
-router.delete('/:id', async (req, res) => {
+// DELETE /:id - Delete profile (Admin only)
+router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
   try {
     // Support both profile_id and id for backward compatibility
     const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);

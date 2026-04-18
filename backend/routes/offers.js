@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 /**
@@ -74,7 +75,8 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/Offer'
  */
 
-router.get('/', async (req, res) => {
+// GET / - List all offers (all authenticated users)
+router.get('/', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM offers');
     res.json(rows);
@@ -108,7 +110,8 @@ router.get('/', async (req, res) => {
  *         description: Offer not found
  */
 
-router.get('/:id', async (req, res) => {
+// GET /:id - Get single offer (all authenticated users)
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: 'Offer not found' });
@@ -174,21 +177,13 @@ router.get('/:id', async (req, res) => {
  *                 type: string
  *                 enum: [PUBLISHED, DRAFT, ARCHIVED]
  *                 default: PUBLISHED
- *     responses:
+*     responses:
  *       201:
- *         description: Offer created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 offer_id:
- *                   type: integer
- *                 message:
- *                   type: string
+ *         description: Offer created
  */
 
-router.post('/', async (req, res) => {
+// POST / - Create offer (Admin/Analyst only)
+router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const {
     name,
     segment,
@@ -262,7 +257,8 @@ router.post('/', async (req, res) => {
  *         description: Offer not found
  */
 
-router.get('/:id/with-options', async (req, res) => {
+// GET /:id/with-options - Get offer with options (all authenticated users)
+router.get('/:id/with-options', requireAuth, async (req, res) => {
   try {
     const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
     if (offerRows.length === 0) {
@@ -309,7 +305,8 @@ router.get('/:id/with-options', async (req, res) => {
  *         description: Offer not found
  */
 
-router.put('/:id', async (req, res) => {
+// PUT /:id - Update offer (Admin/Analyst only)
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
   const {
     name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
     validity_days, fair_use_gb, over_minute_price, over_sms_price,
@@ -367,7 +364,8 @@ router.put('/:id', async (req, res) => {
  *         description: Offer not found
  */
 
-router.delete('/:id', async (req, res) => {
+// DELETE /:id - Delete offer (Admin only)
+router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
   try {
     const [result] = await db.query('DELETE FROM offers WHERE offer_id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });

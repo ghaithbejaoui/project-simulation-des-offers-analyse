@@ -1,5 +1,73 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { fonts } from "../styles/theme";
+
+const cardStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const btnGhostStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const btnDangerStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #e35b5b 0%, #c0392b 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(227,91,91,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const inputStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -9,7 +77,7 @@ function ScoreRing({ score, size = 80 }) {
   const radius = (size - 10) / 2;
   const circ   = 2 * Math.PI * radius;
   const dash   = (score / 100) * circ;
-  const color  = score >= 75 ? colors.green : score >= 50 ? colors.yellow : colors.red;
+  const color  = score >= 75 ? "var(--green)" : score >= 50 ? "var(--yellow)" : "var(--red)";
   return (
     <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
@@ -20,7 +88,7 @@ function ScoreRing({ score, size = 80 }) {
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <span style={{ fontSize: size > 70 ? 18 : 13, fontWeight: 600, fontFamily: fonts.heading, color }}>{Math.round(score)}</span>
-        {size > 70 && <span style={{ fontSize: 9, color: colors.textDim, letterSpacing: "0.04em" }}>/ 100</span>}
+        {size > 70 && <span style={{ fontSize: 9, color: "var(--text-dim)", letterSpacing: "0.04em" }}>/ 100</span>}
       </div>
     </div>
   );
@@ -28,23 +96,23 @@ function ScoreRing({ score, size = 80 }) {
 
 // ─── Result card ──────────────────────────────────────────────────────────────
 function ResultCard({ result, rank }) {
-  const rankColors = ["#f0b429", "#c0c0c0", "#cd7f32", colors.textDim];
-  const rankColor  = rankColors[rank] || colors.textDim;
+  const rankColors = ["#f0b429", "#c0c0c0", "#cd7f32", "var(--text-dim)"];
+  const rankColor  = rankColors[rank] || "var(--text-dim)";
   const rankLabel  = ["🥇 Best", "🥈 2nd", "🥉 3rd"][rank] || `#${rank + 1}`;
 
   return (
-    <div style={{ ...card, padding: "20px 22px", position: "relative", overflow: "hidden", borderColor: rank === 0 ? "rgba(240,180,41,0.35)" : colors.border, transition: "border-color 0.2s" }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = colors.borderHov}
-      onMouseLeave={e => e.currentTarget.style.borderColor = rank === 0 ? "rgba(240,180,41,0.35)" : colors.border}>
+    <div style={{ ...cardStyle, padding: "20px 22px", position: "relative", overflow: "hidden", borderColor: rank === 0 ? "rgba(240,180,41,0.35)" : "var(--border)", transition: "border-color 0.2s" }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = "var(--border-hover)"}
+      onMouseLeave={e => e.currentTarget.style.borderColor = rank === 0 ? "rgba(240,180,41,0.35)" : "var(--border)"}>
       {rank === 0 && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #f0b429, transparent)" }} />}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 600, color: rankColor, letterSpacing: "0.05em" }}>{rankLabel}</span>
-          <h3 style={{ fontSize: 16, fontWeight: 600, fontFamily: fonts.heading, color: colors.text, marginTop: 4, letterSpacing: "-0.3px" }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, fontFamily: fonts.heading, color: "var(--text)", marginTop: 4, letterSpacing: "-0.3px" }}>
             {result.offer_name || result.offer?.name || "Offer"}
           </h3>
-          <p style={{ fontSize: 12, color: colors.textDim, marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 2 }}>
             {result.offer?.segment?.replace("_"," ")}
           </p>
         </div>
@@ -53,13 +121,13 @@ function ResultCard({ result, rank }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
         {[
-          { label: "Base Price", value: `${Number(result.base_cost || 0).toFixed(2)} TND`, color: colors.blue },
-          { label: "Total Cost", value: `${Number(result.total_cost || 0).toFixed(2)} TND`, color: colors.text },
-          { label: "Voice Overage", value: `${Number(result.overage_minutes_cost || 0).toFixed(2)} TND`, color: result.overage_minutes_cost > 0 ? colors.red : colors.textDim },
-          { label: "Data Overage",  value: `${Number(result.overage_data_cost || 0).toFixed(2)} TND`, color: result.overage_data_cost > 0 ? colors.red : colors.textDim },
+          { label: "Base Price", value: `${Number(result.base_cost || 0).toFixed(2)} TND`, color: "var(--blue)" },
+          { label: "Total Cost", value: `${Number(result.total_cost || 0).toFixed(2)} TND`, color: "var(--text)" },
+          { label: "Voice Overage", value: `${Number(result.overage_minutes_cost || 0).toFixed(2)} TND`, color: result.overage_minutes_cost > 0 ? "var(--red)" : "var(--text-dim)" },
+          { label: "Data Overage",  value: `${Number(result.overage_data_cost || 0).toFixed(2)} TND`, color: result.overage_data_cost > 0 ? "var(--red)" : "var(--text-dim)" },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ padding: "10px 12px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: `0.5px solid rgba(26,143,255,0.08)` }}>
-            <p style={{ fontSize: 11, color: colors.textDim, marginBottom: 3 }}>{label}</p>
+            <p style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 3 }}>{label}</p>
             <p style={{ fontSize: 14, fontWeight: 600, color }}>{value}</p>
           </div>
         ))}
@@ -67,7 +135,7 @@ function ResultCard({ result, rank }) {
 
       {result.justification && (
         <div style={{ padding: "10px 12px", background: "rgba(26,143,255,0.06)", borderRadius: 8, border: `0.5px solid rgba(26,143,255,0.15)` }}>
-          <p style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>💡 {result.justification}</p>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>💡 {result.justification}</p>
         </div>
       )}
     </div>
@@ -145,20 +213,129 @@ export default function Simulation() {
   const handleExportCSV = () => {
     if (!resultsArray.length) return;
     
-    let csv = 'Rank,Offer,Segment,Base Cost,Overage Cost,Roaming Cost,Total Cost,Satisfaction Score\n';
+    // Get profile info
+    const profileName = selectedProfile ? profiles.find(p => p.profile_id == selectedProfile)?.label || `Profile ${selectedProfile}` : (useCustom ? 'Custom Profile' : 'Unknown');
+    const profileData = useCustom ? customProfile : (selectedProfile ? profiles.find(p => p.profile_id == selectedProfile) : {});
+    
+    let csv = 'Simulation Info\n';
+    csv += `Profile,${profileName}\n`;
+    csv += `Mode,${mode}\n`;
+    csv += `Date,${new Date().toISOString()}\n`;
+    csv += `Minutes (avg),${profileData?.minutes_avg || customProfile?.avg_minutes || 0}\n`;
+    csv += `SMS (avg),${profileData?.sms_avg || customProfile?.avg_sms || 0}\n`;
+    csv += `Data GB (avg),${profileData?.data_avg_gb || customProfile?.avg_data_gb || 0}\n`;
+    csv += `Budget Max,${profileData?.budget_max || customProfile?.budget_max || 0}\n`;
+    csv += `Priority,${profileData?.priority || customProfile?.priority || 'BALANCED'}\n`;
+    csv += `Roaming Days,${profileData?.roaming_days || customProfile?.roaming_days || 0}\n`;
+    csv += '\nResults\n';
+    csv += 'Rank,Offer,Segment,Base Cost,Overage Cost,Roaming Cost,Total Cost,Satisfaction Score,Recommendation\n';
     resultsArray.forEach((r, i) => {
       const offerName = r.offer_name || r.offer?.name || `Offer ${r.offer_id}`;
       const segment = r.offer?.segment || '';
-      csv += `${i + 1},"${offerName}","${segment}",${r.base_cost || 0},${Number(r.overage_minutes_cost || 0) + Number(r.overage_sms_cost || 0) + Number(r.overage_data_cost || 0)},${r.roaming_cost || 0},${r.total_cost || 0},${r.satisfaction_score || 0}\n`;
+      const rec = r.satisfaction_score >= 70 ? 'Good Match' : r.satisfaction_score >= 50 ? 'Okay' : 'Not Recommended';
+      csv += `${i + 1},"${offerName}","${segment}",${r.base_cost || 0},${Number(r.overage_minutes_cost || 0) + Number(r.overage_sms_cost || 0) + Number(r.overage_data_cost || 0)},${r.roaming_cost || 0},${r.total_cost || 0},${r.satisfaction_score || 0},${rec}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `simulation_results_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `simulation_${profileName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Export results as PDF using browser print
+  const handleExportPDF = () => {
+    if (!resultsArray.length) return;
+    
+    const profileName = selectedProfile ? profiles.find(p => p.profile_id == selectedProfile)?.label || `Profile ${selectedProfile}` : (useCustom ? 'Custom Profile' : 'Unknown');
+    const profileData = useCustom ? customProfile : (selectedProfile ? profiles.find(p => p.profile_id == selectedProfile) : {});
+    
+    // Create print-friendly HTML
+    const printWindow = window.open('', '_blank');
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Simulation Report - ${profileName}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1a1a1a; }
+          h1 { font-size: 24px; margin-bottom: 8px; color: #1a1a1a; }
+          h2 { font-size: 18px; margin: 24px 0 12px; color: #333; border-bottom: 2px solid #1a8fff; padding-bottom: 8px; }
+          .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
+          .meta { color: #666; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+          th { background: #f5f7fa; padding: 12px 8px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #ddd; }
+          td { padding: 12px 8px; border-bottom: 1px solid #eee; }
+          tr:first-child td { font-weight: 600; }
+          .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+          .green { background: #e6f7f0; color: #1a8f4d; }
+          .yellow { background: #fef7e6; color: #b38600; }
+          .red { background: #fce8e6; color: #c0392b; }
+          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>SimTélécom - Simulation Report</h1>
+          <p class="meta">Profile: ${profileName} | Mode: ${mode} | Date: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <h2>Customer Profile</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Minutes (avg)</td><td>${profileData?.minutes_avg || customProfile?.avg_minutes || 0}</td></tr>
+          <tr><td>SMS (avg)</td><td>${profileData?.sms_avg || customProfile?.avg_sms || 0}</td></tr>
+          <tr><td>Data GB (avg)</td><td>${profileData?.data_avg_gb || customProfile?.avg_data_gb || 0}</td></tr>
+          <tr><td>Budget Max</td><td>${profileData?.budget_max || customProfile?.budget_max || 0} TND</td></tr>
+          <tr><td>Priority</td><td>${profileData?.priority || customProfile?.priority || 'BALANCED'}</td></tr>
+        </table>
+        
+        <h2>Simulation Results</h2>
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Offer</th>
+            <th>Segment</th>
+            <th>Base Cost</th>
+            <th>Overage</th>
+            <th>Total</th>
+            <th>Score</th>
+            <th>Recommendation</th>
+          </tr>
+          ${resultsArray.map((r, i) => {
+            const offerName = r.offer_name || r.offer?.name || 'Offer ' + r.offer_id;
+            const segment = r.offer?.segment || '';
+            const rec = r.satisfaction_score >= 70 ? 'Good Match' : r.satisfaction_score >= 50 ? 'Okay' : 'Not Recommended';
+            const recClass = r.satisfaction_score >= 70 ? 'green' : r.satisfaction_score >= 50 ? 'yellow' : 'red';
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${offerName}</td>
+              <td>${segment}</td>
+              <td>${Number(r.base_cost || 0).toFixed(2)} TND</td>
+              <td>${(Number(r.overage_minutes_cost || 0) + Number(r.overage_sms_cost || 0) + Number(r.overage_data_cost || 0)).toFixed(2)} TND</td>
+              <td><strong>${Number(r.total_cost || 0).toFixed(2)} TND</strong></td>
+              <td><strong>${r.satisfaction_score || 0}</strong></td>
+              <td><span class="badge ${recClass}">${rec}</span></td>
+            </tr>`;
+          }).join('')}
+        </table>
+        
+        <div class="footer">
+          SimTélécom · PFE 2026 | Generated on ${new Date().toLocaleString()}
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   // Form state for custom profile
@@ -255,14 +432,14 @@ export default function Simulation() {
 
   const CpField = ({ label, k, type = "number", options }) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</label>
+      <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</label>
       {options ? (
-        <select value={customProfile[k]} onChange={e => setCustomProfile(p => ({ ...p, [k]: e.target.value }))} style={{ ...input, height: 36, fontSize: 13 }}>
+        <select value={customProfile[k]} onChange={e => setCustomProfile(p => ({ ...p, [k]: e.target.value }))} style={{ ...inputStyle, height: 36, fontSize: 13 }}>
           {options.map(o => <option key={o}>{o}</option>)}
         </select>
       ) : (
         <input type={type} value={customProfile[k]} onChange={e => setCustomProfile(p => ({ ...p, [k]: e.target.value }))}
-          style={{ ...input, height: 36, fontSize: 13 }} />
+          style={{ ...inputStyle, height: 36, fontSize: 13 }} />
       )}
     </div>
   );
@@ -278,12 +455,12 @@ export default function Simulation() {
   return (
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Simulation Engine</h2>
-        <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>Run cost simulations and compare offers for customer profiles</p>
+        <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Simulation Engine</h2>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Run cost simulations and compare offers for customer profiles</p>
       </div>
 
       {/* Mode tabs */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 22, padding: 4, background: "rgba(255,255,255,0.03)", borderRadius: 12, border: `0.5px solid ${colors.border}`, width: "fit-content" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 22, padding: 4, background: "rgba(255,255,255,0.03)", borderRadius: 12, border: `0.5px solid var(--border)`, width: "fit-content" }}>
         {[
           { key: "recommend", label: "🎯 Recommend" },
           { key: "compare",   label: "⚡ Compare" },
@@ -292,137 +469,137 @@ export default function Simulation() {
         ].map(({ key, label }) => (
           <button key={key} onClick={() => { setMode(key); setResults(null); setSelectedOffers([]); }}
             style={{ height: 36, padding: "0 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: mode === key ? 500 : 400,
-              background: mode === key ? colors.blueDim : "transparent",
-              color: mode === key ? colors.blue : colors.textMuted,
+              background: mode === key ? "rgba(26,143,255,0.15)" : "transparent",
+              color: mode === key ? "var(--blue)" : "var(--text-muted)",
               transition: "all 0.18s" }}>
             {label}
           </button>
         ))}
       </div>
 
-       <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "start" }}>
-         {/* Left panel: configuration */}
-         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-           {/* Profile selector - hidden in batch mode */}
-           {mode !== "batch" && (
-           <div style={{ ...card, padding: "18px 20px" }}>
-             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-               <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Customer Profile</p>
-               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: colors.textMuted, cursor: "pointer" }}>
-                 <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} style={{ accentColor: colors.blue }} />
-                 Custom
-               </label>
-             </div>
+<div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "start" }}>
+          {/* Left panel: configuration */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Profile selector - hidden in batch mode */}
+            {mode !== "batch" && (
+            <div style={{ ...cardStyle, padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>Customer Profile</p>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)", cursor: "pointer" }}>
+                  <input type="checkbox" checked={useCustom} onChange={e => setUseCustom(e.target.checked)} style={{ accentColor: "var(--blue)" }} />
+                  Custom
+                </label>
+              </div>
 
-             {useCustom ? (
-               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                 <CpField label="Data (GB)" k="avg_data_gb" />
-                 <CpField label="Minutes" k="avg_minutes" />
-                 <CpField label="SMS" k="avg_sms" />
-                 <CpField label="Budget (TND)" k="budget_max" />
-                 <CpField label="Night %" k="night_usage_pct" />
-                 <CpField label="Roaming (d)" k="roaming_days" />
-                 <CpField label="Priority" k="priority" options={["price","quality","balanced"]} />
-                 <CpField label="Segment" k="segment" options={["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"]} />
-               </div>
-             ) : (
-               <select value={selectedProfile} onChange={e => setSelectedProfile(e.target.value)}
-                 style={{ ...input, height: 40, fontSize: 13 }}>
-                 <option value="">— Select a profile —</option>
-                 {profiles.map(p => (
-                   <option key={p.profile_id || p.id} value={p.profile_id || p.id}>{p.name || p.label || "Profile " + (p.profile_id || p.id)} ({p.segment?.replace("_"," ")})</option>
-                 ))}
-               </select>
-             )}
-           </div>
-           )}
-
-           {/* Offer selector (for single/compare/batch) */}
-           {(mode === "single" || mode === "compare") && (
-             <div style={{ ...card, padding: "18px 20px" }}>
-               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                 <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>
-                   {mode === "single" ? "Select Offer" : "Select Offers to Compare"}
-                 </p>
-                 <span style={{ fontSize: 12, color: colors.textDim }}>{selectedOffers.length} selected</span>
-               </div>
-               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
-                 {offers.map(o => (
-                   <label key={o.offer_id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
-                     background: selectedOffers.includes(o.offer_id) ? colors.blueDim : "rgba(255,255,255,0.02)",
-                     border: `0.5px solid ${selectedOffers.includes(o.offer_id) ? colors.blue : colors.border}`,
-                     cursor: "pointer", transition: "all 0.15s" }}>
-                     <input type={mode === "single" ? "radio" : "checkbox"} name="offer"
-                       checked={selectedOffers.includes(o.offer_id)} onChange={() => toggleOffer(o.offer_id)}
-                       style={{ accentColor: colors.blue, flexShrink: 0 }} />
-                     <div style={{ flex: 1 }}>
-                       <p style={{ fontSize: 13, color: colors.text, fontWeight: 500 }}>{o.name}</p>
-                       <p style={{ fontSize: 11, color: colors.textDim }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
-                     </div>
-                   </label>
-                 ))}
-               </div>
-               {mode === "compare" && selectedOffers.length > 0 && (
-                 <button
-                   onClick={() => setSelectedOffers([])}
-                   style={{
-                     ...btnDanger,
-                     height: 38,
-                     fontSize: 13,
-                     marginTop: 12,
-                     opacity: 1,
-                     justifyContent: 'center'
-                   }}
-                 >
-                   Clear Selection
-                 </button>
-               )}
-             </div>
-           )}
-
-           {mode === "batch" && (
-             <div style={{ ...card, padding: "18px 20px" }}>
-               <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 12 }}>Offer to Analyze</p>
-               <select value={batchOfferId} onChange={e => setBatchOfferId(e.target.value)} style={{ ...input, height: 40, fontSize: 13 }}>
-                 <option value="">— Select offer —</option>
-                 {offers.map(o => <option key={o.offer_id} value={o.offer_id}>{o.name}</option>)}
-               </select>
-               <p style={{ fontSize: 12, color: colors.textDim, marginTop: 10 }}>
-                 Will run across {profiles.length} profiles in database.
-               </p>
-             </div>
-           )}
-
-          {error && (
-            <div style={{ padding: "12px 16px", background: "rgba(227,91,91,0.1)", border: "0.5px solid rgba(227,91,91,0.3)", borderRadius: 10, fontSize: 13, color: "#f09070" }}>
-              {error}
+              {useCustom ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <CpField label="Data (GB)" k="avg_data_gb" />
+                  <CpField label="Minutes" k="avg_minutes" />
+                  <CpField label="SMS" k="avg_sms" />
+                  <CpField label="Budget (TND)" k="budget_max" />
+                  <CpField label="Night %" k="night_usage_pct" />
+                  <CpField label="Roaming (d)" k="roaming_days" />
+                  <CpField label="Priority" k="priority" options={["price","quality","balanced"]} />
+                  <CpField label="Segment" k="segment" options={["PREPAID","POSTPAID","BUSINESS","DATA_ONLY"]} />
+                </div>
+              ) : (
+                <select value={selectedProfile} onChange={e => setSelectedProfile(e.target.value)}
+                  style={{ ...inputStyle, height: 40, fontSize: 13 }}>
+                  <option value="">— Select a profile —</option>
+                  {profiles.map(p => (
+                    <option key={p.profile_id || p.id} value={p.profile_id || p.id}>{p.name || p.label || "Profile " + (p.profile_id || p.id)} ({p.segment?.replace("_"," ")})</option>
+                  ))}
+                </select>
+              )}
             </div>
-          )}
-
-          <button onClick={run} disabled={loading} style={{ ...btnPrimary, height: 46, fontSize: 14, justifyContent: "center", opacity: loading ? 0.7 : 1 }}>
-            {loading ? (
-              <><span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} /> Running…</>
-            ) : (
-              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              {mode === "recommend" ? "Get Recommendations" : mode === "batch" ? "Run Batch Analysis" : "Run Simulation"}</>
             )}
-          </button>
+
+            {/* Offer selector (for single/compare/batch) */}
+            {(mode === "single" || mode === "compare") && (
+              <div style={{ ...cardStyle, padding: "18px 20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>
+                    {mode === "single" ? "Select Offer" : "Select Offers to Compare"}
+                  </p>
+                  <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{selectedOffers.length} selected</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
+                  {offers.map(o => (
+                    <label key={o.offer_id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
+                      background: selectedOffers.includes(o.offer_id) ? "rgba(26,143,255,0.15)" : "rgba(255,255,255,0.02)",
+                      border: `0.5px solid ${selectedOffers.includes(o.offer_id) ? "var(--blue)" : "var(--border)"}`,
+                      cursor: "pointer", transition: "all 0.15s" }}>
+                      <input type={mode === "single" ? "radio" : "checkbox"} name="offer"
+                        checked={selectedOffers.includes(o.offer_id)} onChange={() => toggleOffer(o.offer_id)}
+                        style={{ accentColor: "var(--blue)", flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{o.name}</p>
+                        <p style={{ fontSize: 11, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {mode === "compare" && selectedOffers.length > 0 && (
+                  <button
+                    onClick={() => setSelectedOffers([])}
+                    style={{
+                      ...btnDangerStyle,
+                      height: 38,
+                      fontSize: 13,
+                      marginTop: 12,
+                      opacity: 1,
+                      justifyContent: 'center'
+                    }}
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+            )}
+
+            {mode === "batch" && (
+              <div style={{ ...cardStyle, padding: "18px 20px" }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 12 }}>Offer to Analyze</p>
+                <select value={batchOfferId} onChange={e => setBatchOfferId(e.target.value)} style={{ ...inputStyle, height: 40, fontSize: 13 }}>
+                  <option value="">— Select offer —</option>
+                  {offers.map(o => <option key={o.offer_id} value={o.offer_id}>{o.name}</option>)}
+                </select>
+                <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 10 }}>
+                  Will run across {profiles.length} profiles in database.
+                </p>
+              </div>
+            )}
+
+           {error && (
+             <div style={{ padding: "12px 16px", background: "rgba(227,91,91,0.1)", border: "0.5px solid rgba(227,91,91,0.3)", borderRadius: 10, fontSize: 13, color: "#f09070" }}>
+               {error}
+             </div>
+           )}
+
+           <button onClick={run} disabled={loading} style={{ ...btnPrimaryStyle, height: 46, fontSize: 14, justifyContent: "center", opacity: loading ? 0.7 : 1 }}>
+             {loading ? (
+               <><span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} /> Running…</>
+             ) : (
+               <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+               {mode === "recommend" ? "Get Recommendations" : mode === "batch" ? "Run Batch Analysis" : "Run Simulation"}</>
+             )}
+           </button>
         </div>
 
         {/* Right panel: results */}
         <div>
           {!results && !loading && (
-            <div style={{ ...card, padding: 48, textAlign: "center" }}>
+            <div style={{ ...cardStyle, padding: 48, textAlign: "center" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>⚡</div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: colors.text, marginBottom: 8 }}>Ready to simulate</p>
-              <p style={{ fontSize: 13, color: colors.textDim }}>Configure a profile and click Run to see cost analysis and offer comparisons.</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)", marginBottom: 8 }}>Ready to simulate</p>
+              <p style={{ fontSize: 13, color: "var(--text-dim)" }}>Configure a profile and click Run to see cost analysis and offer comparisons.</p>
             </div>
           )}
 
           {loading && (
-            <div style={{ ...card, padding: 48, textAlign: "center" }}>
-              <div style={{ width: 40, height: 40, border: `3px solid ${colors.blueDim}`, borderTop: `3px solid ${colors.blue}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-              <p style={{ fontSize: 14, color: colors.textMuted }}>Running simulation…</p>
+            <div style={{ ...cardStyle, padding: 48, textAlign: "center" }}>
+              <div style={{ width: 40, height: 40, border: `3px solid rgba(26,143,255,0.15)`, borderTop: `3px solid var(--blue)`, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+              <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Running simulation…</p>
             </div>
           )}
 
@@ -430,37 +607,41 @@ export default function Simulation() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Summary bar */}
               {resultsArray.length > 0 && (
-                <div style={{ ...card, padding: "14px 20px", display: "flex", gap: 24, alignItems: "center", borderColor: "rgba(26,143,255,0.3)" }}>
+                <div style={{ ...cardStyle, padding: "14px 20px", display: "flex", gap: 24, alignItems: "center", borderColor: "rgba(26,143,255,0.3)" }}>
                   <div>
-                    <p style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.05em" }}>Offers Analyzed</p>
-                    <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: colors.text }}>{resultsArray.length}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Offers Analyzed</p>
+                    <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--text)" }}>{resultsArray.length}</p>
                   </div>
                   {resultsArray[0] && (
                     <>
-                      <div style={{ width: 1, height: 36, background: colors.border }} />
+                      <div style={{ width: 1, height: 36, background: "var(--border)" }} />
                       <div>
-                        <p style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.05em" }}>Best Score</p>
-                        <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: colors.green }}>
+                        <p style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Best Score</p>
+                        <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--green)" }}>
                           {Math.round(resultsArray[0].satisfaction_score || 0)}/100
                         </p>
                       </div>
-                      <div style={{ width: 1, height: 36, background: colors.border }} />
+                      <div style={{ width: 1, height: 36, background: "var(--border)" }} />
                       <div>
-                        <p style={{ fontSize: 11, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.05em" }}>Best Price</p>
-                        <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: colors.blue }}>
+                        <p style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Best Price</p>
+                        <p style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>
                           {Number(resultsArray[0].total_cost || 0).toFixed(2)} TND
                         </p>
                       </div>
                     </>
                   )}
                   <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                    <button onClick={() => setShowSaveModal(true)} style={{ ...btnPrimary, height: 34, fontSize: 12 }}>
+                    <button onClick={() => setShowSaveModal(true)} style={{ ...btnPrimaryStyle, height: 34, fontSize: 12 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                       Save to Scenario
                     </button>
-                    <button onClick={handleExportCSV} style={{ ...btnGhost, height: 34, fontSize: 12 }}>
+                    <button onClick={handleExportCSV} style={{ ...btnGhostStyle, height: 34, fontSize: 12 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                      Export CSV
+                      CSV
+                    </button>
+                    <button onClick={handleExportPDF} style={{ ...btnGhostStyle, height: 34, fontSize: 12 }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      PDF
                     </button>
                   </div>
                 </div>
@@ -473,8 +654,8 @@ export default function Simulation() {
 
               {/* Batch table */}
               {mode === "batch" && results.summary && (
-                <div style={{ ...card, padding: "18px 20px" }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 14 }}>Batch Summary</p>
+                <div style={{ ...cardStyle, padding: "18px 20px" }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 14 }}>Batch Summary</p>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                     {[
                       { label: "Avg Total Cost", value: `${Number(results.summary.avg_total_cost || 0).toFixed(2)} TND` },
@@ -482,9 +663,9 @@ export default function Simulation() {
                       { label: "Profiles Over Budget", value: results.summary.profiles_over_budget || 0 },
                       { label: "Avg Overage Cost", value: `${Number(results.summary.avg_overage || 0).toFixed(2)} TND` },
                     ].map(({ label, value }) => (
-                      <div key={label} style={{ padding: "12px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: `0.5px solid ${colors.border}` }}>
-                        <p style={{ fontSize: 11, color: colors.textDim, marginBottom: 4 }}>{label}</p>
-                        <p style={{ fontSize: 18, fontWeight: 600, fontFamily: fonts.heading, color: colors.blue }}>{value}</p>
+                      <div key={label} style={{ padding: "12px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: `0.5px solid var(--border)` }}>
+                        <p style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{label}</p>
+                        <p style={{ fontSize: 18, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>{value}</p>
                       </div>
                     ))}
                   </div>
@@ -498,46 +679,46 @@ export default function Simulation() {
       {/* Save to Scenario Modal */}
       {showSaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div style={{ ...card, width: "100%", maxWidth: 420, padding: 28 }}>
+          <div style={{ ...cardStyle, width: "100%", maxWidth: 420, padding: 28 }}>
             {saveSuccess ? (
               <>
                 <div style={{ textAlign: "center", padding: "20px 0" }}>
                   <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(67,199,139,0.15)", border: "1px solid rgba(67,199,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.green} strokeWidth="2.5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <h3 style={{ fontFamily: fonts.heading, fontSize: 18, fontWeight: 600, color: colors.text, marginBottom: 8 }}>Scenario Saved</h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted }}>Your simulation results have been saved successfully.</p>
+                  <h3 style={{ fontFamily: fonts.heading, fontSize: 18, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>Scenario Saved</h3>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Your simulation results have been saved successfully.</p>
                 </div>
               </>
             ) : (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                  <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>Save to Scenario</h3>
-                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20 }}>×</button>
+                  <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>Save to Scenario</h3>
+                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20 }}>×</button>
                 </div>
                 
-                <p style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>
                   This will save your simulation results to a new scenario that you can view later.
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Scenario Name</label>
+                  <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Scenario Name</label>
                   <input
                     type="text"
                     value={saveName}
                     onChange={e => { setSaveName(e.target.value); setSaveError(""); }}
                     placeholder="My Comparison Scenario"
-                    style={{ ...input, height: 40, fontSize: 13, borderColor: saveError ? "rgba(227,91,91,0.5)" : undefined }}
+                    style={{ ...inputStyle, height: 40, fontSize: 13, borderColor: saveError ? "rgba(227,91,91,0.5)" : undefined }}
                     onKeyDown={e => e.key === "Enter" && handleSaveToScenario()}
                   />
-                  {saveError && <p style={{ fontSize: 12, color: colors.red, marginTop: 4 }}>{saveError}</p>}
+                  {saveError && <p style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{saveError}</p>}
                 </div>
 
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ ...btnGhost, flex: 1 }}>Cancel</button>
-                  <button onClick={handleSaveToScenario} style={{ ...btnPrimary, flex: 1 }}>
+                  <button onClick={() => { setShowSaveModal(false); setSaveError(""); }} style={{ ...btnGhostStyle, flex: 1 }}>Cancel</button>
+                  <button onClick={handleSaveToScenario} style={{ ...btnPrimaryStyle, flex: 1 }}>
                     Save Scenario
                   </button>
                 </div>

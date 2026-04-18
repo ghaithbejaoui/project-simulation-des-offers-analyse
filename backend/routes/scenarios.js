@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireAuth, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 /**
@@ -84,7 +84,8 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', async (req, res) => {
+// GET / - List scenarios (all authenticated users)
+router.get('/', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -171,7 +172,8 @@ router.get('/', async (req, res) => {
  *       404:
  *         description: Scenario not found
  */
-router.get('/:id', async (req, res) => {
+// GET /:id - Get scenario (all authenticated users)
+router.get('/:id', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -246,7 +248,8 @@ router.get('/:id', async (req, res) => {
  *       201:
  *         description: Scenario created
  */
-router.post('/', async (req, res) => {
+// POST / - Create scenario (all authenticated users)
+router.post('/', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -324,7 +327,8 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: Scenario not found
  */
-router.put('/:id', async (req, res) => {
+// PUT /:id - Update scenario (all authenticated users)
+router.put('/:id', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -424,7 +428,8 @@ router.put('/:id', async (req, res) => {
  *       404:
  *         description: Scenario not found
  */
-router.delete('/:id', async (req, res) => {
+// DELETE /:id - Delete scenario (all authenticated users)
+router.delete('/:id', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -482,7 +487,8 @@ router.delete('/:id', async (req, res) => {
  *       201:
  *         description: Scenario duplicated
  */
-router.post('/:id/duplicate', async (req, res) => {
+// POST /:id/duplicate - Duplicate scenario (all authenticated users)
+router.post('/:id/duplicate', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -568,7 +574,8 @@ router.post('/:id/duplicate', async (req, res) => {
  *       201:
  *         description: Results saved
  */
-router.post('/:id/results', async (req, res) => {
+// POST /:id/results - Save results (all authenticated users)
+router.post('/:id/results', requireAuth, async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }

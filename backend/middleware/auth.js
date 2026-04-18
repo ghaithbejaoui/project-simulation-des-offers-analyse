@@ -41,4 +41,31 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { authMiddleware, requireAdmin };
+/**
+ * Middleware to require authentication (any logged in user: Admin, Analyst, or Guest)
+ */
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  next();
+};
+
+/**
+ * Middleware to require specific role(s)
+ * @param {string|string[]} roles - Role name(s) allowed
+ */
+const requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    const allowedRoles = Array.isArray(roles[0]) ? roles[0] : roles;
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
+    }
+    next();
+  };
+};
+
+module.exports = { authMiddleware, requireAdmin, requireAuth, requireRole };

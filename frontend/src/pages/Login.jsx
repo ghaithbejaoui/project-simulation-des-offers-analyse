@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 const ROLES = {
-  admin: { label: "Administrator", color: "#e35b35", icon: "⬡" },
-  analyst: { label: "Analyst", color: "#1a8fff", icon: "◈" },
+  admin: { label: "Administrator", color: "#e35b5b", icon: "⬡", email: "admin@telecom.com", password: "123" },
+  analyst: { label: "Analyst", color: "#1a8fff", icon: "◈", email: "analyst@telecom.com", password: "123" },
+  guest: { label: "Guest", color: "#43c78b", icon: "◎", email: "guest@telecom.com", password: "123" },
 };
 
 export default function Login() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -22,7 +25,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!email || !password) {
-      setError("Please fill in all fields.");
+      setError(t("common.error"));
       return;
     }
     setLoading(true);
@@ -87,7 +90,9 @@ export default function Login() {
             <button
               key={key}
               onClick={() => {
-                setActiveRole(key === activeRole ? null : key);
+                setActiveRole(key);
+                setEmail(r.email);
+                setPassword(r.password);
                 setError("");
               }}
               style={{
@@ -105,7 +110,7 @@ export default function Login() {
         {/* Form */}
         <form onSubmit={handleSubmit} style={styles.form} noValidate>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Email address</label>
+            <label style={styles.label}>{t("login.email")}</label>
             <div style={styles.inputWrap}>
               <svg style={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="2" y="4" width="20" height="16" rx="3" />
@@ -123,7 +128,7 @@ export default function Login() {
           </div>
 
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Password</label>
+            <label style={styles.label}>{t("login.password")}</label>
             <div style={styles.inputWrap}>
               <svg style={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="3" y="11" width="18" height="11" rx="2" />
@@ -179,11 +184,11 @@ export default function Login() {
             {loading ? (
               <span style={styles.spinnerWrap}>
                 <span style={styles.spinner} />
-                Signing in…
+                {t("login.loggingIn")}
               </span>
             ) : (
               <>
-                Sign in
+                {t("login.login")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 8 }}>
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
@@ -207,7 +212,7 @@ export default function Login() {
       </div>
 
       {/* Bottom version tag */}
-      <p style={styles.version}>SimTélécom v1.0 · PFE 2025</p>
+      <p style={styles.version}>SimTélécom · PFE 2026</p>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap');

@@ -1,5 +1,73 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input } from "../styles/theme";
+import { fonts } from "../styles/theme";
+
+const cardStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const btnGhostStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const btnDangerStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #e35b5b 0%, #c0392b 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(227,91,91,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const inputStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
 
 const API = "http://localhost:5000/api";
 const getToken = () => localStorage.getItem("token");
@@ -16,11 +84,11 @@ const EMPTY_FORM = {
 
 function StatusBadge({ status }) {
   const map = {
-    ACTIVE: { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: colors.green, label: "Active" },
-    DRAFT: { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: colors.yellow, label: "Draft" },
-    ARCHIVED: { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim, label: "Archived" },
+    ACTIVE: { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: "var(--green)", label: "Active" },
+    DRAFT: { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: "var(--yellow)", label: "Draft" },
+    ARCHIVED: { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: "Archived" },
   };
-  const st = map[status] || { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: colors.textDim, label: status };
+  const st = map[status] || { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: status };
   return (
     <span style={{ fontSize: 11, fontWeight: 500, padding: "3px 9px", borderRadius: 6, background: st.bg, border: `0.5px solid ${st.border}`, color: st.color, textTransform: "capitalize" }}>
       {st.label}
@@ -31,13 +99,13 @@ function StatusBadge({ status }) {
 function FormField({ label, value, onChange, type = "text", placeholder }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
+      <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</label>
       <input
         type={type}
         value={value ?? ""}
         placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
-        style={{ ...input, height: 38, fontSize: 13 }}
+        style={{ ...inputStyle, height: 38, fontSize: 13 }}
       />
     </div>
   );
@@ -82,12 +150,12 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ ...card, width: "100%", maxWidth: 500, padding: 28 }}>
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 500, padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
             {scenario?.scenario_id ? "Edit Scenario" : "New Scenario"}
           </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20, lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -95,11 +163,11 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
           <FormField label="Description" value={form.description} onChange={v => set("description", v)} placeholder="Optional description" />
           
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Customer Profile</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Customer Profile</label>
             <select
               value={form.profile_id || ""}
               onChange={e => set("profile_id", e.target.value)}
-              style={{ ...input, height: 38, fontSize: 13 }}
+              style={{ ...inputStyle, height: 38, fontSize: 13 }}
             >
               <option value="">Select a profile...</option>
               {profiles.map(p => (
@@ -112,11 +180,11 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
 
           {scenario && (
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <label style={{ fontSize: 11, color: colors.textDim, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Status</label>
+              <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Status</label>
               <select
                 value={form.status || "DRAFT"}
                 onChange={e => set("status", e.target.value)}
-                style={{ ...input, height: 38, fontSize: 13 }}
+                style={{ ...inputStyle, height: 38, fontSize: 13 }}
               >
                 <option value="DRAFT">Draft</option>
                 <option value="ACTIVE">Active</option>
@@ -126,11 +194,11 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
           )}
         </div>
 
-        {error && <div style={{ marginTop: 12, color: colors.red, fontSize: 13 }}>{error}</div>}
+        {error && <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button onClick={onClose} style={{ ...btnGhost, flex: 1 }}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ ...btnPrimary, flex: 1, opacity: saving ? 0.6 : 1 }}>
+          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>Cancel</button>
+          <button onClick={handleSave} disabled={saving} style={{ ...btnPrimaryStyle, flex: 1, opacity: saving ? 0.6 : 1 }}>
             {saving ? "Saving..." : "Save Scenario"}
           </button>
         </div>
@@ -139,7 +207,7 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
   );
 }
 
-function ResultsModal({ scenario, onClose, onSave }) {
+function ResultsModal({ scenario, onClose, onSave, onExport, onExportPDF }) {
   const [results, setResults] = useState(scenario?.results || []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -160,22 +228,22 @@ function ResultsModal({ scenario, onClose, onSave }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, margin: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ ...card, width: "100%", maxWidth: 700, maxHeight: "80vh", overflowY: "auto", padding: 28 }}>
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 700, maxHeight: "80vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: colors.text }}>
+          <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
             Results: {scenario?.name}
           </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: colors.textDim, fontSize: 20, lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
 
         {results.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: colors.textDim }}>
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text-dim)" }}>
             No results saved. Run a comparison from the Simulation page to generate results.
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: `0.5px solid ${colors.border}` }}>
+              <tr style={{ borderBottom: `0.5px solid var(--border)` }}>
                 <th style={{ ...th, textAlign: "left" }}>Offer</th>
                 <th style={{ ...th, textAlign: "right" }}>Cost</th>
                 <th style={{ ...th, textAlign: "right" }}>Score</th>
@@ -184,10 +252,10 @@ function ResultsModal({ scenario, onClose, onSave }) {
             </thead>
             <tbody>
               {results.map((r, i) => (
-                <tr key={i} style={{ borderBottom: `0.5px solid ${colors.border}` }}>
+                <tr key={i} style={{ borderBottom: `0.5px solid var(--border)` }}>
                   <td style={{ ...td }}>Offer #{r.offer_id}</td>
-                  <td style={{ ...td, textAlign: "right", color: colors.text }}>{Number(r.total_cost || 0).toFixed(2)} TND</td>
-                  <td style={{ ...td, textAlign: "right", color: Number(r.satisfaction_score || 0) >= 70 ? colors.green : Number(r.satisfaction_score || 0) >= 50 ? colors.yellow : colors.red }}>
+                  <td style={{ ...td, textAlign: "right", color: "var(--text)" }}>{Number(r.total_cost || 0).toFixed(2)} TND</td>
+                  <td style={{ ...td, textAlign: "right", color: Number(r.satisfaction_score || 0) >= 70 ? "var(--green)" : Number(r.satisfaction_score || 0) >= 50 ? "var(--yellow)" : "var(--red)" }}>
                     {r.satisfaction_score}/100
                   </td>
                   <td style={{ ...td, textAlign: "center" }}>#{r.rank_by_score}</td>
@@ -197,18 +265,26 @@ function ResultsModal({ scenario, onClose, onSave }) {
           </table>
         )}
 
-        {error && <div style={{ marginTop: 12, color: colors.red, fontSize: 13 }}>{error}</div>}
+        {error && <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button onClick={onClose} style={{ ...btnGhost, flex: 1 }}>Close</button>
+          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>Close</button>
+          <button onClick={() => onExportPDF(scenario)} style={{ ...btnGhostStyle, flex: 1 }}>
+            PDF
+          </button>
+          {scenario?.results?.length > 0 && onExport && (
+            <button onClick={() => onExport(scenario)} style={{ ...btnPrimaryStyle, flex: 1 }}>
+              CSV
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-const th = { padding: "14px 12px", fontSize: 11, fontWeight: 500, color: colors.textDim, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "left", verticalAlign: "middle", borderBottom: `0.5px solid ${colors.border}` };
-const td = { padding: "12px", fontSize: 13, color: colors.textMuted, verticalAlign: "middle" };
+const th = { padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "left", verticalAlign: "middle", borderBottom: `0.5px solid var(--border)` };
+const td = { padding: "12px", fontSize: 13, color: "var(--text-muted)", verticalAlign: "middle" };
 
 export default function Scenarios() {
   const [scenarios, setScenarios] = useState([]);
@@ -274,6 +350,121 @@ export default function Scenarios() {
       showToast("Scenario duplicated");
       fetchScenarios();
     } catch (e) { showToast(e.message, "error"); }
+  };
+
+  // Export scenario results as CSV
+  const handleExportScenarioPDF = (scenario) => {
+    if (!scenario?.results?.length) {
+      showToast("No results to export", "error");
+      return;
+    }
+    
+    const profile = scenario.profile_id ? profiles.find(p => p.profile_id == scenario.profile_id) : null;
+    
+    const printWindow = window.open('', '_blank');
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${scenario.name} - Report</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1a1a1a; }
+          h1 { font-size: 24px; margin-bottom: 8px; }
+          h2 { font-size: 18px; margin: 24px 0 12px; color: #333; border-bottom: 2px solid #1a8fff; padding-bottom: 8px; }
+          .meta { color: #666; font-size: 14px; margin-bottom: 24px; }
+          table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+          th { background: #f5f7fa; padding: 12px 8px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #ddd; }
+          td { padding: 12px 8px; border-bottom: 1px solid #eee; }
+          .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+          .green { background: #e6f7f0; color: #1a8f4d; }
+          .yellow { background: #fef7e6; color: #b38600; }
+          .red { background: #fce8e6; color: #c0392b; }
+          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <h1>${scenario.name}</h1>
+        <p class="meta">${scenario.description || ''} | Status: ${scenario.status} | Created: ${new Date(scenario.created_at).toLocaleDateString()}</p>
+        
+        <h2>Customer Profile</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Profile</td><td>${profile?.label || 'N/A'}</td></tr>
+          <tr><td>Minutes (avg)</td><td>${profile?.minutes_avg || 0}</td></tr>
+          <tr><td>SMS (avg)</td><td>${profile?.sms_avg || 0}</td></tr>
+          <tr><td>Data GB</td><td>${profile?.data_avg_gb || 0}</td></tr>
+          <tr><td>Budget</td><td>${profile?.budget_max || 0} TND</td></tr>
+        </table>
+        
+        <h2>Results</h2>
+        <table>
+          <tr><th>#</th><th>Offer</th><th>Base</th><th>Overage</th><th>Total</th><th>Score</th><th>Recommendation</th></tr>
+          ${scenario.results.map(r => {
+            const rec = r.satisfaction_score >= 70 ? 'Good Match' : r.satisfaction_score >= 50 ? 'Okay' : 'Not Recommended';
+            const recClass = r.satisfaction_score >= 70 ? 'green' : r.satisfaction_score >= 50 ? 'yellow' : 'red';
+            return `<tr>
+              <td>${r.rank_by_score}</td>
+              <td>Offer ${r.offer_id}</td>
+              <td>${Number(r.base_cost || 0).toFixed(2)} TND</td>
+              <td>${Number(r.overage_cost || 0).toFixed(2)} TND</td>
+              <td><strong>${Number(r.total_cost || 0).toFixed(2)} TND</strong></td>
+              <td><strong>${r.satisfaction_score}</strong></td>
+              <td><span class="badge ${recClass}">${rec}</span></td>
+            </tr>`;
+          }).join('')}
+        </table>
+        
+        <div class="footer">SimTélécom · PFE 2026 | Generated ${new Date().toLocaleString()}</div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+    showToast("PDF ready - use print dialog to save");
+  };
+
+  const handleExportScenarioCSV = (scenario) => {
+    if (!scenario?.results?.length) {
+      showToast("No results to export", "error");
+      return;
+    }
+    
+    // Get profile data if available
+    const profile = scenario.profile_id ? profiles.find(p => p.profile_id == scenario.profile_id) : null;
+    
+    let csv = 'Scenario Info\n';
+    csv += `Name,${scenario.name}\n`;
+    csv += `Description,${scenario.description || ''}\n`;
+    csv += `Status,${scenario.status}\n`;
+    csv += `Created,${scenario.created_at}\n`;
+    csv += `Updated,${scenario.updated_at}\n`;
+    csv += '\nCustomer Profile\n';
+    csv += `Profile ID,${scenario.profile_id || 'N/A'}\n`;
+    csv += `Profile Name,${profile?.label || 'N/A'}\n`;
+    csv += `Minutes Avg,${profile?.minutes_avg || 0}\n`;
+    csv += `SMS Avg,${profile?.sms_avg || 0}\n`;
+    csv += `Data GB Avg,${profile?.data_avg_gb || 0}\n`;
+    csv += `Budget Max,${profile?.budget_max || 0}\n`;
+    csv += `Priority,${profile?.priority || 'BALANCED'}\n`;
+    csv += `Roaming Days,${profile?.roaming_days || 0}\n`;
+    csv += '\nResults\n';
+    csv += 'Rank,Offer ID,Base Cost,Overage Cost,Roaming Cost,Total Cost,Satisfaction Score,Recommendation\n';
+    scenario.results.forEach((r) => {
+      const rec = r.satisfaction_score >= 70 ? 'Good Match' : r.satisfaction_score >= 50 ? 'Okay' : 'Not Recommended';
+      csv += `${r.rank_by_score || ''},${r.offer_id || ''},${r.base_cost || 0},${r.overage_cost || 0},${r.roaming_cost || 0},${r.total_cost || 0},${r.satisfaction_score || 0},${rec}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${scenario.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Export complete");
   };
 
   // Run simulation and update results for existing scenario
@@ -355,25 +546,25 @@ export default function Scenarios() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Scenarios</h1>
-          <span style={{ fontSize: 13, color: colors.textDim }}>{pagination.total} total</span>
+          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Scenarios</h1>
+          <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{pagination.total} total</span>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <select value={filter} onChange={e => setFilter(e.target.value)} style={{ ...input, height: 36, fontSize: 13 }}>
+          <select value={filter} onChange={e => setFilter(e.target.value)} style={{ ...inputStyle, height: 36, fontSize: 13 }}>
             {STATUSES.map(s => <option key={s} value={s}>{s === "ALL" ? "All Status" : s}</option>)}
           </select>
-          <button onClick={() => { setSelected(null); setShowModal(true); }} style={{ ...btnPrimary, height: 36 }}>
+          <button onClick={() => { setSelected(null); setShowModal(true); }} style={{ ...btnPrimaryStyle, height: 36 }}>
             + New Scenario
           </button>
         </div>
       </div>
 
       {/* Table */}
-      <div style={{ ...card, overflow: "hidden", padding: 0 }}>
+      <div style={{ ...cardStyle, overflow: "hidden", padding: 0 }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: "center", color: colors.textMuted }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>Loading...</div>
         ) : scenarios.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: colors.textMuted }}>
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
             No scenarios yet. Create one to save your simulation comparisons.
           </div>
         ) : (
@@ -388,21 +579,21 @@ export default function Scenarios() {
             </thead>
             <tbody>
               {scenarios.map(s => (
-                <tr key={s.scenario_id} style={{ borderBottom: `0.5px solid ${colors.border}` }}>
-                  <td style={{ ...td, fontWeight: 500, color: colors.text, verticalAlign: "middle" }}>
-                    <div style={{ fontWeight: 500, color: colors.text }}>{s.name}</div>
-                    {s.description && <div style={{ fontSize: 11, color: colors.textDim, fontWeight: 400, marginTop: 4 }}>{s.description}</div>}
+                <tr key={s.scenario_id} style={{ borderBottom: `0.5px solid var(--border)` }}>
+                  <td style={{ ...td, fontWeight: 500, color: "var(--text)", verticalAlign: "middle" }}>
+                    <div style={{ fontWeight: 500, color: "var(--text)" }}>{s.name}</div>
+                    {s.description && <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 400, marginTop: 4 }}>{s.description}</div>}
                   </td>
                   <td style={{ ...td, textAlign: "center" }}><StatusBadge status={s.status} /></td>
-                  <td style={{ ...td, color: colors.textMuted }}>{new Date(s.updated_at).toLocaleDateString()}</td>
+                  <td style={{ ...td, color: "var(--text-muted)" }}>{new Date(s.updated_at).toLocaleDateString()}</td>
                   <td style={{ ...td, textAlign: "center", display: "flex", gap: 8, justifyContent: "center" }}>
-                    <button onClick={() => openScenario(s)} style={{ ...btnGhost, height: 28, fontSize: 12, padding: "0 12px" }}>View</button>
-                    <button onClick={() => { setSelected(s); setShowModal(true); }} style={{ ...btnGhost, height: 28, fontSize: 12, padding: "0 12px" }}>Edit</button>
-                    <button onClick={() => runAndUpdateResults(s)} disabled={runningId === s.scenario_id} style={{ ...btnPrimary, height: 28, fontSize: 12, padding: "0 12px", opacity: runningId === s.scenario_id ? 0.6 : 1 }}>
+                    <button onClick={() => openScenario(s)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>View</button>
+                    <button onClick={() => { setSelected(s); setShowModal(true); }} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Edit</button>
+                    <button onClick={() => runAndUpdateResults(s)} disabled={runningId === s.scenario_id} style={{ ...btnPrimaryStyle, height: 28, fontSize: 12, padding: "0 12px", opacity: runningId === s.scenario_id ? 0.6 : 1 }}>
                       {runningId === s.scenario_id ? "Running..." : "Run & Save"}
                     </button>
-                    <button onClick={() => handleDuplicate(s.scenario_id)} style={{ ...btnGhost, height: 28, fontSize: 12, padding: "0 12px" }}>Copy</button>
-                    <button onClick={() => handleDelete(s.scenario_id)} style={{ ...btnDanger, height: 28, fontSize: 12, padding: "0 12px" }}>Delete</button>
+                    <button onClick={() => handleDuplicate(s.scenario_id)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Copy</button>
+                    <button onClick={() => handleDelete(s.scenario_id)} style={{ ...btnDangerStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Delete</button>
                   </td>
                 </tr>
               ))}
@@ -426,6 +617,8 @@ export default function Scenarios() {
           scenario={selected}
           onClose={() => { setShowResults(false); setSelected(null); }}
           onSave={() => { setShowResults(false); setSelected(null); fetchScenarios(); }}
+          onExport={handleExportScenarioCSV}
+          onExportPDF={handleExportScenarioPDF}
         />
       )}
 

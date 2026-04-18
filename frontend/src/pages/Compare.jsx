@@ -1,5 +1,84 @@
 import { useState, useEffect } from "react";
-import { colors, fonts, card, btnPrimary, btnGhost, btnDanger, input, select } from "../styles/theme";
+import { fonts } from "../styles/theme";
+
+const cardStyleStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnPrimaryStyleStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const btnGhostStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const btnDangerStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #e35b5b 0%, #c0392b 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(227,91,91,0.28)",
+  transition: "all 0.2s ease",
+};
+
+const inputStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const selectStyle = {
+  background: "var(--bg-cardStyle)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text)",
+  fontSize: 13,
+  padding: "0 12px",
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
 
 const API = "http://localhost:5000/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` });
@@ -7,10 +86,10 @@ const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `
 // ─── Comparison Row ───────────────────────────────────────────────────────────
 function ComparisonRow({ label, values, highlight }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${values.length}, 1fr)`, borderBottom: `0.5px solid ${colors.border}` }}>
-      <div style={{ padding: "12px 16px", fontSize: 13, color: colors.textMuted, fontWeight: 500 }}>{label}</div>
+    <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${values.length}, 1fr)`, borderBottom: `0.5px solid ${"var(--border)"}` }}>
+      <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>{label}</div>
       {values.map((v, i) => (
-        <div key={i} style={{ padding: "12px 16px", textAlign: "center", fontSize: 13, color: highlight === i ? colors.green : colors.text }}>
+        <div key={i} style={{ padding: "12px 16px", textAlign: "center", fontSize: 13, color: highlight === i ? "var(--green)" : "var(--text)" }}>
           {v}
         </div>
       ))}
@@ -21,9 +100,9 @@ function ComparisonRow({ label, values, highlight }) {
 // ─── Winner Badge ──────────────────────────────────────────────────────────────
 function WinnerBadge({ type, value }) {
   const badges = {
-    price: { label: "Best Price", color: colors.blue },
-    satisfaction: { label: "Best Score", color: colors.green },
-    data: { label: "Most Data", color: colors.yellow },
+    price: { label: "Best Price", color: "var(--blue)" },
+    satisfaction: { label: "Best Score", color: "var(--green)" },
+    data: { label: "Most Data", color: "var(--yellow)" },
   };
   const b = badges[type] || badges.price;
   if (value) {
@@ -132,33 +211,33 @@ export default function Compare() {
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       {/* Header */}
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: colors.text }}>Offer Comparator</h2>
-        <p style={{ fontSize: 13, color: colors.textMuted, marginTop: 3 }}>Compare multiple offers side-by-side for a specific customer profile</p>
+        <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Offer Comparator</h2>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Compare multiple offers side-by-side for a specific customer profile</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 20, alignItems: "start" }}>
         {/* Left Panel */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Profile Selector */}
-          <div style={{ ...card, padding: "18px 20px" }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 12 }}>Customer Profile</p>
+          <div style={{ ...cardStyleStyle, padding: "18px 20px" }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 12 }}>Customer Profile</p>
             <select 
               value={selectedProfile} 
               onChange={e => setSelectedProfile(e.target.value)}
-              style={{ ...select, height: 40 }}
+              style={{ ...selectStyle, height: 40 }}
             >
-              <option value="" style={{ background: colors.bgCard, color: colors.text }}>— Select a profile —</option>
+              <option value="" style={{ background: "var(--bg-cardStyle)", color: "var(--text)" }}>— Select a profile —</option>
               {profiles.map((p, index) => (
-                <option key={index} value={p.profile_id ?? p.id} style={{ background: colors.bgCard, color: colors.text }}>{p.label || p.name}</option>
+                <option key={index} value={p.profile_id ?? p.id} style={{ background: "var(--bg-cardStyle)", color: "var(--text)" }}>{p.label || p.name}</option>
               ))}
             </select>
           </div>
 
           {/* Offer Selector */}
-          <div style={{ ...card, padding: "18px 20px" }}>
+          <div style={{ ...cardStyleStyle, padding: "18px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Select Offers</p>
-              <span style={{ fontSize: 12, color: colors.textDim }}>{selectedOffers.length} selected</span>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>Select Offers</p>
+              <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{selectedOffers.length} selected</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
               {offers.map((o, index) => (
@@ -170,8 +249,8 @@ export default function Compare() {
                     gap: 10, 
                     padding: "10px 12px", 
                     borderRadius: 8,
-                    background: isOfferSelected(index) ? colors.blueDim : "rgba(255,255,255,0.02)",
-                    border: `0.5px solid ${isOfferSelected(index) ? colors.blue : colors.border}`,
+                    background: isOfferSelected(index) ? "var(--blue-dim)" : "rgba(255,255,255,0.02)",
+                    border: `0.5px solid ${isOfferSelected(index) ? "var(--blue)" : "var(--border)"}`,
                     cursor: "pointer",
                     transition: "all 0.15s"
                   }}
@@ -180,11 +259,11 @@ export default function Compare() {
                     type="checkbox" 
                     checked={isOfferSelected(index)} 
                     onChange={() => toggleOffer(index)}
-                    style={{ accentColor: colors.blue, flexShrink: 0 }} 
+                    style={{ accentColor: "var(--blue)", flexShrink: 0 }} 
                   />
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, color: colors.text, fontWeight: 500 }}>{o.name}</p>
-                    <p style={{ fontSize: 11, color: colors.textDim }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment}</p>
+                    <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{o.name}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment}</p>
                   </div>
                 </label>
               ))}
@@ -192,17 +271,17 @@ export default function Compare() {
           </div>
 
            {/* Action Button */}
-           <button
-             onClick={runComparison}
-             disabled={comparing || selectedOffers.length < 2 || !selectedProfile}
-             style={{
-               ...btnPrimary,
-               height: 46,
-               fontSize: 14,
-               justifyContent: "center",
-               opacity: (comparing || selectedOffers.length < 2 || !selectedProfile) ? 0.5 : 1
-             }}
-           >
+<button
+              onClick={runComparison}
+              disabled={comparing || selectedOffers.length < 2 || !selectedProfile}
+              style={{
+                ...btnPrimaryStyleStyle,
+                height: 46,
+                fontSize: 14,
+                justifyContent: "center",
+                opacity: (comparing || selectedOffers.length < 2 || !selectedProfile) ? 0.5 : 1
+              }}
+            >
              {comparing ? (
                <><span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} /> Comparing...</>
              ) : (
@@ -218,7 +297,7 @@ export default function Compare() {
              }}
              disabled={selectedOffers.length === 0}
              style={{
-               ...btnDanger,
+               ...btnDangerStyle,
                height: 46,
                fontSize: 14,
                justifyContent: "center",
@@ -233,29 +312,29 @@ export default function Compare() {
         {/* Right Panel - Results */}
         <div>
           {!comparison && !comparing && (
-            <div style={{ ...card, padding: 48, textAlign: "center" }}>
+            <div style={{ ...cardStyleStyle, padding: 48, textAlign: "center" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>⚖️</div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: colors.text, marginBottom: 8 }}>Ready to compare</p>
-              <p style={{ fontSize: 13, color: colors.textDim }}>Select at least 2 offers and a customer profile, then click Compare.</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)", marginBottom: 8 }}>Ready to compare</p>
+              <p style={{ fontSize: 13, color: "var(--text-dim)" }}>Select at least 2 offers and a customer profile, then click Compare.</p>
             </div>
           )}
 
           {comparing && (
-            <div style={{ ...card, padding: 48, textAlign: "center" }}>
-              <div style={{ width: 40, height: 40, border: `3px solid ${colors.blueDim}`, borderTop: `3px solid ${colors.blue}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-              <p style={{ fontSize: 14, color: colors.textMuted }}>Running comparison...</p>
+            <div style={{ ...cardStyleStyle, padding: 48, textAlign: "center" }}>
+              <div style={{ width: 40, height: 40, border: `3px solid ${"var(--blue-dim)"}`, borderTop: `3px solid ${"var(--blue)"}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+              <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Running comparison...</p>
             </div>
           )}
 
           {comparison && comparison.length > 0 && (
-            <div style={{ ...card, overflow: "hidden" }}>
+            <div style={{ ...cardStyleStyle, overflow: "hidden" }}>
               {/* Header Row */}
-              <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, background: colors.blueDim, borderBottom: `0.5px solid ${colors.border}` }}>
-                <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 600, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Metric</div>
+              <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, background: "var(--blue-dim)", borderBottom: `0.5px solid ${"var(--border)"}` }}>
+                <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Metric</div>
                 {comparison.map((c, i) => (
                   <div key={i} style={{ padding: "14px 16px", textAlign: "center" }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: colors.text }}>{c.offer_name || c.offer?.name}</p>
-                    <p style={{ fontSize: 11, color: colors.textDim }}>{c.offer?.segment}</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{c.offer_name || c.offer?.name}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-dim)" }}>{c.offer?.segment}</p>
                   </div>
                 ))}
               </div>
@@ -307,11 +386,11 @@ export default function Compare() {
               />
 
               {/* Justification Row */}
-              <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, borderBottom: `0.5px solid ${colors.border}` }}>
-                <div style={{ padding: "12px 16px", fontSize: 13, color: colors.textMuted, fontWeight: 500 }}>Recommendation</div>
+              <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, borderBottom: `0.5px solid ${"var(--border)"}` }}>
+                <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>Recommendation</div>
                 {comparison.map((c, i) => (
                   <div key={i} style={{ padding: "12px 16px", textAlign: "center" }}>
-                    <p style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
                        {c.justification || (i === bestMatchIndex ? "✓ Recommended" : "-")}
                     </p>
                   </div>
@@ -320,10 +399,10 @@ export default function Compare() {
 
               {/* Winner Summary */}
 {bestMatchIndex >= 0 && comparison[bestMatchIndex] && (
-  <div style={{ padding: "16px 20px", background: "rgba(67,199,139,0.08)", borderTop: `0.5px solid ${colors.border}` }}>
-    <p style={{ fontSize: 13, fontWeight: 500, color: colors.green }}>
+  <div style={{ padding: "16px 20px", background: "rgba(67,199,139,0.08)", borderTop: `0.5px solid ${"var(--border)"}` }}>
+    <p style={{ fontSize: 13, fontWeight: 500, color: "var(--green)" }}>
       🏆 Best Match: {comparison[bestMatchIndex].offer_name || comparison[bestMatchIndex].offer?.name}
-      <span style={{ color: colors.textMuted, fontWeight: 400, marginLeft: 8 }}>
+      <span style={{ color: "var(--text-muted)", fontWeight: 400, marginLeft: 8 }}>
         Score: {Math.round(comparison[bestMatchIndex].calculation?.satisfaction_score || comparison[bestMatchIndex].satisfaction_score || 0)}/100 · {Number(comparison[bestMatchIndex].calculation?.total_cost || comparison[bestMatchIndex].total_cost || 0).toFixed(2)} TND
       </span>
     </p>

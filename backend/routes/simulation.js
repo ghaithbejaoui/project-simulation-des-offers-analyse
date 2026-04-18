@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
 
 /**
@@ -97,7 +98,7 @@ const router = express.Router();
  *         description: Profile or offer not found
  */
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { profile_id, offer_id, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
   if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
 
@@ -215,7 +216,7 @@ router.post('/', async (req, res) => {
  *         description: Profile not found
  */
 
-router.post('/recommend', async (req, res) => {
+router.post('/recommend', requireAuth, async (req, res) => {
   const { profile_id, limit = 5, segment } = req.body;
   let profile;
 
@@ -348,7 +349,7 @@ router.post('/recommend', async (req, res) => {
  *         description: Profile or offers not found
  */
 
-router.post('/compare', async (req, res) => {
+router.post('/compare', requireAuth, async (req, res) => {
   const { profile_id, offer_ids, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
   if (!offer_ids || !Array.isArray(offer_ids) || offer_ids.length === 0) {
     return res.status(400).json({ message: 'offer_ids (array) are required' });
@@ -511,7 +512,7 @@ router.post('/compare', async (req, res) => {
  *         description: Offer or profiles not found
  */
 
-router.post('/batch', async (req, res) => {
+router.post('/batch', requireAuth, async (req, res) => {
   const { offer_id, profile_ids } = req.body;
   if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
 

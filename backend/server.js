@@ -96,6 +96,9 @@ app.use('/api/scenarios', scenariosRoutes);
 const exportRoutes = require('./routes/export');
 app.use('/api/export', exportRoutes);
 
+const usersRoutes = require('./routes/users');
+app.use('/api/users', usersRoutes);
+
 
 // Health check endpoint
 app.get('/', (req, res) => {

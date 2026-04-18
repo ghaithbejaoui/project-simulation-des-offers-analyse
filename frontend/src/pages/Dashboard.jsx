@@ -1,25 +1,71 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { colors, fonts, card, btnPrimary, btnGhost } from "../styles/theme";
+import { fonts } from "../styles/theme";
+import { useLanguage } from "../context/LanguageContext";
+
+const cardStyle = {
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
+const btnGhostStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "var(--bg-card)",
+  border: "0.5px solid var(--border)",
+  borderRadius: 10,
+  color: "var(--text-muted)",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "0 20px",
+  height: 40,
+  background: "linear-gradient(135deg, #0d5fd4 0%, #1a8fff 100%)",
+  border: "none",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: "pointer",
+  boxShadow: "0 4px 16px rgba(26,143,255,0.28)",
+  transition: "all 0.2s ease",
+};
 
 // ─── Metric Card ─────────────────────────────────────────────────────────────
 function KPICard({ label, value, sub, color, icon, trend }) {
   return (
-    <div style={{ ...card, padding: "20px 22px", position: "relative", overflow: "hidden" }}>
+    <div style={{ 
+      ...cardStyle, 
+      padding: "20px 22px", 
+      position: "relative", 
+      overflow: "hidden" 
+    }}>
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
         <div style={{ width: 38, height: 38, borderRadius: 10, background: `${color}18`, border: `0.5px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", color }}>
           {icon}
         </div>
         {trend !== undefined && (
-          <span style={{ fontSize: 12, fontWeight: 500, color: trend >= 0 ? colors.green : colors.red, background: trend >= 0 ? "rgba(67,199,139,0.1)" : "rgba(227,91,91,0.1)", padding: "3px 8px", borderRadius: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: trend >= 0 ? "var(--green)" : "var(--red)", background: trend >= 0 ? "rgba(67,199,139,0.1)" : "rgba(227,91,91,0.1)", padding: "3px 8px", borderRadius: 6 }}>
             {trend >= 0 ? "+" : ""}{trend}%
           </span>
         )}
       </div>
-      <p style={{ fontSize: 11, color: colors.textDim, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>{label}</p>
-      <p style={{ fontSize: 26, fontWeight: 600, fontFamily: fonts.heading, color: colors.text, letterSpacing: "-0.5px" }}>{value}</p>
-      {sub && <p style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>{sub}</p>}
+      <p style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>{label}</p>
+      <p style={{ fontSize: 26, fontWeight: 600, fontFamily: fonts.heading, color: "var(--text)", letterSpacing: "-0.5px" }}>{value}</p>
+      {sub && <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{sub}</p>}
     </div>
   );
 }
@@ -41,19 +87,20 @@ function MiniBarChart({ data, color }) {
 // ─── Recent activity item ─────────────────────────────────────────────────────
 function ActivityItem({ icon, text, time, color }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `0.5px solid rgba(26,143,255,0.08)` }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "0.5px solid var(--border)" }}>
       <div style={{ width: 32, height: 32, borderRadius: 8, background: `${color}15`, border: `0.5px solid ${color}35`, display: "flex", alignItems: "center", justifyContent: "center", color, flexShrink: 0, fontSize: 14 }}>
         {icon}
       </div>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 13, color: colors.text }}>{text}</p>
+        <p style={{ fontSize: 13, color: "var(--text)" }}>{text}</p>
       </div>
-      <span style={{ fontSize: 11, color: colors.textDim, whiteSpace: "nowrap" }}>{time}</span>
+      <span style={{ fontSize: 11, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{time}</span>
     </div>
   );
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ offers: 0, profiles: 0, simulations: 0, options: 0 });
   const [loading, setLoading] = useState(true);
@@ -99,52 +146,52 @@ export default function Dashboard() {
   return (
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       {/* Welcome banner */}
-      <div style={{ ...card, padding: "22px 28px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", borderColor: "rgba(26,143,255,0.28)", background: "linear-gradient(135deg, rgba(13,95,212,0.15) 0%, rgba(13,22,40,0.9) 60%)" }}>
+      <div style={{ ...cardStyle, padding: "22px 28px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", borderColor: "rgba(26,143,255,0.28)", background: "linear-gradient(135deg, rgba(13,95,212,0.15) 0%, rgba(13,22,40,0.9) 60%)" }}>
         <div>
-          <h1 style={{ fontFamily: fonts.heading, fontSize: 22, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-            Good morning 👋
+          <h1 style={{ fontFamily: fonts.heading, fontSize: 22, fontWeight: 600, color: "var(--text)", marginBottom: 6 }}>
+            {t("dashboard.welcome")}
           </h1>
-          <p style={{ fontSize: 14, color: colors.textMuted }}>Here's your telecom simulation overview for today.</p>
+          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>{t("dashboard.welcomeSubtitle")}</p>
         </div>
-        <button onClick={() => navigate("/simulation")} style={{ ...btnPrimary, height: 44, fontSize: 14, padding: "0 24px" }}>
+        <button onClick={() => navigate("/simulation")} style={{ ...btnPrimaryStyle, height: 44, fontSize: 14, padding: "0 24px" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
-          Run Simulation
+          {t("dashboard.runSimulation")}
         </button>
       </div>
 
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
         <KPICard
-          label="Active Offers"
+          label={t("dashboard.activeOffers")}
           value={loading ? "—" : stats.offers}
-          sub="2 added this week"
-          color={colors.blue}
+          sub={t("dashboard.subOffers")}
+          color={"var(--blue)"}
           trend={+16}
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>}
         />
         <KPICard
-          label="Customer Profiles"
+          label={t("dashboard.customerProfiles")}
           value={loading ? "—" : stats.profiles}
-          sub="300 in database"
-          color={colors.green}
+          sub={t("dashboard.subProfiles")}
+          color={"var(--green)"}
           trend={+8}
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
         />
         <KPICard
-          label="Simulations Run"
+          label={t("dashboard.simulationsRun")}
           value={loading ? "—" : stats.simulations}
-          sub="This month"
-          color={colors.yellow}
+          sub={t("dashboard.subSimulations")}
+          color={"var(--yellow)"}
           trend={+23}
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}
         />
         <KPICard
-          label="Avg. Satisfaction"
+          label={t("dashboard.avgSatisfaction")}
           value="78.4"
-          sub="Score / 100"
-          color={colors.orange}
+          sub={t("dashboard.subSatisfaction")}
+          color={"var(--orange)"}
           trend={+4}
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
         />
@@ -153,34 +200,34 @@ export default function Dashboard() {
       {/* Charts row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
         {/* Cost trend */}
-        <div style={{ ...card, padding: "20px 22px", gridColumn: "span 2" }}>
+        <div style={{ ...cardStyle, padding: "20px 22px", gridColumn: "span 2" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <div>
-              <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Simulated Cost Trend</p>
-              <p style={{ fontSize: 12, color: colors.textDim }}>Average monthly cost across profiles (TND)</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>{t("dashboard.costTrend")}</p>
+              <p style={{ fontSize: 12, color: "var(--text-dim)" }}>{t("dashboard.costTrendSubtitle")}</p>
             </div>
-            <span style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: colors.blue }}>89.3 TND</span>
+            <span style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>89.3 TND</span>
           </div>
-          <MiniBarChart data={costData} color={colors.blue} />
+          <MiniBarChart data={costData} color={"var(--blue)"} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
             {costData.map(d => (
-              <span key={d.label} style={{ fontSize: 10, color: colors.textDim, flex: 1, textAlign: "center" }}>{d.label}</span>
+              <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
             ))}
           </div>
         </div>
 
         {/* Satisfaction */}
-        <div style={{ ...card, padding: "20px 22px" }}>
-          <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 4 }}>Satisfaction Scores</p>
-          <p style={{ fontSize: 12, color: colors.textDim, marginBottom: 16 }}>Daily average this week</p>
-          <MiniBarChart data={satisfactionData} color={colors.green} />
+        <div style={{ ...cardStyle, padding: "20px 22px" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 4 }}>{t("dashboard.satisfactionScores")}</p>
+          <p style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 16 }}>{t("dashboard.satisfactionSubtitle")}</p>
+          <MiniBarChart data={satisfactionData} color={"var(--green)"} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
             {satisfactionData.map(d => (
-              <span key={d.label} style={{ fontSize: 10, color: colors.textDim, flex: 1, textAlign: "center" }}>{d.label}</span>
+              <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
             ))}
           </div>
           <div style={{ marginTop: 16, padding: "10px 14px", background: "rgba(67,199,139,0.08)", borderRadius: 8, border: "0.5px solid rgba(67,199,139,0.2)" }}>
-            <p style={{ fontSize: 12, color: colors.green, fontWeight: 500 }}>↑ +4.2pts vs last week</p>
+            <p style={{ fontSize: 12, color: "var(--green)", fontWeight: 500 }}>↑ +4.2pts {t("dashboard.vsLastWeek")}</p>
           </div>
         </div>
       </div>
@@ -188,17 +235,17 @@ export default function Dashboard() {
       {/* Bottom row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Offer breakdown */}
-        <div style={{ ...card, padding: "20px 22px" }}>
-          <p style={{ fontSize: 13, fontWeight: 500, color: colors.text, marginBottom: 16 }}>Offers by Segment</p>
+        <div style={{ ...cardStyle, padding: "20px 22px" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 16 }}>{t("dashboard.offersBySegment")}</p>
           {[
-            { label: "Postpaid", pct: 42, color: colors.blue },
-            { label: "Prepaid", pct: 33, color: colors.green },
-            { label: "Business", pct: 18, color: colors.orange },
-            { label: "Data-Only", pct: 7, color: colors.yellow },
+            { label: "Postpaid", pct: 42, color: "var(--blue)" },
+            { label: "Prepaid", pct: 33, color: "var(--green)" },
+            { label: "Business", pct: 18, color: "var(--orange)" },
+            { label: "Data-Only", pct: 7, color: "var(--yellow)" },
           ].map(({ label, pct, color }) => (
             <div key={label} style={{ marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 12, color: colors.textMuted }}>{label}</span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color }}>{pct}%</span>
               </div>
               <div style={{ height: 5, borderRadius: 4, background: "rgba(255,255,255,0.05)" }}>
@@ -209,20 +256,20 @@ export default function Dashboard() {
         </div>
 
         {/* Recent activity */}
-        <div style={{ ...card, padding: "20px 22px" }}>
+        <div style={{ ...cardStyle, padding: "20px 22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: colors.text }}>Recent Activity</p>
-            <button onClick={() => navigate("/audit")} style={{ ...btnGhost, height: 30, padding: "0 12px", fontSize: 12 }}>
-              View all
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>{t("dashboard.recentActivity")}</p>
+            <button onClick={() => navigate("/audit")} style={{ ...btnGhostStyle, height: 30, padding: "0 12px", fontSize: 12 }}>
+              {t("dashboard.viewAll")}
             </button>
           </div>
           {activityLoading ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: colors.textDim }}>
-              Loading activity...
+            <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-dim)" }}>
+              {t("dashboard.loading")}
             </div>
           ) : activity.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: colors.textDim }}>
-              No recent activity
+            <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-dim)" }}>
+              {t("dashboard.noActivity")}
             </div>
           ) : (
             activity.map((item) => (

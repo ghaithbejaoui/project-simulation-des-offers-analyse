@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { globalStyles, colors, fonts } from "../styles/theme";
+import { fonts } from "../styles/theme";
+import { useLanguage } from "../context/LanguageContext";
 
 const NAV_ITEMS = [
   {
     path: "/dashboard",
-    label: "Dashboard",
+    labelKey: "nav.dashboard",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -17,7 +18,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/offers",
-    label: "Offers",
+    labelKey: "nav.offers",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -28,7 +29,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/options",
-    label: "Options",
+    labelKey: "nav.options",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <circle cx="12" cy="12" r="3" />
@@ -39,7 +40,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/profiles",
-    label: "Customer Profiles",
+    labelKey: "nav.profiles",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -51,7 +52,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/compare",
-    label: "Compare",
+    labelKey: "nav.compare",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <line x1="18" y1="20" x2="18" y2="10" />
@@ -62,7 +63,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/simulation",
-    label: "Simulation",
+    labelKey: "nav.simulation",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -72,7 +73,7 @@ const NAV_ITEMS = [
   },
   {
     path: "/scenarios",
-    label: "Scenarios",
+    labelKey: "nav.scenarios",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -87,8 +88,20 @@ const NAV_ITEMS = [
 
 const ADMIN_ONLY = [
   {
+    path: "/users",
+    labelKey: "nav.users",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
     path: "/audit",
-    label: "Audit Log",
+    labelKey: "nav.audit",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -97,9 +110,10 @@ const ADMIN_ONLY = [
   },
 ];
 
-export default function Layout({ children }) {
+export default function Layout({ children, theme = "dark" }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, language, toggleLanguage } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
@@ -116,13 +130,85 @@ export default function Layout({ children }) {
     navigate("/login");
   };
 
-   const isAdmin = user?.role === "ADMIN";
+  const getThemeToggle = () => {
+    if (!mounted) return null;
+    return (
+      <button
+        onClick={() => {
+          const newTheme = theme === "dark" ? "light" : "dark";
+          localStorage.setItem("simtelecom-theme", newTheme);
+          document.documentElement.setAttribute("data-theme", newTheme);
+          window.location.reload();
+        }}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          border: "0.5px solid var(--border)",
+          background: "var(--bg-card)",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform 0.2s ease, background 0.3s ease",
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.08)"}
+        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+        title={theme === "dark" ? t("theme.switchToLight") : t("theme.switchToDark")}
+      >
+        {theme === "dark" ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        )}
+      </button>
+    );
+  };
+
+  const getLanguageSwitcher = () => (
+    <button
+      onClick={toggleLanguage}
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        border: "0.5px solid var(--border)",
+        background: "var(--bg-card)",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "transform 0.2s ease, background 0.3s ease",
+        fontSize: 14,
+        fontWeight: 600,
+        color: "var(--text-muted)",
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.08)"}
+      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+      title={t("language.select")}
+    >
+      {language.toUpperCase()}
+    </button>
+  );
+
+const isAdmin = user?.role === "ADMIN";
   const allItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ONLY] : NAV_ITEMS;
+  const s = getStyles(theme);
 
   return (
     <div style={s.root}>
-      <style>{globalStyles}</style>
-
       {/* Background grid */}
       <div style={s.grid} />
 
@@ -132,8 +218,8 @@ export default function Layout({ children }) {
         <div style={s.logoRow}>
           <div style={s.logoIcon}>
             <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
-              <polygon points="24,4 44,36 4,36" fill="none" stroke="#1a8fff" strokeWidth="2" opacity="0.7" />
-              <circle cx="24" cy="24" r="5" fill="#1a8fff" />
+              <polygon points="24,4 44,36 4,36" fill="none" stroke="var(--blue)" strokeWidth="2" opacity="0.7" />
+              <circle cx="24" cy="24" r="5" fill="var(--blue)" />
             </svg>
           </div>
           {!collapsed && (
@@ -163,12 +249,12 @@ export default function Layout({ children }) {
                   justifyContent: collapsed ? "center" : "flex-start",
                   padding: collapsed ? "10px 0" : "10px 14px",
                 }}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? t(item.labelKey) : undefined}
               >
-                <span style={{ ...s.navIcon, color: active ? colors.blue : item.accent ? colors.green : "inherit" }}>
+                <span style={{ ...s.navIcon, color: active ? "var(--blue)" : item.accent ? "var(--green)" : "inherit" }}>
                   {item.icon}
                 </span>
-                {!collapsed && <span style={s.navLabel}>{item.label}</span>}
+                {!collapsed && <span style={s.navLabel}>{t(item.labelKey)}</span>}
                 {!collapsed && item.accent && (
                   <span style={s.badge}>RUN</span>
                 )}
@@ -215,19 +301,21 @@ export default function Layout({ children }) {
         <header style={s.topbar}>
           <div style={s.topbarLeft}>
             <h2 style={s.pageTitle}>
-              {allItems.find(i => i.path === location.pathname)?.label || "SimTelecom"}
+              {t(allItems.find(i => i.path === location.pathname)?.labelKey || "app.name")}
             </h2>
           </div>
           <div style={s.topbarRight}>
+            {getLanguageSwitcher()}
+            {getThemeToggle()}
             <div style={s.statusBadge}>
               <span style={s.statusDot} />
-              <span style={s.statusText}>API Connected</span>
+              <span style={s.statusText}>{t("app.connected")}</span>
             </div>
             <div style={s.userChip}>
               <div style={{ ...s.avatar, width: 30, height: 30, fontSize: 12 }}>
                 {user?.role?.[0]?.toUpperCase() || "A"}
               </div>
-              <span style={{ fontSize: 13, color: colors.textMuted }}>
+              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
                 {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase() : "Analyst"}
               </span>
             </div>
@@ -243,24 +331,24 @@ export default function Layout({ children }) {
   );
 }
 
-const s = {
+const getStyles = (theme) => ({
   root: {
     display: "flex",
     minHeight: "100vh",
-    background: colors.bg,
+    background: theme === "light" ? "#f9fafb" : "var(--bg)",
     fontFamily: fonts.body,
     position: "relative",
     overflow: "visible",
+    transition: "background 0.3s ease",
   },
   grid: {
     position: "fixed",
     inset: 0,
-    backgroundImage: `
-      linear-gradient(rgba(26,143,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(26,143,255,0.04) 1px, transparent 1px)
-    `,
+    backgroundImage: theme === "light" 
+      ? "none" 
+      : `linear-gradient(rgba(26,143,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(26,143,255,0.04) 1px, transparent 1px)`,
     backgroundSize: "40px 40px",
-    animation: "gridScroll 12s linear infinite",
+    animation: theme === "light" ? "none" : "gridScroll 12s linear infinite",
     pointerEvents: "none",
     zIndex: 0,
   },
@@ -269,13 +357,12 @@ const s = {
     top: 0,
     left: 0,
     height: "100vh",
-    background: "rgba(8, 15, 30, 0.95)",
-    borderRight: `0.5px solid ${colors.border}`,
-    backdropFilter: "blur(20px)",
+    background: theme === "light" ? "#ffffff" : "var(--bg-card)",
+    borderRight: theme === "light" ? "1px solid #e5e7eb" : "0.5px solid var(--border)",
     display: "flex",
     flexDirection: "column",
     zIndex: 100,
-    transition: "width 0.25s ease",
+    transition: "width 0.25s ease, background 0.3s ease, border 0.3s ease",
     overflow: "hidden",
   },
   logoRow: {
@@ -283,7 +370,7 @@ const s = {
     alignItems: "center",
     gap: 10,
     padding: "18px 14px 16px",
-    borderBottom: `0.5px solid ${colors.border}`,
+    borderBottom: theme === "light" ? "1px solid #e5e7eb" : "0.5px solid var(--border)",
     minHeight: 64,
   },
   logoIcon: {
@@ -295,7 +382,7 @@ const s = {
     fontFamily: fonts.heading,
     fontSize: 16,
     fontWeight: 600,
-    color: colors.text,
+    color: "var(--text)",
     letterSpacing: "-0.3px",
     flex: 1,
     whiteSpace: "nowrap",
@@ -304,7 +391,7 @@ const s = {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: colors.textDim,
+    color: "var(--text-dim)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -326,7 +413,7 @@ const s = {
     alignItems: "center",
     gap: 10,
     borderRadius: 10,
-    color: colors.textMuted,
+    color: "var(--text-muted)",
     fontSize: 13,
     fontWeight: 400,
     transition: "all 0.18s",
@@ -335,12 +422,12 @@ const s = {
     cursor: "pointer",
   },
   navItemActive: {
-    background: colors.blueDim,
-    color: colors.blue,
+    background: theme === "light" ? "rgba(37, 99, 235, 0.1)" : "var(--blue-dim)",
+    color: "var(--blue)",
     fontWeight: 500,
   },
   navItemAccent: {
-    color: colors.green,
+    color: "var(--green)",
   },
   navIcon: {
     flexShrink: 0,
@@ -356,9 +443,9 @@ const s = {
     fontSize: 9,
     fontWeight: 600,
     letterSpacing: "0.08em",
-    color: colors.green,
-    background: "rgba(67,199,139,0.12)",
-    border: "0.5px solid rgba(67,199,139,0.3)",
+    color: "var(--green)",
+    background: theme === "light" ? "rgba(22, 163, 74, 0.1)" : "rgba(67,199,139,0.12)",
+    border: theme === "light" ? "1px solid rgba(22, 163, 74, 0.2)" : "0.5px solid rgba(67,199,139,0.3)",
     borderRadius: 4,
     padding: "2px 5px",
   },
@@ -368,28 +455,28 @@ const s = {
     width: 5,
     height: 5,
     borderRadius: "50%",
-    background: colors.blue,
-    boxShadow: `0 0 6px ${colors.blue}`,
+    background: "var(--blue)",
+    boxShadow: "0 0 6px var(--blue)",
   },
   userBox: {
     display: "flex",
     alignItems: "center",
     gap: 10,
-    borderTop: `0.5px solid ${colors.border}`,
+    borderTop: theme === "light" ? "1px solid #e5e7eb" : "0.5px solid var(--border)",
     marginTop: "auto",
   },
   avatar: {
     width: 34,
     height: 34,
     borderRadius: "50%",
-    background: colors.blueDim,
-    border: `0.5px solid ${colors.borderHov}`,
+    background: theme === "light" ? "rgba(37, 99, 235, 0.1)" : "var(--blue-dim)",
+    border: theme === "light" ? "1px solid #e5e7eb" : "0.5px solid var(--border-hov)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 13,
     fontWeight: 600,
-    color: colors.blue,
+    color: "var(--blue)",
     flexShrink: 0,
   },
   userInfo: {
@@ -399,21 +486,21 @@ const s = {
   userName: {
     fontSize: 13,
     fontWeight: 500,
-    color: colors.text,
+    color: "var(--text)",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
   userRole: {
     fontSize: 11,
-    color: colors.textDim,
+    color: "var(--text-dim)",
     textTransform: "capitalize",
   },
   logoutBtn: {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: colors.textDim,
+    color: "var(--text-dim)",
     display: "flex",
     padding: 4,
     borderRadius: 6,
@@ -434,21 +521,21 @@ const s = {
     position: "sticky",
     top: 0,
     height: 60,
-    background: "rgba(7,13,24,0.92)",
-    borderBottom: `0.5px solid ${colors.border}`,
-    backdropFilter: "blur(16px)",
+    background: theme === "light" ? "#ffffff" : "var(--bg-card)",
+    borderBottom: theme === "light" ? "1px solid #e5e7eb" : "0.5px solid var(--border)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     padding: "0 28px",
     zIndex: 50,
+    transition: "background 0.3s ease, border 0.3s ease",
   },
   topbarLeft: {},
   pageTitle: {
     fontFamily: fonts.heading,
     fontSize: 17,
     fontWeight: 600,
-    color: colors.text,
+    color: "var(--text)",
     letterSpacing: "-0.3px",
   },
   topbarRight: {
@@ -461,21 +548,21 @@ const s = {
     alignItems: "center",
     gap: 6,
     padding: "5px 12px",
-    background: "rgba(67,199,139,0.08)",
-    border: "0.5px solid rgba(67,199,139,0.25)",
+    background: theme === "light" ? "rgba(22, 163, 74, 0.1)" : "rgba(67,199,139,0.08)",
+    border: theme === "light" ? "1px solid rgba(22, 163, 74, 0.2)" : "0.5px solid rgba(67,199,139,0.25)",
     borderRadius: 20,
   },
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: "50%",
-    background: colors.green,
-    boxShadow: `0 0 6px ${colors.green}`,
+    background: "var(--green)",
+    boxShadow: "0 0 6px var(--green)",
     animation: "pulse 2s ease-in-out infinite",
   },
   statusText: {
     fontSize: 12,
-    color: colors.green,
+    color: "var(--green)",
     fontWeight: 500,
   },
   userChip: {
@@ -492,4 +579,4 @@ const s = {
     overflowY: "auto",
     overflowX: "hidden",
   },
-};
+});

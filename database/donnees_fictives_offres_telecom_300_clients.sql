@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2026 at 01:36 PM
+-- Generation Time: Apr 21, 2026 at 12:16 AM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -166,7 +166,44 @@ INSERT INTO `audit_logs` (`log_id`, `user_id`, `action`, `entity`, `entity_id`, 
 (121, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:26:27'),
 (122, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:29:23'),
 (123, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 22:17:16'),
-(124, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 22:28:42');
+(124, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 22:28:42'),
+(125, 3, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"Guest\",\"role\":\"GUEST\"}', '2026-04-19 11:42:24'),
+(126, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-19 11:43:14'),
+(127, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":6,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":77.99,\"satisfaction_score\":44}]}', '2026-04-19 11:44:58'),
+(128, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-20 19:18:16'),
+(129, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-20 19:21:09'),
+(130, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":6,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":77.99,\"satisfaction_score\":44}]}', '2026-04-20 19:22:03'),
+(131, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,3,2,5],\"comparisons\":[{\"offer_id\":2,\"total_cost\":157.6,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":5,\"total_cost\":150.88,\"satisfaction_score\":49,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":276.63,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":4}]}', '2026-04-20 19:22:09'),
+(132, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":56,\"offer_ids\":[4,6,10],\"comparisons\":[{\"offer_id\":10,\"total_cost\":58.36,\"satisfaction_score\":100,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":4,\"total_cost\":111.67,\"satisfaction_score\":71,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":6,\"total_cost\":131.48,\"satisfaction_score\":64,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-20 19:22:16'),
+(133, 1, 'SIMULATE_SINGLE', 'simulation', NULL, '::1', '{\"profile_id\":103,\"offer_id\":16,\"total_cost\":\"201.97\",\"satisfaction_score\":42}', '2026-04-20 19:22:24'),
+(134, 1, 'SIMULATE_SINGLE', 'simulation', NULL, '::1', '{\"profile_id\":103,\"offer_id\":4,\"total_cost\":\"212.16\",\"satisfaction_score\":71}', '2026-04-20 19:22:27'),
+(135, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":87,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":50,\"total_cost\":60.5,\"satisfaction_score\":77},{\"offer_id\":32,\"total_cost\":74.07,\"satisfaction_score\":82},{\"offer_id\":43,\"total_cost\":78.61,\"satisfaction_score\":83},{\"offer_id\":46,\"total_cost\":80.2,\"satisfaction_score\":77},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98}]}', '2026-04-20 19:22:41'),
+(136, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":6,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":77.99,\"satisfaction_score\":44}]}', '2026-04-20 19:22:44'),
+(137, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":4,\"offer_ids\":[2,1,7,6],\"comparisons\":[{\"offer_id\":2,\"total_cost\":55.99,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":4},{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":7,\"total_cost\":39.78,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1},{\"offer_id\":6,\"total_cost\":52.24,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":3}]}', '2026-04-20 19:22:52'),
+(138, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":32,\"offer_ids\":[2,1,7,6],\"comparisons\":[{\"offer_id\":2,\"total_cost\":219.64,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":242.55,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":4},{\"offer_id\":6,\"total_cost\":178.88,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1},{\"offer_id\":7,\"total_cost\":189.21,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":2}]}', '2026-04-20 19:23:01'),
+(139, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":65,\"offer_ids\":[2,1,7,6,9,15,14],\"comparisons\":[{\"offer_id\":7,\"total_cost\":75.4,\"satisfaction_score\":74,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":133.41,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":6},{\"offer_id\":15,\"total_cost\":101.35,\"satisfaction_score\":49,\"rank_by_score\":3,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":113.11,\"satisfaction_score\":47,\"rank_by_score\":4,\"rank_by_cost\":5},{\"offer_id\":9,\"total_cost\":75.87,\"satisfaction_score\":46,\"rank_by_score\":5,\"rank_by_cost\":2},{\"offer_id\":6,\"total_cost\":104.14,\"satisfaction_score\":44,\"rank_by_score\":6,\"rank_by_cost\":4},{\"offer_id\":14,\"total_cost\":170.48,\"satisfaction_score\":44,\"rank_by_score\":7,\"rank_by_cost\":7}]}', '2026-04-20 19:23:04'),
+(140, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":87,\"offer_ids\":[15,14,18],\"comparisons\":[{\"offer_id\":15,\"total_cost\":115.51,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":14,\"total_cost\":157.46,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":18,\"total_cost\":203.96,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-20 19:23:11'),
+(141, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":9,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":107.4,\"satisfaction_score\":97},{\"offer_id\":2,\"total_cost\":163.63,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":246.57,\"satisfaction_score\":64},{\"offer_id\":4,\"total_cost\":121.6,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":153.84,\"satisfaction_score\":64}]}', '2026-04-20 19:23:40'),
+(142, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":53,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":9,\"total_cost\":59.36,\"satisfaction_score\":96},{\"offer_id\":46,\"total_cost\":59.58,\"satisfaction_score\":97},{\"offer_id\":32,\"total_cost\":64.69,\"satisfaction_score\":100},{\"offer_id\":50,\"total_cost\":66.13,\"satisfaction_score\":97},{\"offer_id\":43,\"total_cost\":71.01,\"satisfaction_score\":73}]}', '2026-04-20 19:23:43'),
+(143, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":7,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":157.6,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":276.63,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":141.28,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":161.71,\"satisfaction_score\":44}]}', '2026-04-20 19:24:55'),
+(144, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":43,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":145.08,\"satisfaction_score\":67},{\"offer_id\":2,\"total_cost\":204.25,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":280.94,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":202.68,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":213.05,\"satisfaction_score\":64}]}', '2026-04-20 19:24:57'),
+(145, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":92,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":142.24,\"satisfaction_score\":67},{\"offer_id\":2,\"total_cost\":205.66,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":266.13,\"satisfaction_score\":64},{\"offer_id\":4,\"total_cost\":111.24,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":133.31,\"satisfaction_score\":64}]}', '2026-04-20 19:24:58'),
+(146, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":85,\"offer_ids\":[7,6,13,12],\"comparisons\":[{\"offer_id\":12,\"total_cost\":176.51,\"satisfaction_score\":46,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":13,\"total_cost\":193.42,\"satisfaction_score\":46,\"rank_by_score\":2,\"rank_by_cost\":4},{\"offer_id\":7,\"total_cost\":169.14,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1},{\"offer_id\":6,\"total_cost\":171.61,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":2}]}', '2026-04-20 19:25:03'),
+(147, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":3,\"offer_ids\":[7,6,13,12,18],\"comparisons\":[{\"offer_id\":12,\"total_cost\":185.24,\"satisfaction_score\":46,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":13,\"total_cost\":222.05,\"satisfaction_score\":46,\"rank_by_score\":2,\"rank_by_cost\":5},{\"offer_id\":18,\"total_cost\":141.66,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1},{\"offer_id\":6,\"total_cost\":170.61,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":2},{\"offer_id\":7,\"total_cost\":200.7,\"satisfaction_score\":44,\"rank_by_score\":5,\"rank_by_cost\":4}]}', '2026-04-20 19:25:06'),
+(148, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":70,\"offer_ids\":[7,6,13,12,18],\"comparisons\":[{\"offer_id\":13,\"total_cost\":220.11,\"satisfaction_score\":66,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":18,\"total_cost\":105.14,\"satisfaction_score\":64,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":7,\"total_cost\":272.62,\"satisfaction_score\":64,\"rank_by_score\":3,\"rank_by_cost\":5},{\"offer_id\":12,\"total_cost\":158.8,\"satisfaction_score\":46,\"rank_by_score\":4,\"rank_by_cost\":2},{\"offer_id\":6,\"total_cost\":220.66,\"satisfaction_score\":44,\"rank_by_score\":5,\"rank_by_cost\":4}]}', '2026-04-20 19:25:09'),
+(149, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":78,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":201.47,\"satisfaction_score\":67},{\"offer_id\":2,\"total_cost\":232.96,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":305.15,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":182.83,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":161.28,\"satisfaction_score\":64}]}', '2026-04-20 19:30:04'),
+(150, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":301,\"offer_ids\":[2,10,8],\"comparisons\":[{\"offer_id\":8,\"total_cost\":998.84,\"satisfaction_score\":83,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":2,\"total_cost\":969.83,\"satisfaction_score\":81,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":10,\"total_cost\":987.28,\"satisfaction_score\":79,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-20 19:30:11'),
+(151, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,2,5,6],\"comparisons\":[{\"offer_id\":2,\"total_cost\":157.6,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":5,\"total_cost\":150.88,\"satisfaction_score\":49,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":2},{\"offer_id\":6,\"total_cost\":161.71,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":4}]}', '2026-04-20 21:07:09'),
+(152, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":42,\"offer_ids\":[1,8],\"comparisons\":[{\"offer_id\":8,\"total_cost\":283.79,\"satisfaction_score\":53,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":485.35,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-20 21:08:48'),
+(153, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":74,\"offer_ids\":[7,12],\"comparisons\":[{\"offer_id\":12,\"total_cost\":207.49,\"satisfaction_score\":46,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":7,\"total_cost\":212.5,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-20 21:08:52'),
+(154, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":126,\"offer_ids\":[7,12,3,2],\"comparisons\":[{\"offer_id\":7,\"total_cost\":62.96,\"satisfaction_score\":84,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":101.44,\"satisfaction_score\":81,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":12,\"total_cost\":156.18,\"satisfaction_score\":46,\"rank_by_score\":3,\"rank_by_cost\":4},{\"offer_id\":3,\"total_cost\":155.87,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":3}]}', '2026-04-20 21:08:56'),
+(155, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":86,\"offer_ids\":[7,12,3,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":176.89,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":12,\"total_cost\":214.43,\"satisfaction_score\":46,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":7,\"total_cost\":144.81,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":268.9,\"satisfaction_score\":44,\"rank_by_score\":4,\"rank_by_cost\":4}]}', '2026-04-20 21:09:00'),
+(156, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":13,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":532.15,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":520.66,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-20 21:09:03'),
+(157, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":51,\"offer_ids\":[1,2,10,9,17],\"comparisons\":[{\"offer_id\":10,\"total_cost\":53.11,\"satisfaction_score\":79,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":9,\"total_cost\":55.87,\"satisfaction_score\":76,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":17,\"total_cost\":101.54,\"satisfaction_score\":52,\"rank_by_score\":3,\"rank_by_cost\":5},{\"offer_id\":2,\"total_cost\":63.05,\"satisfaction_score\":51,\"rank_by_score\":4,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":85.63,\"satisfaction_score\":47,\"rank_by_score\":5,\"rank_by_cost\":4}]}', '2026-04-20 21:09:08'),
+(158, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":4,\"offer_ids\":[1,2,10,9,17,13],\"comparisons\":[{\"offer_id\":17,\"total_cost\":87.3,\"satisfaction_score\":52,\"rank_by_score\":1,\"rank_by_cost\":5},{\"offer_id\":2,\"total_cost\":55.99,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":4},{\"offer_id\":10,\"total_cost\":47.31,\"satisfaction_score\":49,\"rank_by_score\":3,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47,\"rank_by_score\":4,\"rank_by_cost\":3},{\"offer_id\":9,\"total_cost\":37.69,\"satisfaction_score\":46,\"rank_by_score\":5,\"rank_by_cost\":1},{\"offer_id\":13,\"total_cost\":94.05,\"satisfaction_score\":46,\"rank_by_score\":6,\"rank_by_cost\":6}]}', '2026-04-20 21:09:11'),
+(159, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":5,\"offer_ids\":[1,2,10,9,17,13],\"comparisons\":[{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":486.16,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":6},{\"offer_id\":10,\"total_cost\":214.89,\"satisfaction_score\":49,\"rank_by_score\":3,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":447.04,\"satisfaction_score\":47,\"rank_by_score\":4,\"rank_by_cost\":5},{\"offer_id\":9,\"total_cost\":209.15,\"satisfaction_score\":46,\"rank_by_score\":5,\"rank_by_cost\":2},{\"offer_id\":13,\"total_cost\":291.94,\"satisfaction_score\":46,\"rank_by_score\":6,\"rank_by_cost\":4}]}', '2026-04-20 21:09:14');
+INSERT INTO `audit_logs` (`log_id`, `user_id`, `action`, `entity`, `entity_id`, `ip_address`, `details`, `created_at`) VALUES
+(160, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":9,\"offer_ids\":[1,2,10,9,17,13],\"comparisons\":[{\"offer_id\":17,\"total_cost\":102.89,\"satisfaction_score\":82,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":10,\"total_cost\":86.49,\"satisfaction_score\":79,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":107.4,\"satisfaction_score\":77,\"rank_by_score\":3,\"rank_by_cost\":4},{\"offer_id\":9,\"total_cost\":99.55,\"satisfaction_score\":76,\"rank_by_score\":4,\"rank_by_cost\":2},{\"offer_id\":2,\"total_cost\":163.63,\"satisfaction_score\":51,\"rank_by_score\":5,\"rank_by_cost\":5},{\"offer_id\":13,\"total_cost\":177.15,\"satisfaction_score\":46,\"rank_by_score\":6,\"rank_by_cost\":6}]}', '2026-04-20 21:09:16');
 
 -- --------------------------------------------------------
 
@@ -492,6 +529,135 @@ INSERT INTO `customer_profiles` (`profile_id`, `label`, `minutes_avg`, `sms_avg`
 (299, 'Client 299', 2286, 2696, '105.86', 33, 6, '22.49', 'PRICE'),
 (300, 'Client 300', 755, 2148, '30.77', 76, 5, '112.77', 'BALANCED'),
 (301, 'Ghaith bejaoui', 200, 50, '25.00', 35, 200, '50.00', 'PRICE');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fact_simulations`
+--
+
+CREATE TABLE `fact_simulations` (
+  `id` int(11) NOT NULL,
+  `simulated_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `offer_id` int(11) NOT NULL,
+  `offer_name` varchar(100) NOT NULL,
+  `offer_segment` varchar(50) NOT NULL,
+  `profile_id` int(11) NOT NULL,
+  `profile_name` varchar(100) NOT NULL,
+  `profile_segment` varchar(50) NOT NULL,
+  `base_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_minutes_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_sms_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `overage_data_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `roaming_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `options_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discounts` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `satisfaction_score` tinyint(4) NOT NULL DEFAULT 0,
+  `has_overage` tinyint(1) NOT NULL DEFAULT 0,
+  `is_recommended` tinyint(1) NOT NULL DEFAULT 0,
+  `simulation_type` varchar(20) NOT NULL DEFAULT 'single'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `fact_simulations`
+--
+
+INSERT INTO `fact_simulations` (`id`, `simulated_at`, `offer_id`, `offer_name`, `offer_segment`, `profile_id`, `profile_name`, `profile_segment`, `base_cost`, `overage_minutes_cost`, `overage_sms_cost`, `overage_data_cost`, `roaming_cost`, `options_cost`, `discounts`, `total_cost`, `satisfaction_score`, `has_overage`, `is_recommended`, `simulation_type`) VALUES
+(1, '2026-04-20 20:22:03', 1, 'Offer 1', 'POSTPAID', 6, 'Client 6', 'UNKNOWN', '37.56', '0.00', '0.00', '28.13', '0.00', '0.00', '0.00', '65.69', 47, 1, 0, 'recommend'),
+(2, '2026-04-20 20:22:09', 2, 'Offer 2', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '34.83', '79.12', '0.00', '13.64', '30.00', '0.00', '0.00', '157.60', 51, 1, 0, 'compare'),
+(3, '2026-04-20 20:22:09', 5, 'Offer 5', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '27.58', '0.00', '0.24', '48.06', '75.00', '0.00', '0.00', '150.88', 49, 1, 0, 'compare'),
+(4, '2026-04-20 20:22:09', 1, 'Offer 1', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '37.56', '1.91', '0.00', '33.16', '80.00', '0.00', '0.00', '152.62', 47, 1, 0, 'compare'),
+(5, '2026-04-20 20:22:10', 3, 'Offer 3', 'PREPAID', 7, 'Client 7', 'UNKNOWN', '21.55', '107.46', '0.00', '67.63', '80.00', '0.00', '0.00', '276.63', 44, 1, 0, 'compare'),
+(6, '2026-04-20 20:22:16', 10, 'Offer 10', 'POSTPAID', 56, 'Client 56', 'UNKNOWN', '42.28', '0.00', '16.08', '0.00', '0.00', '0.00', '0.00', '58.36', 100, 1, 1, 'compare'),
+(7, '2026-04-20 20:22:16', 4, 'Offer 4', 'POSTPAID', 56, 'Client 56', 'UNKNOWN', '21.75', '37.03', '12.90', '0.00', '40.00', '0.00', '0.00', '111.67', 71, 1, 1, 'compare'),
+(8, '2026-04-20 20:22:16', 6, 'Offer 6', 'PREPAID', 56, 'Client 56', 'UNKNOWN', '21.65', '53.76', '26.07', '0.00', '30.00', '0.00', '0.00', '131.48', 64, 1, 0, 'compare'),
+(9, '2026-04-20 20:22:24', 16, 'Offer 16', 'PREPAID', 103, 'Client 103', 'UNKNOWN', '16.75', '98.46', '23.63', '13.13', '50.00', '6.41', '0.00', '201.97', 42, 1, 0, 'single'),
+(10, '2026-04-20 20:22:27', 4, 'Offer 4', 'POSTPAID', 103, 'Client 103', 'UNKNOWN', '21.75', '64.71', '85.70', '0.00', '40.00', '19.54', '0.00', '212.16', 71, 1, 1, 'single'),
+(11, '2026-04-20 20:22:41', 50, 'Offer 50', 'POSTPAID', 87, 'Client 87', 'UNKNOWN', '27.93', '0.00', '16.52', '6.06', '10.00', '0.00', '0.00', '60.50', 77, 1, 1, 'recommend'),
+(12, '2026-04-20 20:22:44', 1, 'Offer 1', 'POSTPAID', 6, 'Client 6', 'UNKNOWN', '37.56', '0.00', '0.00', '28.13', '0.00', '0.00', '0.00', '65.69', 47, 1, 0, 'recommend'),
+(13, '2026-04-20 20:22:52', 2, 'Offer 2', 'POSTPAID', 4, 'Client 4', 'UNKNOWN', '34.83', '14.61', '0.00', '6.55', '0.00', '0.00', '0.00', '55.99', 51, 1, 0, 'compare'),
+(14, '2026-04-20 20:22:52', 1, 'Offer 1', 'POSTPAID', 4, 'Client 4', 'UNKNOWN', '37.56', '0.00', '0.00', '14.35', '0.00', '0.00', '0.00', '51.91', 47, 1, 0, 'compare'),
+(15, '2026-04-20 20:22:52', 7, 'Offer 7', 'PREPAID', 4, 'Client 4', 'UNKNOWN', '20.74', '0.00', '0.00', '14.04', '5.00', '0.00', '0.00', '39.78', 44, 1, 0, 'compare'),
+(16, '2026-04-20 20:22:52', 6, 'Offer 6', 'PREPAID', 4, 'Client 4', 'UNKNOWN', '21.65', '15.18', '0.00', '15.41', '0.00', '0.00', '0.00', '52.24', 44, 1, 0, 'compare'),
+(17, '2026-04-20 20:23:01', 2, 'Offer 2', 'POSTPAID', 32, 'Client 32', 'UNKNOWN', '34.83', '156.59', '0.00', '23.22', '5.00', '0.00', '0.00', '219.64', 51, 1, 0, 'compare'),
+(18, '2026-04-20 20:23:01', 1, 'Offer 1', 'POSTPAID', 32, 'Client 32', 'UNKNOWN', '37.56', '91.46', '0.00', '58.54', '55.00', '0.00', '0.00', '242.55', 47, 1, 0, 'compare'),
+(19, '2026-04-20 20:23:01', 6, 'Offer 6', 'PREPAID', 32, 'Client 32', 'UNKNOWN', '21.65', '79.47', '0.00', '27.76', '50.00', '0.00', '0.00', '178.88', 44, 1, 0, 'compare'),
+(20, '2026-04-20 20:23:01', 7, 'Offer 7', 'PREPAID', 32, 'Client 32', 'UNKNOWN', '20.74', '77.07', '0.00', '26.40', '65.00', '0.00', '0.00', '189.21', 44, 1, 0, 'compare'),
+(21, '2026-04-20 20:23:04', 7, 'Offer 7', 'PREPAID', 65, 'Client 65', 'UNKNOWN', '20.74', '6.30', '0.00', '28.36', '20.00', '0.00', '0.00', '75.40', 74, 1, 1, 'compare'),
+(22, '2026-04-20 20:23:04', 2, 'Offer 2', 'POSTPAID', 65, 'Client 65', 'UNKNOWN', '34.83', '43.81', '28.91', '25.86', '0.00', '0.00', '0.00', '133.41', 51, 1, 0, 'compare'),
+(23, '2026-04-20 20:23:04', 15, 'Offer 15', 'POSTPAID', 65, 'Client 65', 'UNKNOWN', '43.36', '8.74', '0.00', '49.25', '0.00', '0.00', '0.00', '101.35', 49, 1, 0, 'compare'),
+(24, '2026-04-20 20:23:04', 1, 'Offer 1', 'POSTPAID', 65, 'Client 65', 'UNKNOWN', '37.56', '0.00', '0.00', '65.55', '10.00', '0.00', '0.00', '113.11', 47, 1, 0, 'compare'),
+(25, '2026-04-20 20:23:04', 9, 'Offer 9', 'PREPAID', 65, 'Client 65', 'UNKNOWN', '13.73', '0.00', '10.79', '46.35', '5.00', '0.00', '0.00', '75.87', 46, 1, 0, 'compare'),
+(26, '2026-04-20 20:23:04', 6, 'Offer 6', 'PREPAID', 65, 'Client 65', 'UNKNOWN', '21.65', '28.41', '19.36', '29.72', '5.00', '0.00', '0.00', '104.14', 44, 1, 0, 'compare'),
+(27, '2026-04-20 20:23:04', 14, 'Offer 14', 'PREPAID', 65, 'Client 65', 'UNKNOWN', '11.12', '42.97', '0.00', '101.39', '15.00', '0.00', '0.00', '170.48', 44, 1, 0, 'compare'),
+(28, '2026-04-20 20:23:11', 15, 'Offer 15', 'POSTPAID', 87, 'Client 87', 'UNKNOWN', '43.36', '0.00', '19.85', '32.30', '20.00', '0.00', '0.00', '115.51', 49, 1, 0, 'compare'),
+(29, '2026-04-20 20:23:11', 14, 'Offer 14', 'PREPAID', 87, 'Client 87', 'UNKNOWN', '11.12', '0.00', '11.86', '69.47', '65.00', '0.00', '0.00', '157.46', 44, 1, 0, 'compare'),
+(30, '2026-04-20 20:23:11', 18, 'Offer 18', 'PREPAID', 87, 'Client 87', 'UNKNOWN', '11.63', '0.00', '47.60', '79.74', '65.00', '0.00', '0.00', '203.96', 44, 1, 0, 'compare'),
+(31, '2026-04-20 20:23:40', 1, 'Offer 1', 'POSTPAID', 9, 'Client 9', 'UNKNOWN', '37.56', '0.00', '0.00', '34.84', '35.00', '0.00', '0.00', '107.40', 97, 1, 1, 'recommend'),
+(32, '2026-04-20 20:23:43', 9, 'Offer 9', 'PREPAID', 53, 'Client 53', 'UNKNOWN', '13.73', '5.75', '30.33', '4.56', '5.00', '0.00', '0.00', '59.36', 96, 1, 1, 'recommend'),
+(33, '2026-04-20 20:24:55', 1, 'Offer 1', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '37.56', '1.91', '0.00', '33.16', '80.00', '0.00', '0.00', '152.62', 47, 1, 0, 'recommend'),
+(34, '2026-04-20 20:24:57', 1, 'Offer 1', 'POSTPAID', 43, 'Client 43', 'UNKNOWN', '37.56', '5.87', '41.65', '0.00', '60.00', '0.00', '0.00', '145.08', 67, 1, 0, 'recommend'),
+(35, '2026-04-20 20:24:58', 1, 'Offer 1', 'POSTPAID', 92, 'Client 92', 'UNKNOWN', '37.56', '44.48', '0.00', '60.20', '0.00', '0.00', '0.00', '142.24', 67, 1, 0, 'recommend'),
+(36, '2026-04-20 20:25:03', 12, 'Offer 12', 'PREPAID', 85, 'Client 85', 'UNKNOWN', '17.61', '37.74', '0.00', '51.16', '70.00', '0.00', '0.00', '176.51', 46, 1, 0, 'compare'),
+(37, '2026-04-20 20:25:03', 13, 'Offer 13', 'PREPAID', 85, 'Client 85', 'UNKNOWN', '24.38', '69.08', '0.00', '39.96', '60.00', '0.00', '0.00', '193.42', 46, 1, 0, 'compare'),
+(38, '2026-04-20 20:25:03', 7, 'Offer 7', 'PREPAID', 85, 'Client 85', 'UNKNOWN', '20.74', '68.46', '0.00', '9.94', '70.00', '0.00', '0.00', '169.14', 44, 1, 0, 'compare'),
+(39, '2026-04-20 20:25:03', 6, 'Offer 6', 'PREPAID', 85, 'Client 85', 'UNKNOWN', '21.65', '73.26', '10.40', '11.30', '55.00', '0.00', '0.00', '171.61', 44, 1, 0, 'compare'),
+(40, '2026-04-20 20:25:06', 12, 'Offer 12', 'PREPAID', 3, 'Client 3', 'UNKNOWN', '17.61', '72.97', '0.00', '79.67', '15.00', '0.00', '0.00', '185.24', 46, 1, 0, 'compare'),
+(41, '2026-04-20 20:25:06', 13, 'Offer 13', 'PREPAID', 3, 'Client 3', 'UNKNOWN', '24.38', '124.37', '0.00', '68.29', '5.00', '0.00', '0.00', '222.05', 46, 1, 0, 'compare'),
+(42, '2026-04-20 20:25:06', 18, 'Offer 18', 'PREPAID', 3, 'Client 3', 'UNKNOWN', '11.63', '47.38', '0.00', '72.65', '10.00', '0.00', '0.00', '141.66', 44, 1, 0, 'compare'),
+(43, '2026-04-20 20:25:06', 6, 'Offer 6', 'PREPAID', 3, 'Client 3', 'UNKNOWN', '21.65', '130.64', '0.00', '18.32', '0.00', '0.00', '0.00', '170.61', 44, 1, 0, 'compare'),
+(44, '2026-04-20 20:25:06', 7, 'Offer 7', 'PREPAID', 3, 'Client 3', 'UNKNOWN', '20.74', '148.00', '0.00', '16.95', '15.00', '0.00', '0.00', '200.70', 44, 1, 0, 'compare'),
+(45, '2026-04-20 20:25:09', 13, 'Offer 13', 'PREPAID', 70, 'Client 70', 'UNKNOWN', '24.38', '175.73', '0.00', '0.00', '20.00', '0.00', '0.00', '220.11', 66, 1, 0, 'compare'),
+(46, '2026-04-20 20:25:09', 18, 'Offer 18', 'PREPAID', 70, 'Client 70', 'UNKNOWN', '11.63', '68.51', '0.00', '0.00', '25.00', '0.00', '0.00', '105.14', 64, 1, 0, 'compare'),
+(47, '2026-04-20 20:25:09', 7, 'Offer 7', 'PREPAID', 70, 'Client 70', 'UNKNOWN', '20.74', '221.88', '0.00', '0.00', '30.00', '0.00', '0.00', '272.62', 64, 1, 0, 'compare'),
+(48, '2026-04-20 20:25:09', 12, 'Offer 12', 'PREPAID', 70, 'Client 70', 'UNKNOWN', '17.61', '105.69', '0.00', '5.50', '30.00', '0.00', '0.00', '158.80', 46, 1, 0, 'compare'),
+(49, '2026-04-20 20:25:09', 6, 'Offer 6', 'PREPAID', 70, 'Client 70', 'UNKNOWN', '21.65', '183.94', '0.00', '0.07', '15.00', '0.00', '0.00', '220.66', 44, 1, 0, 'compare'),
+(50, '2026-04-20 20:30:04', 1, 'Offer 1', 'POSTPAID', 78, 'Client 78', 'UNKNOWN', '37.56', '118.91', '0.00', '0.00', '45.00', '0.00', '0.00', '201.47', 67, 1, 0, 'recommend'),
+(51, '2026-04-20 20:30:11', 8, 'Offer 8', 'POSTPAID', 301, 'Ghaith bejaoui', 'UNKNOWN', '38.84', '0.00', '0.00', '0.00', '960.00', '0.00', '0.00', '998.84', 83, 0, 1, 'compare'),
+(52, '2026-04-20 20:30:11', 2, 'Offer 2', 'POSTPAID', 301, 'Ghaith bejaoui', 'UNKNOWN', '34.83', '0.00', '0.00', '0.00', '935.00', '0.00', '0.00', '969.83', 81, 0, 1, 'compare'),
+(53, '2026-04-20 20:30:11', 10, 'Offer 10', 'POSTPAID', 301, 'Ghaith bejaoui', 'UNKNOWN', '42.28', '0.00', '0.00', '0.00', '945.00', '0.00', '0.00', '987.28', 79, 0, 1, 'compare'),
+(54, '2026-04-20 22:07:09', 2, 'Offer 2', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '34.83', '79.12', '0.00', '13.64', '30.00', '0.00', '0.00', '157.60', 51, 1, 0, 'compare'),
+(55, '2026-04-20 22:07:10', 5, 'Offer 5', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '27.58', '0.00', '0.24', '48.06', '75.00', '0.00', '0.00', '150.88', 49, 1, 0, 'compare'),
+(56, '2026-04-20 22:07:10', 1, 'Offer 1', 'POSTPAID', 7, 'Client 7', 'UNKNOWN', '37.56', '1.91', '0.00', '33.16', '80.00', '0.00', '0.00', '152.62', 47, 1, 0, 'compare'),
+(57, '2026-04-20 22:07:10', 6, 'Offer 6', 'PREPAID', 7, 'Client 7', 'UNKNOWN', '21.65', '44.39', '0.00', '20.67', '75.00', '0.00', '0.00', '161.71', 44, 1, 0, 'compare'),
+(58, '2026-04-20 22:08:48', 8, 'Offer 8', 'POSTPAID', 42, 'Client 42', 'UNKNOWN', '38.84', '167.28', '26.11', '51.56', '0.00', '0.00', '0.00', '283.79', 53, 1, 0, 'compare'),
+(59, '2026-04-20 22:08:48', 1, 'Offer 1', 'POSTPAID', 42, 'Client 42', 'UNKNOWN', '37.56', '331.47', '33.49', '72.83', '10.00', '0.00', '0.00', '485.35', 47, 1, 0, 'compare'),
+(60, '2026-04-20 22:08:52', 12, 'Offer 12', 'PREPAID', 74, 'Client 74', 'UNKNOWN', '17.61', '51.75', '0.00', '58.13', '80.00', '0.00', '0.00', '207.49', 46, 1, 0, 'compare'),
+(61, '2026-04-20 22:08:52', 7, 'Offer 7', 'PREPAID', 74, 'Client 74', 'UNKNOWN', '20.74', '100.10', '0.00', '11.65', '80.00', '0.00', '0.00', '212.50', 44, 1, 0, 'compare'),
+(62, '2026-04-20 22:08:56', 7, 'Offer 7', 'PREPAID', 126, 'Client 126', 'UNKNOWN', '20.74', '0.00', '0.00', '27.22', '15.00', '0.00', '0.00', '62.96', 84, 1, 1, 'compare'),
+(63, '2026-04-20 22:08:56', 2, 'Offer 2', 'POSTPAID', 126, 'Client 126', 'UNKNOWN', '34.83', '14.99', '27.31', '24.32', '0.00', '0.00', '0.00', '101.44', 81, 1, 1, 'compare'),
+(64, '2026-04-20 22:08:56', 12, 'Offer 12', 'PREPAID', 126, 'Client 126', 'UNKNOWN', '17.61', '2.19', '0.00', '121.38', '15.00', '0.00', '0.00', '156.18', 46, 1, 0, 'compare'),
+(65, '2026-04-20 22:08:56', 3, 'Offer 3', 'PREPAID', 126, 'Client 126', 'UNKNOWN', '21.55', '33.63', '0.00', '95.69', '5.00', '0.00', '0.00', '155.87', 44, 1, 0, 'compare'),
+(66, '2026-04-20 22:09:00', 2, 'Offer 2', 'POSTPAID', 86, 'Client 86', 'UNKNOWN', '34.83', '77.98', '34.85', '14.24', '15.00', '0.00', '0.00', '176.89', 51, 1, 0, 'compare'),
+(67, '2026-04-20 22:09:00', 12, 'Offer 12', 'PREPAID', 86, 'Client 86', 'UNKNOWN', '17.61', '19.70', '11.13', '90.99', '75.00', '0.00', '0.00', '214.43', 46, 1, 0, 'compare'),
+(68, '2026-04-20 22:09:00', 7, 'Offer 7', 'PREPAID', 86, 'Client 86', 'UNKNOWN', '20.74', '27.74', '1.59', '19.74', '75.00', '0.00', '0.00', '144.81', 44, 1, 0, 'compare'),
+(69, '2026-04-20 22:09:00', 3, 'Offer 3', 'PREPAID', 86, 'Client 86', 'UNKNOWN', '21.55', '106.14', '7.03', '69.18', '65.00', '0.00', '0.00', '268.90', 44, 1, 0, 'compare'),
+(70, '2026-04-20 22:09:03', 2, 'Offer 2', 'POSTPAID', 13, 'Client 13', 'UNKNOWN', '34.83', '380.75', '91.64', '24.94', '0.00', '0.00', '0.00', '532.15', 51, 1, 0, 'compare'),
+(71, '2026-04-20 22:09:03', 1, 'Offer 1', 'POSTPAID', 13, 'Client 13', 'UNKNOWN', '37.56', '350.56', '64.44', '63.11', '5.00', '0.00', '0.00', '520.66', 47, 1, 0, 'compare'),
+(72, '2026-04-20 22:09:08', 10, 'Offer 10', 'POSTPAID', 51, 'Client 51', 'UNKNOWN', '42.28', '0.00', '0.00', '10.83', '0.00', '0.00', '0.00', '53.11', 79, 1, 1, 'compare'),
+(73, '2026-04-20 22:09:08', 9, 'Offer 9', 'PREPAID', 51, 'Client 51', 'UNKNOWN', '13.73', '0.00', '0.00', '32.14', '10.00', '0.00', '0.00', '55.87', 76, 1, 1, 'compare'),
+(74, '2026-04-20 22:09:08', 17, 'Offer 17', 'BUSINESS', 51, 'Client 51', 'UNKNOWN', '78.58', '0.00', '0.00', '22.96', '0.00', '0.00', '0.00', '101.54', 52, 1, 0, 'compare'),
+(75, '2026-04-20 22:09:08', 2, 'Offer 2', 'POSTPAID', 51, 'Client 51', 'UNKNOWN', '34.83', '14.61', '0.00', '13.61', '0.00', '0.00', '0.00', '63.05', 51, 1, 0, 'compare'),
+(76, '2026-04-20 22:09:08', 1, 'Offer 1', 'POSTPAID', 51, 'Client 51', 'UNKNOWN', '37.56', '0.00', '0.00', '33.07', '15.00', '0.00', '0.00', '85.63', 47, 1, 0, 'compare'),
+(77, '2026-04-20 22:09:11', 17, 'Offer 17', 'BUSINESS', 4, 'Client 4', 'UNKNOWN', '78.58', '0.00', '0.00', '8.72', '0.00', '0.00', '0.00', '87.30', 52, 1, 0, 'compare'),
+(78, '2026-04-20 22:09:12', 2, 'Offer 2', 'POSTPAID', 4, 'Client 4', 'UNKNOWN', '34.83', '14.61', '0.00', '6.55', '0.00', '0.00', '0.00', '55.99', 51, 1, 0, 'compare'),
+(79, '2026-04-20 22:09:12', 10, 'Offer 10', 'POSTPAID', 4, 'Client 4', 'UNKNOWN', '42.28', '0.00', '0.00', '5.03', '0.00', '0.00', '0.00', '47.31', 49, 1, 0, 'compare'),
+(80, '2026-04-20 22:09:12', 1, 'Offer 1', 'POSTPAID', 4, 'Client 4', 'UNKNOWN', '37.56', '0.00', '0.00', '14.35', '0.00', '0.00', '0.00', '51.91', 47, 1, 0, 'compare'),
+(81, '2026-04-20 22:09:12', 9, 'Offer 9', 'PREPAID', 4, 'Client 4', 'UNKNOWN', '13.73', '0.00', '0.00', '23.96', '0.00', '0.00', '0.00', '37.69', 46, 1, 0, 'compare'),
+(82, '2026-04-20 22:09:12', 13, 'Offer 13', 'PREPAID', 4, 'Client 4', 'UNKNOWN', '24.38', '13.13', '0.00', '56.54', '0.00', '0.00', '0.00', '94.05', 46, 1, 0, 'compare'),
+(83, '2026-04-20 22:09:14', 17, 'Offer 17', 'BUSINESS', 5, 'Client 5', 'UNKNOWN', '78.58', '50.53', '0.00', '15.80', '0.00', '0.00', '0.00', '144.91', 52, 1, 0, 'compare'),
+(84, '2026-04-20 22:09:14', 2, 'Offer 2', 'POSTPAID', 5, 'Client 5', 'UNKNOWN', '34.83', '393.95', '47.31', '10.06', '0.00', '0.00', '0.00', '486.16', 51, 1, 0, 'compare'),
+(85, '2026-04-20 22:09:14', 10, 'Offer 10', 'POSTPAID', 5, 'Client 5', 'UNKNOWN', '42.28', '126.31', '38.39', '7.91', '0.00', '0.00', '0.00', '214.89', 49, 1, 0, 'compare'),
+(86, '2026-04-20 22:09:14', 1, 'Offer 1', 'POSTPAID', 5, 'Client 5', 'UNKNOWN', '37.56', '365.83', '0.00', '23.65', '20.00', '0.00', '0.00', '447.04', 47, 1, 0, 'compare'),
+(87, '2026-04-20 22:09:14', 9, 'Offer 9', 'PREPAID', 5, 'Client 5', 'UNKNOWN', '13.73', '135.27', '17.12', '28.03', '15.00', '0.00', '0.00', '209.15', 46, 1, 0, 'compare'),
+(88, '2026-04-20 22:09:14', 13, 'Offer 13', 'PREPAID', 5, 'Client 5', 'UNKNOWN', '24.38', '178.61', '1.90', '67.04', '20.00', '0.00', '0.00', '291.94', 46, 1, 0, 'compare'),
+(89, '2026-04-20 22:09:16', 17, 'Offer 17', 'BUSINESS', 9, 'Client 9', 'UNKNOWN', '78.58', '0.00', '0.00', '24.31', '0.00', '0.00', '0.00', '102.89', 82, 1, 1, 'compare'),
+(90, '2026-04-20 22:09:16', 10, 'Offer 10', 'POSTPAID', 9, 'Client 9', 'UNKNOWN', '42.28', '0.00', '32.83', '11.38', '0.00', '0.00', '0.00', '86.49', 79, 1, 1, 'compare'),
+(91, '2026-04-20 22:09:16', 1, 'Offer 1', 'POSTPAID', 9, 'Client 9', 'UNKNOWN', '37.56', '0.00', '0.00', '34.84', '35.00', '0.00', '0.00', '107.40', 77, 1, 1, 'compare'),
+(92, '2026-04-20 22:09:16', 9, 'Offer 9', 'PREPAID', 9, 'Client 9', 'UNKNOWN', '13.73', '6.96', '15.95', '32.92', '30.00', '0.00', '0.00', '99.55', 76, 1, 1, 'compare'),
+(93, '2026-04-20 22:09:16', 2, 'Offer 2', 'POSTPAID', 9, 'Client 9', 'UNKNOWN', '34.83', '70.61', '43.91', '14.28', '0.00', '0.00', '0.00', '163.63', 51, 1, 0, 'compare'),
+(94, '2026-04-20 22:09:16', 13, 'Offer 13', 'PREPAID', 9, 'Client 9', 'UNKNOWN', '24.38', '37.56', '0.52', '79.69', '35.00', '0.00', '0.00', '177.15', 46, 1, 0, 'compare');
 
 -- --------------------------------------------------------
 
@@ -935,6 +1101,131 @@ INSERT INTO `users` (`user_id`, `username`, `email`, `password_hash`, `role`, `c
 (2, 'analyst', 'analyst@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ANALYST', '2026-03-30 21:54:48', '2026-03-30 22:39:46'),
 (3, 'Guest', 'guest@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'GUEST', '2026-04-18 17:32:40', '2026-04-18 17:32:40');
 
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `vw_arpu`
+-- (See below for the actual view)
+--
+CREATE TABLE `vw_arpu` (
+`offer_id` int(11)
+,`offer_name` varchar(100)
+,`offer_segment` varchar(50)
+,`simulation_count` bigint(21)
+,`arpu` decimal(11,2)
+,`min_cost` decimal(10,2)
+,`max_cost` decimal(10,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `vw_daily_volume`
+-- (See below for the actual view)
+--
+CREATE TABLE `vw_daily_volume` (
+`sim_date` date
+,`simulation_type` varchar(20)
+,`simulation_count` bigint(21)
+,`avg_cost` decimal(11,2)
+,`avg_score` decimal(5,1)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `vw_overage`
+-- (See below for the actual view)
+--
+CREATE TABLE `vw_overage` (
+`offer_id` int(11)
+,`offer_name` varchar(100)
+,`offer_segment` varchar(50)
+,`total_sims` bigint(21)
+,`sims_with_overage` decimal(25,0)
+,`overage_pct` decimal(31,2)
+,`avg_overage_cost` decimal(13,2)
+,`avg_minutes_overage` decimal(11,2)
+,`avg_sms_overage` decimal(11,2)
+,`avg_data_overage` decimal(11,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `vw_recommendation_rate`
+-- (See below for the actual view)
+--
+CREATE TABLE `vw_recommendation_rate` (
+`offer_id` int(11)
+,`offer_name` varchar(100)
+,`offer_segment` varchar(50)
+,`total_sims` bigint(21)
+,`recommended_count` decimal(25,0)
+,`recommendation_rate_pct` decimal(31,2)
+,`avg_score` decimal(5,1)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `vw_segment_summary`
+-- (See below for the actual view)
+--
+CREATE TABLE `vw_segment_summary` (
+`offer_segment` varchar(50)
+,`total_sims` bigint(21)
+,`avg_arpu` decimal(11,2)
+,`avg_score` decimal(5,1)
+,`overage_pct` decimal(31,2)
+,`recommendation_rate_pct` decimal(31,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `vw_arpu`
+--
+DROP TABLE IF EXISTS `vw_arpu`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_arpu`  AS SELECT `fact_simulations`.`offer_id` AS `offer_id`, `fact_simulations`.`offer_name` AS `offer_name`, `fact_simulations`.`offer_segment` AS `offer_segment`, count(0) AS `simulation_count`, round(avg(`fact_simulations`.`total_cost`),2) AS `arpu`, round(min(`fact_simulations`.`total_cost`),2) AS `min_cost`, round(max(`fact_simulations`.`total_cost`),2) AS `max_cost` FROM `fact_simulations` GROUP BY `fact_simulations`.`offer_id`, `fact_simulations`.`offer_name`, `fact_simulations`.`offer_segment``offer_segment`  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `vw_daily_volume`
+--
+DROP TABLE IF EXISTS `vw_daily_volume`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_daily_volume`  AS SELECT cast(`fact_simulations`.`simulated_at` as date) AS `sim_date`, `fact_simulations`.`simulation_type` AS `simulation_type`, count(0) AS `simulation_count`, round(avg(`fact_simulations`.`total_cost`),2) AS `avg_cost`, round(avg(`fact_simulations`.`satisfaction_score`),1) AS `avg_score` FROM `fact_simulations` GROUP BY cast(`fact_simulations`.`simulated_at` as date), `fact_simulations`.`simulation_type` ORDER BY cast(`fact_simulations`.`simulated_at` as date) AS `DESCdesc` ASC  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `vw_overage`
+--
+DROP TABLE IF EXISTS `vw_overage`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_overage`  AS SELECT `fact_simulations`.`offer_id` AS `offer_id`, `fact_simulations`.`offer_name` AS `offer_name`, `fact_simulations`.`offer_segment` AS `offer_segment`, count(0) AS `total_sims`, sum(`fact_simulations`.`has_overage`) AS `sims_with_overage`, round(sum(`fact_simulations`.`has_overage`) * 100.0 / count(0),2) AS `overage_pct`, round(avg(`fact_simulations`.`overage_minutes_cost` + `fact_simulations`.`overage_sms_cost` + `fact_simulations`.`overage_data_cost`),2) AS `avg_overage_cost`, round(avg(`fact_simulations`.`overage_minutes_cost`),2) AS `avg_minutes_overage`, round(avg(`fact_simulations`.`overage_sms_cost`),2) AS `avg_sms_overage`, round(avg(`fact_simulations`.`overage_data_cost`),2) AS `avg_data_overage` FROM `fact_simulations` GROUP BY `fact_simulations`.`offer_id`, `fact_simulations`.`offer_name`, `fact_simulations`.`offer_segment``offer_segment`  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `vw_recommendation_rate`
+--
+DROP TABLE IF EXISTS `vw_recommendation_rate`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_recommendation_rate`  AS SELECT `fact_simulations`.`offer_id` AS `offer_id`, `fact_simulations`.`offer_name` AS `offer_name`, `fact_simulations`.`offer_segment` AS `offer_segment`, count(0) AS `total_sims`, sum(`fact_simulations`.`is_recommended`) AS `recommended_count`, round(sum(`fact_simulations`.`is_recommended`) * 100.0 / count(0),2) AS `recommendation_rate_pct`, round(avg(`fact_simulations`.`satisfaction_score`),1) AS `avg_score` FROM `fact_simulations` GROUP BY `fact_simulations`.`offer_id`, `fact_simulations`.`offer_name`, `fact_simulations`.`offer_segment``offer_segment`  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `vw_segment_summary`
+--
+DROP TABLE IF EXISTS `vw_segment_summary`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_segment_summary`  AS SELECT `fact_simulations`.`offer_segment` AS `offer_segment`, count(0) AS `total_sims`, round(avg(`fact_simulations`.`total_cost`),2) AS `avg_arpu`, round(avg(`fact_simulations`.`satisfaction_score`),1) AS `avg_score`, round(sum(`fact_simulations`.`has_overage`) * 100.0 / count(0),2) AS `overage_pct`, round(sum(`fact_simulations`.`is_recommended`) * 100.0 / count(0),2) AS `recommendation_rate_pct` FROM `fact_simulations` GROUP BY `fact_simulations`.`offer_segment``offer_segment`  ;
+
 --
 -- Indexes for dumped tables
 --
@@ -951,6 +1242,17 @@ ALTER TABLE `audit_logs`
 --
 ALTER TABLE `customer_profiles`
   ADD PRIMARY KEY (`profile_id`);
+
+--
+-- Indexes for table `fact_simulations`
+--
+ALTER TABLE `fact_simulations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_simulated_at` (`simulated_at`),
+  ADD KEY `idx_offer_id` (`offer_id`),
+  ADD KEY `idx_profile_id` (`profile_id`),
+  ADD KEY `idx_segment` (`offer_segment`),
+  ADD KEY `idx_sim_type` (`simulation_type`);
 
 --
 -- Indexes for table `offers`
@@ -1000,13 +1302,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
 
 --
 -- AUTO_INCREMENT for table `customer_profiles`
 --
 ALTER TABLE `customer_profiles`
   MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=302;
+
+--
+-- AUTO_INCREMENT for table `fact_simulations`
+--
+ALTER TABLE `fact_simulations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `offers`

@@ -1,12 +1,29 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const db = require('./config/database');
 const { authMiddleware } = require('./middleware/auth');
 const app = express();
 
-// Middleware
+// Security middleware
+app.use(helmet());
 app.use(cors());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' }
+});
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // stricter limit for auth endpoints
+  message: { error: 'Too many login attempts, please try again later.' }
+});
+
+app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -86,6 +103,9 @@ app.use('/api/audit', auditRoutes);
 
 const statsRoutes = require('./routes/stats');
 app.use('/api/stats', statsRoutes);
+
+const biRoutes = require('./routes/bi');
+app.use('/api/bi', biRoutes);
 
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);

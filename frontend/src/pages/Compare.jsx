@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { fonts } from "../styles/theme";
 
 const cardStyleStyle = {
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 16,
   boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
@@ -31,7 +31,7 @@ const btnGhostStyle = {
   gap: 8,
   padding: "0 20px",
   height: 40,
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 10,
   color: "var(--text-muted)",
@@ -59,7 +59,7 @@ const btnDangerStyle = {
 };
 
 const inputStyle = {
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 10,
   color: "var(--text)",
@@ -70,7 +70,7 @@ const inputStyle = {
 };
 
 const selectStyle = {
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 10,
   color: "var(--text)",
@@ -78,6 +78,8 @@ const selectStyle = {
   padding: "0 12px",
   outline: "none",
   transition: "border-color 0.2s ease",
+  appearance: "none",
+  WebkitAppearance: "none",
 };
 
 const API = "http://localhost:5000/api";
@@ -226,9 +228,9 @@ export default function Compare() {
               onChange={e => setSelectedProfile(e.target.value)}
               style={{ ...selectStyle, height: 40 }}
             >
-              <option value="" style={{ background: "var(--bg-cardStyle)", color: "var(--text)" }}>— Select a profile —</option>
+              <option value="" style={{ background: "var(--bg-card)", color: "var(--text)" }}>— Select a profile —</option>
               {profiles.map((p, index) => (
-                <option key={index} value={p.profile_id ?? p.id} style={{ background: "var(--bg-cardStyle)", color: "var(--text)" }}>{p.label || p.name}</option>
+                <option key={index} value={p.profile_id ?? p.id} style={{ background: "var(--bg-card)", color: "var(--text)" }}>{p.label || p.name}</option>
               ))}
             </select>
           </div>
@@ -239,16 +241,16 @@ export default function Compare() {
               <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>Select Offers</p>
               <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{selectedOffers.length} selected</span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 6, maxHeight: 320, overflowY: "auto", padding: 2 }}>
               {offers.map((o, index) => (
                 <label 
                   key={index}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
-                    gap: 10, 
-                    padding: "10px 12px", 
-                    borderRadius: 8,
+                    gap: 6, 
+                    padding: "6px 8px", 
+                    borderRadius: 6,
                     background: isOfferSelected(index) ? "var(--blue-dim)" : "rgba(255,255,255,0.02)",
                     border: `0.5px solid ${isOfferSelected(index) ? "var(--blue)" : "var(--border)"}`,
                     cursor: "pointer",
@@ -261,9 +263,9 @@ export default function Compare() {
                     onChange={() => toggleOffer(index)}
                     style={{ accentColor: "var(--blue)", flexShrink: 0 }} 
                   />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{o.name}</p>
-                    <p style={{ fontSize: 11, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment}</p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 11, color: "var(--text)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.name}</p>
+                    <p style={{ fontSize: 10, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment}</p>
                   </div>
                 </label>
               ))}

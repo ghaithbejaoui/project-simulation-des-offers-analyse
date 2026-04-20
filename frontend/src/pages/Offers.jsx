@@ -5,7 +5,7 @@ import { isAdmin } from "../App";
 import { useLanguage } from "../context/LanguageContext";
 
 const cardStyleStyle = {
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 16,
   boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
@@ -34,7 +34,7 @@ const btnGhostStyleStyle = {
   gap: 8,
   padding: "0 20px",
   height: 40,
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 10,
   color: "var(--text-muted)",
@@ -62,7 +62,7 @@ const btnDangerStyleStyle = {
 };
 
 const inputStyleStyle = {
-  background: "var(--bg-cardStyle)",
+  background: "var(--bg-card)",
   border: "0.5px solid var(--border)",
   borderRadius: 10,
   color: "var(--text)",

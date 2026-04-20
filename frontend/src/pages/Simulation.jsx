@@ -523,18 +523,18 @@ export default function Simulation() {
                   </p>
                   <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{selectedOffers.length} selected</span>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 6, maxHeight: 300, overflowY: "auto", padding: 2 }}>
                   {offers.map(o => (
-                    <label key={o.offer_id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
+                    <label key={o.offer_id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", borderRadius: 6,
                       background: selectedOffers.includes(o.offer_id) ? "rgba(26,143,255,0.15)" : "rgba(255,255,255,0.02)",
                       border: `0.5px solid ${selectedOffers.includes(o.offer_id) ? "var(--blue)" : "var(--border)"}`,
                       cursor: "pointer", transition: "all 0.15s" }}>
                       <input type={mode === "single" ? "radio" : "checkbox"} name="offer"
                         checked={selectedOffers.includes(o.offer_id)} onChange={() => toggleOffer(o.offer_id)}
                         style={{ accentColor: "var(--blue)", flexShrink: 0 }} />
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{o.name}</p>
-                        <p style={{ fontSize: 11, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 11, color: "var(--text)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.name}</p>
+                        <p style={{ fontSize: 10, color: "var(--text-dim)" }}>{Number(o.monthly_price).toFixed(2)} TND · {o.segment?.replace("_"," ")}</p>
                       </div>
                     </label>
                   ))}

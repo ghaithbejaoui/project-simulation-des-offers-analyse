@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fonts } from "../styles/theme";
 import { useLanguage } from "../context/LanguageContext";
+import { biService } from "../services/biService";
 
 const cardStyle = {
   background: "var(--bg-card)",
@@ -106,42 +107,54 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
-  const [costData] = useState([
-    { label: "Jan", value: 42 }, { label: "Feb", value: 58 }, { label: "Mar", value: 51 },
-    { label: "Apr", value: 74 }, { label: "May", value: 63 }, { label: "Jun", value: 89 },
-    { label: "Jul", value: 78 },
-  ]);
-  const [satisfactionData] = useState([
-    { label: "Mon", value: 72 }, { label: "Tue", value: 85 }, { label: "Wed", value: 68 },
-    { label: "Thu", value: 91 }, { label: "Fri", value: 79 }, { label: "Sat", value: 55 }, { label: "Sun", value: 60 },
-  ]);
+  const [kpis, setKpis] = useState(null);
+  const [dailyVolume, setDailyVolume] = useState([]);
+  const [segmentData, setSegmentData] = useState([]);
 
-   useEffect(() => {
-     const fetchStats = async () => {
-       try {
-         const token = localStorage.getItem("token");
-         const headers = { Authorization: `Bearer ${token}` };
-         const [offersRes, profilesRes, optionsRes, activityRes] = await Promise.allSettled([
-           fetch("http://localhost:5000/api/offers", { headers }),
-           fetch("http://localhost:5000/api/customer-profiles", { headers }),
-           fetch("http://localhost:5000/api/options", { headers }),
-           fetch("http://localhost:5000/api/audit/recent?limit=5", { headers }),
-         ]);
-         const offers   = offersRes.status   === "fulfilled" && offersRes.value.ok   ? (await offersRes.value.json()).length   : 12;
-         const profiles = profilesRes.status === "fulfilled" && profilesRes.value.ok ? (await profilesRes.value.json()).length : 47;
-         const options  = optionsRes.status  === "fulfilled" && optionsRes.value.ok  ? (await optionsRes.value.json()).length  : 8;
-         const activityData = activityRes.status === "fulfilled" && activityRes.value.ok ? (await activityRes.value.json()).activity : null;
-         setStats({ offers, profiles, options, simulations: 134 });
-         if (activityData) setActivity(activityData);
-       } catch {
-         setStats({ offers: 12, profiles: 47, options: 8, simulations: 134 });
-       } finally {
-         setLoading(false);
-         setActivityLoading(false);
-       }
-     };
-     fetchStats();
-   }, []);
+useEffect(() => {
+      const fetchStats = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const headers = { Authorization: `Bearer ${token}` };
+          const [offersRes, profilesRes, optionsRes, activityRes, biRes, volumeRes, segmentRes] = await Promise.allSettled([
+            fetch("http://localhost:5000/api/offers", { headers }),
+            fetch("http://localhost:5000/api/customer-profiles", { headers }),
+            fetch("http://localhost:5000/api/options", { headers }),
+            fetch("http://localhost:5000/api/audit/recent?limit=5", { headers }),
+            biService.getKpis(),
+            biService.getDailyVolume(30),
+            biService.getSegmentSummary(),
+          ]);
+          const offers   = offersRes.status   === "fulfilled" && offersRes.value.ok   ? (await offersRes.value.json()).length   : 12;
+          const profiles = profilesRes.status === "fulfilled" && profilesRes.value.ok ? (await profilesRes.value.json()).length : 47;
+          const options  = optionsRes.status  === "fulfilled" && optionsRes.value.ok  ? (await optionsRes.value.json()).length  : 8;
+          const activityData = activityRes.status === "fulfilled" && activityRes.value.ok ? (await activityRes.value.json()).activity : null;
+          const biData = biRes.status === "fulfilled" ? biRes.value : null;
+          const volumeData = volumeRes.status === "fulfilled" ? volumeRes.value : [];
+          const volumeByDate = volumeData.slice(0, 14).map(v => ({
+            label: new Date(v.sim_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            value: v.simulation_count || 0
+          })).reverse();
+          const segmentRaw = segmentRes.status === "fulfilled" ? segmentRes.value : [];
+          const segmentByType = segmentRaw.map(s => ({
+            label: s.offer_segment,
+            total: s.total_sims,
+            pct: s.recommendation_rate_pct || 0
+          }));
+          setStats({ offers, profiles, options, simulations: biData?.total_simulations || 134 });
+          setKpis(biData);
+          setDailyVolume(volumeByDate);
+          setSegmentData(segmentByType);
+          if (activityData) setActivity(activityData);
+        } catch {
+          setStats({ offers: 12, profiles: 47, options: 8, simulations: 134 });
+        } finally {
+          setLoading(false);
+          setActivityLoading(false);
+        }
+      };
+      fetchStats();
+    }, []);
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
@@ -189,7 +202,7 @@ export default function Dashboard() {
         />
         <KPICard
           label={t("dashboard.avgSatisfaction")}
-          value="78.4"
+          value={kpis?.avg_score ?? "—"}
           sub={t("dashboard.subSatisfaction")}
           color={"var(--orange)"}
           trend={+4}
@@ -206,13 +219,13 @@ export default function Dashboard() {
               <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>{t("dashboard.costTrend")}</p>
               <p style={{ fontSize: 12, color: "var(--text-dim)" }}>{t("dashboard.costTrendSubtitle")}</p>
             </div>
-            <span style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>89.3 TND</span>
+            <span style={{ fontSize: 22, fontWeight: 600, fontFamily: fonts.heading, color: "var(--blue)" }}>{kpis?.global_arpu || "—"} TND</span>
           </div>
-          <MiniBarChart data={costData} color={"var(--blue)"} />
+          <MiniBarChart data={dailyVolume.length > 0 ? dailyVolume : [{ label: "-", value: 0 }]} color={"var(--blue)"} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            {costData.map(d => (
+            {dailyVolume.length > 0 ? dailyVolume.map(d => (
               <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
-            ))}
+            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>No data</span>}
           </div>
         </div>
 
@@ -220,14 +233,14 @@ export default function Dashboard() {
         <div style={{ ...cardStyle, padding: "20px 22px" }}>
           <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 4 }}>{t("dashboard.satisfactionScores")}</p>
           <p style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 16 }}>{t("dashboard.satisfactionSubtitle")}</p>
-          <MiniBarChart data={satisfactionData} color={"var(--green)"} />
+          <MiniBarChart data={dailyVolume.length > 0 ? dailyVolume.map(d => ({ label: d.label, value: kpis?.avg_score || 0 })) : [{ label: "-", value: 0 }]} color={"var(--green)"} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            {satisfactionData.map(d => (
+            {dailyVolume.length > 0 ? dailyVolume.map(d => (
               <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
-            ))}
+            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>No data</span>}
           </div>
           <div style={{ marginTop: 16, padding: "10px 14px", background: "rgba(67,199,139,0.08)", borderRadius: 8, border: "0.5px solid rgba(67,199,139,0.2)" }}>
-            <p style={{ fontSize: 12, color: "var(--green)", fontWeight: 500 }}>↑ +4.2pts {t("dashboard.vsLastWeek")}</p>
+            <p style={{ fontSize: 12, color: "var(--green)", fontWeight: 500 }}>{kpis?.recommendation_rate || 0}% {t("dashboard.recommended")}</p>
           </div>
         </div>
       </div>
@@ -237,22 +250,24 @@ export default function Dashboard() {
         {/* Offer breakdown */}
         <div style={{ ...cardStyle, padding: "20px 22px" }}>
           <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 16 }}>{t("dashboard.offersBySegment")}</p>
-          {[
-            { label: "Postpaid", pct: 42, color: "var(--blue)" },
-            { label: "Prepaid", pct: 33, color: "var(--green)" },
-            { label: "Business", pct: 18, color: "var(--orange)" },
-            { label: "Data-Only", pct: 7, color: "var(--yellow)" },
-          ].map(({ label, pct, color }) => (
-            <div key={label} style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
-                <span style={{ fontSize: 12, fontWeight: 500, color }}>{pct}%</span>
+          {(segmentData.length > 0 ? segmentData : [
+            { label: "No data", total: 0, pct: 0 }
+          ]).map((seg, idx) => {
+            const colors = ["var(--blue)", "var(--green)", "var(--orange)", "var(--yellow)"];
+            const maxTotal = Math.max(...segmentData.map(s => s.total), 1);
+            const pct = Math.round((seg.total / maxTotal) * 100);
+            return (
+              <div key={seg.label} style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{seg.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: colors[idx % colors.length] }}>{seg.total || 0}</span>
+                </div>
+                <div style={{ height: 5, borderRadius: 4, background: "rgba(255,255,255,0.05)" }}>
+                  <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: colors[idx % colors.length], opacity: 0.8, transition: "width 0.8s ease" }} />
+                </div>
               </div>
-              <div style={{ height: 5, borderRadius: 4, background: "rgba(255,255,255,0.05)" }}>
-                <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: color, opacity: 0.8, transition: "width 0.8s ease" }} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Recent activity */}

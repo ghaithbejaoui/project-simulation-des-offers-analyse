@@ -196,6 +196,38 @@ export default function Login() {
               </>
             )}
           </button>
+
+          <button 
+            type="button"
+            disabled={loading}
+            onClick={async () => {
+              setLoading(true);
+              setError("");
+              try {
+                const res = await fetch("http://localhost:5000/api/auth/guest", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Guest login failed");
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                window.location.href = "/dashboard";
+              } catch (err) {
+                setError(err.message);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            style={{ ...styles.submitBtn, background: "rgba(67,199,139,0.15)", border: "0.5px solid rgba(67,199,139,0.4)", color: "#43c78b", marginTop: 8 }}
+          >
+            Continue as Guest
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 8 }}>
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </button>
         </form>
 
         {/* Footer */}

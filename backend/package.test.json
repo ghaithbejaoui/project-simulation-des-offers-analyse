@@ -1,0 +1,9 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node tests/simulation.test.js"
+  },
+  "devDependencies": {}
+}

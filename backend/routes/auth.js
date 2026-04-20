@@ -3,7 +3,15 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many login attempts, please try again later.' }
+});
 
 /**
  * @swagger
@@ -82,8 +90,8 @@ const router = express.Router();
  *         description: Server error
  */
 
-// Login route
-router.post('/login', async (req, res) => {
+// Login route with rate limiting
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -162,7 +170,41 @@ router.get('/me', (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Not authenticated' });
   }
-   res.json({ user_id: req.user.user_id, role: req.user.role });
+  res.json({ user_id: req.user.user_id, role: req.user.role });
+});
+
+// Guest login - no password required
+router.post('/guest', async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM users WHERE role = 'GUEST' LIMIT 1");
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Guest account not configured' });
+    }
+    
+    const user = rows[0];
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    const ip_address = req.ip || req.connection.remoteAddress;
+    await logAction({
+      user_id: user.user_id,
+      action: 'LOGIN',
+      entity: 'auth',
+      ip_address,
+      details: { username: user.username, role: user.role }
+    });
+
+    res.json({
+      token,
+      user: { user_id: user.user_id, username: user.username, role: user.role }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

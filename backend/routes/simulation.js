@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
 const { requireAuth } = require('../middleware/auth');
+const { logSimulation } = require('../middleware/biLogger');
 const router = express.Router();
 
 /**
@@ -100,7 +101,11 @@ const router = express.Router();
 
 router.post('/', requireAuth, async (req, res) => {
   const { profile_id, offer_id, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
+  
+  // Basic validation
   if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
+  if (profile_id && isNaN(Number(profile_id))) return res.status(400).json({ message: 'profile_id must be a number' });
+  if (isNaN(Number(offer_id))) return res.status(400).json({ message: 'offer_id must be a number' });
 
   let profile;
   try {
@@ -154,51 +159,54 @@ router.post('/', requireAuth, async (req, res) => {
     if (overMinutes + overSms + overData > 0) score -= 10;
      let satisfactionScore = Math.max(0, Math.min(100, score));
 
-     // Audit log
-     const user_id = req.user?.user_id || null;
-     const ip_address = req.ip || req.connection.remoteAddress;
-     await logAction({
-       user_id,
-       action: 'SIMULATE_SINGLE',
-       entity: 'simulation',
-       ip_address,
-       details: {
-         profile_id: profile.profile_id || null,
-         offer_id: offer.offer_id,
-         total_cost: totalCost.toFixed(2),
-         satisfaction_score: satisfactionScore
-       }
-     });
+// Audit log
+      const user_id = req.user?.user_id || null;
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id,
+        action: 'SIMULATE_SINGLE',
+        entity: 'simulation',
+        ip_address,
+        details: {
+          profile_id: profile.profile_id || null,
+          offer_id: offer.offer_id,
+          total_cost: totalCost.toFixed(2),
+          satisfaction_score: satisfactionScore
+        }
+      });
 
-     res.json({
-      profile,
-      offer: { ...offer, options: offer.options },
-      base_cost: parseFloat(baseCost.toFixed(2)),
-      monthly_price: Number(offer.monthly_price),
-      overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
-      overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
-      overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
-      roaming_cost: parseFloat(roamingCost.toFixed(2)),
-      calculation: {
+      const result = {
+        profile,
+        offer: { ...offer, options: offer.options },
         base_cost: parseFloat(baseCost.toFixed(2)),
-        overage_cost: parseFloat(overageCost.toFixed(2)),
-        options_cost: parseFloat(optionsCost.toFixed(2)),
+        monthly_price: Number(offer.monthly_price),
+        overage_minutes_cost: parseFloat(overageMinutesCost.toFixed(2)),
+        overage_sms_cost: parseFloat(overageSmsCost.toFixed(2)),
+        overage_data_cost: parseFloat(overageDataCost.toFixed(2)),
         roaming_cost: parseFloat(roamingCost.toFixed(2)),
-        discounts: parseFloat(discounts.toFixed(2)),
+        calculation: {
+          base_cost: parseFloat(baseCost.toFixed(2)),
+          overage_cost: parseFloat(overageCost.toFixed(2)),
+          options_cost: parseFloat(optionsCost.toFixed(2)),
+          roaming_cost: parseFloat(roamingCost.toFixed(2)),
+          discounts: parseFloat(discounts.toFixed(2)),
+          total_cost: parseFloat(totalCost.toFixed(2)),
+          satisfaction_score: satisfactionScore
+        },
         total_cost: parseFloat(totalCost.toFixed(2)),
         satisfaction_score: satisfactionScore
-      },
-      total_cost: parseFloat(totalCost.toFixed(2)),
-      satisfaction_score: satisfactionScore
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+      };
 
-/**
- * @swagger
- * /api/simulation/recommend:
+      await logSimulation(result, 'single');
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  /**
+   * @swagger
+   * /api/simulation/recommend:
  *   post:
  *     summary: Get smart offer recommendations
  *     tags: [Simulation]
@@ -218,6 +226,15 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.post('/recommend', requireAuth, async (req, res) => {
   const { profile_id, limit = 5, segment } = req.body;
+  
+  // Basic validation
+  if (limit && (isNaN(Number(limit)) || limit < 1 || limit > 100)) {
+    return res.status(400).json({ message: 'limit must be a number between 1 and 100' });
+  }
+  if (segment && !['PREPAID', 'POSTPAID', 'BUSINESS'].includes(segment)) {
+    return res.status(400).json({ message: 'segment must be PREPAID, POSTPAID, or BUSINESS' });
+  }
+
   let profile;
 
   try {
@@ -301,27 +318,30 @@ router.post('/recommend', requireAuth, async (req, res) => {
      else if (profile.priority === 'QUALITY') recommendations.sort((a, b) => b.score - a.score);
      else recommendations.sort((a, b) => (b.score / b.estimated_cost) - (a.score / a.estimated_cost));
 
-     // Audit log - log the recommendation request
-     const user_id = req.user?.user_id || null;
-     const ip_address = req.ip || req.connection.remoteAddress;
-     await logAction({
-       user_id,
-       action: 'SIMULATE_RECOMMEND',
-       entity: 'simulation',
-       ip_address,
-       details: {
-         profile_id: profile.profile_id || null,
-         limit: limit,
-         segment: profile.segment || null,
-         recommended_offers: recommendations.slice(0, limit).map(r => ({
-           offer_id: r.offer_id,
-           total_cost: r.total_cost,
-           satisfaction_score: r.satisfaction_score
-         }))
-       }
-     });
+// Audit log - log the recommendation request
+      const user_id = req.user?.user_id || null;
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id,
+        action: 'SIMULATE_RECOMMEND',
+        entity: 'simulation',
+        ip_address,
+        details: {
+          profile_id: profile.profile_id || null,
+          limit: limit,
+          segment: profile.segment || null,
+          recommended_offers: recommendations.slice(0, limit).map(r => ({
+            offer_id: r.offer_id,
+            total_cost: r.total_cost,
+            satisfaction_score: r.satisfaction_score
+          }))
+        }
+      });
 
-     res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
+      const topResult = recommendations[0] ? { ...recommendations[0], profile } : null;
+      if (topResult) await logSimulation(topResult, 'recommend');
+
+      res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -351,8 +371,16 @@ router.post('/recommend', requireAuth, async (req, res) => {
 
 router.post('/compare', requireAuth, async (req, res) => {
   const { profile_id, offer_ids, minutes_avg, sms_avg, data_avg_gb, roaming_days, budget_max, priority } = req.body;
+  
+  // Basic validation
   if (!offer_ids || !Array.isArray(offer_ids) || offer_ids.length === 0) {
-    return res.status(400).json({ message: 'offer_ids (array) are required' });
+    return res.status(400).json({ message: 'offer_ids (array with at least 2 offers) is required' });
+  }
+  if (offer_ids.length < 2) {
+    return res.status(400).json({ message: 'At least 2 offers required for comparison' });
+  }
+  if (!offer_ids.every(id => !isNaN(Number(id)))) {
+    return res.status(400).json({ message: 'All offer_ids must be numbers' });
   }
 
   let profile;
@@ -455,36 +483,40 @@ router.post('/compare', requireAuth, async (req, res) => {
        comp.rank_by_score = sortedByScore.findIndex(c => c.offer_id === comp.offer_id) + 1;
      });
 
-     // Audit log
-     const user_id = req.user?.user_id || null;
-     const ip_address = req.ip || req.connection.remoteAddress;
-     await logAction({
-       user_id,
-       action: 'SIMULATE_COMPARE',
-       entity: 'simulation',
-       ip_address,
-       details: {
-         profile_id: profile.profile_id || null,
-         offer_ids: offer_ids,
-         comparisons: sortedByScore.map(c => ({
-           offer_id: c.offer_id,
-           total_cost: c.total_cost,
-           satisfaction_score: c.satisfaction_score,
-           rank_by_score: c.rank_by_score,
-           rank_by_cost: c.rank_by_cost
-         }))
+// Audit log
+      const user_id = req.user?.user_id || null;
+      const ip_address = req.ip || req.connection.remoteAddress;
+      await logAction({
+        user_id,
+        action: 'SIMULATE_COMPARE',
+        entity: 'simulation',
+        ip_address,
+        details: {
+          profile_id: profile.profile_id || null,
+          offer_ids: offer_ids,
+          comparisons: sortedByScore.map(c => ({
+            offer_id: c.offer_id,
+            total_cost: c.total_cost,
+            satisfaction_score: c.satisfaction_score,
+            rank_by_score: c.rank_by_score,
+            rank_by_cost: c.rank_by_cost
+          }))
+        }
+      });
+
+      for (const comp of sortedByScore) {
+        await logSimulation({ ...comp, profile }, 'compare');
+      }
+
+      res.json({
+       profile,
+       count: comparisons.length,
+       comparisons: sortedByScore, // Return sorted by score (descending) with tie-breaker
+       summary: {
+         cheapest: sortedByCost[0]?.offer_name,
+         best_score: sortedByScore[0]?.offer_name
        }
      });
-
-     res.json({
-      profile,
-      count: comparisons.length,
-      comparisons: sortedByScore, // Return sorted by score (descending) with tie-breaker
-      summary: {
-        cheapest: sortedByCost[0]?.offer_name,
-        best_score: sortedByScore[0]?.offer_name
-      }
-    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -514,7 +546,13 @@ router.post('/compare', requireAuth, async (req, res) => {
 
 router.post('/batch', requireAuth, async (req, res) => {
   const { offer_id, profile_ids } = req.body;
+  
+  // Basic validation
   if (!offer_id) return res.status(400).json({ message: 'offer_id is required' });
+  if (isNaN(Number(offer_id))) return res.status(400).json({ message: 'offer_id must be a number' });
+  if (profile_ids && !Array.isArray(profile_ids)) {
+    return res.status(400).json({ message: 'profile_ids must be an array' });
+  }
 
   try {
     const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [offer_id]);
@@ -605,6 +643,28 @@ router.post('/batch', requireAuth, async (req, res) => {
           avg_satisfaction: parseFloat(avgSatisfaction.toFixed(2))
         }
       });
+
+      for (const r of results) {
+        const result = {
+          offer: { offer_id: offer.offer_id, name: offer.name, segment: offer.segment },
+          profile: { profile_id: r.profile_id, label: r.label, budget_max: r.budget_max },
+          base_cost: r.base_cost,
+          overage_cost: r.overage_cost,
+          roaming_cost: r.roaming_cost,
+          overage_minutes_cost: 0,
+          overage_sms_cost: 0,
+          overage_data_cost: r.overage_cost,
+          options_cost: 0,
+          discounts: 0,
+          calculation: {
+            total_cost: r.estimated_cost,
+            satisfaction_score: r.satisfaction_score
+          },
+          total_cost: r.estimated_cost,
+          satisfaction_score: r.satisfaction_score
+        };
+        await logSimulation(result, 'batch');
+      }
 
       res.json({
        offer: { offer_id: offer.offer_id, name: offer.name },

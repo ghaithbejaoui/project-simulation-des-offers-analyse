@@ -2,7 +2,25 @@ const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const Joi = require('joi');
 const router = express.Router();
+
+// Validation schemas
+const offerSchema = Joi.object({
+  name: Joi.string().max(100).required(),
+  segment: Joi.string().valid('PREPAID', 'POSTPAID', 'BUSINESS').required(),
+  monthly_price: Joi.number().min(0).required(),
+  quota_minutes: Joi.number().integer().min(0),
+  quota_sms: Joi.number().integer().min(0),
+  quota_data_gb: Joi.number().min(0),
+  validity_days: Joi.number().integer().min(1),
+  fair_use_gb: Joi.number().integer().min(0),
+  over_minute_price: Joi.number().min(0),
+  over_sms_price: Joi.number().min(0),
+  over_data_price: Joi.number().min(0),
+  roaming_included_days: Joi.number().integer().min(0),
+  status: Joi.string().valid('PUBLISHED', 'DRAFT', 'ARCHIVED')
+});
 
 /**
  * @swagger
@@ -184,6 +202,12 @@ router.get('/:id', requireAuth, async (req, res) => {
 
 // POST / - Create offer (Admin/Analyst only)
 router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
+  // Validate input
+  const { error, value } = offerSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
   const {
     name,
     segment,
@@ -198,7 +222,7 @@ router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
     over_data_price = 0.5000,
     roaming_included_days = 0,
     status = 'PUBLISHED'
-  } = req.body;
+  } = value;
 
   try {
     const [result] = await db.query(

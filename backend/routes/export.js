@@ -1,6 +1,8 @@
 const express = require('express');
 const db = require('../config/database');
 const { logAction } = require('./audit');
+const XLSX = require('xlsx');
+const PDFDocument = require('pdfkit');
 const router = express.Router();
 
 /**
@@ -130,12 +132,22 @@ router.get('/scenario/:id/xlsx', async (req, res) => {
       offerNames = offerRows.reduce((acc, o) => { acc[o.offer_id] = o.name; return acc; }, {});
     }
 
-    // Build CSV as XLSX alternative (Excel-compatible CSV)
-    let csv = 'Rank\tOffer\tBase Cost\tOverage Cost\tRoaming Cost\tTotal Cost\tSatisfaction Score\tRecommendation\n';
-    resultRows.forEach(r => {
-      const offerName = offerNames[r.offer_id] || `Offer ${r.offer_id}`;
-      csv += `${r.rank_by_score || ''}\t"${offerName}"\t${r.base_cost || 0}\t${r.overage_cost || 0}\t${r.roaming_cost || 0}\t${r.total_cost || 0}\t${r.satisfaction_score || 0}\t${r.recommendation || ''}\n`;
-    });
+    // Build worksheet data
+    const data = resultRows.map(r => ({
+      Rank: r.rank_by_score || '',
+      Offer: offerNames[r.offer_id] || `Offer ${r.offer_id}`,
+      'Base Cost': r.base_cost || 0,
+      'Overage Cost': r.overage_cost || 0,
+      'Roaming Cost': r.roaming_cost || 0,
+      'Total Cost': r.total_cost || 0,
+      'Satisfaction Score': r.satisfaction_score || 0,
+      Recommendation: r.recommendation || ''
+    }));
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Results");
 
     // Log audit
     await logAction({
@@ -147,9 +159,11 @@ router.get('/scenario/:id/xlsx', async (req, res) => {
       details: { results_count: resultRows.length }
     });
 
-    res.setHeader('Content-Type', 'application/vnd.ms-excel');
-    res.setHeader('Content-Disposition', `attachment; filename="${scenario.name.replace(/[^a-z0-9]/gi, '_')}_results.xls"`);
-    res.send('\ufeff' + csv); // BOM for Excel UTF-8
+    // Generate buffer and send
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${scenario.name.replace(/[^a-z0-9]/gi, '_')}_results.xlsx"`);
+    res.send(buffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -238,6 +252,104 @@ router.get('/profiles/csv', async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="customer_profiles_export.csv"');
     res.send(csv);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/scenario/:id/pdf', async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const { id } = req.params;
+
+  try {
+    const [scenarioRows] = await db.query('SELECT * FROM scenarios WHERE scenario_id = ?', [id]);
+    if (scenarioRows.length === 0) {
+      return res.status(404).json({ message: 'Scenario not found' });
+    }
+    const scenario = scenarioRows[0];
+
+    const [resultRows] = await db.query(
+      'SELECT * FROM scenario_results WHERE scenario_id = ? ORDER BY rank_by_score ASC',
+      [id]
+    );
+
+    // Get offer names
+    const offerIds = resultRows.map(r => r.offer_id).filter(Boolean);
+    let offerNames = {};
+    if (offerIds.length > 0) {
+      const placeholders = offerIds.map(() => '?').join(',');
+      const [offerRows] = await db.query(
+        `SELECT offer_id, name FROM offers WHERE offer_id IN (${placeholders})`,
+        offerIds
+      );
+      offerNames = offerRows.reduce((acc, o) => { acc[o.offer_id] = o.name; return acc; }, {});
+    }
+
+    // Create PDF
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${scenario.name.replace(/[^a-z0-9]/gi, '_')}_results.pdf"`);
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('Simulation Results', { align: 'center' });
+    doc.fontSize(14).text(scenario.name, { align: 'center' });
+    if (scenario.description) {
+      doc.fontSize(10).text(scenario.description, { align: 'center' });
+    }
+    doc.moveDown();
+
+    // Table header
+    const tableTop = 150;
+    const col1 = 50, col2 = 150, col3 = 280, col4 = 360, col5 = 430;
+    
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Rank', col1, tableTop);
+    doc.text('Offer', col2, tableTop);
+    doc.text('Total Cost', col3, tableTop);
+    doc.text('Score', col4, tableTop);
+    doc.text('Recommendation', col5, tableTop);
+    
+    doc.moveTo(col1, tableTop + 15).lineTo(col5 + 60, tableTop + 15).stroke();
+    
+    // Table rows
+    doc.font('Helvetica').fontSize(9);
+    let y = tableTop + 25;
+    resultRows.forEach((r) => {
+      if (y > 700) {
+        doc.addPage();
+        y = 50;
+      }
+      doc.text(String(r.rank_by_score || ''), col1, y);
+      doc.text(offerNames[r.offer_id] || `Offer ${r.offer_id}`, col2, y);
+      doc.text(String(r.total_cost || 0), col3, y);
+      doc.text(String(r.satisfaction_score || 0), col4, y);
+      doc.text(r.recommendation || '', col5, y);
+      y += 20;
+    });
+
+    // Footer
+    doc.fontSize(8).text(
+      `Generated on ${new Date().toLocaleString()}`,
+      50,
+      750,
+      { align: 'left' }
+    );
+
+    // Log audit
+    await logAction({
+      user_id: req.user.user_id,
+      action: 'EXPORT_PDF',
+      entity: 'scenario',
+      entity_id: parseInt(id),
+      ip_address: req.ip,
+      details: { results_count: resultRows.length }
+    });
+
+    doc.end();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

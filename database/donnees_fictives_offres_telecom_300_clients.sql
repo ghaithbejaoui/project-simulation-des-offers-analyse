@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 17, 2026 at 05:05 PM
+-- Generation Time: Apr 19, 2026 at 01:36 PM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -38,6 +38,136 @@ CREATE TABLE `audit_logs` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `audit_logs`
+--
+
+INSERT INTO `audit_logs` (`log_id`, `user_id`, `action`, `entity`, `entity_id`, `ip_address`, `details`, `created_at`) VALUES
+(1, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 11:36:43'),
+(2, 1, 'CREATE', 'offer', 61, '::1', '{\"name\":\"valid\",\"segment\":\"POSTPAID\",\"monthly_price\":\"25\"}', '2026-04-18 11:37:20'),
+(3, 1, 'CREATE', 'customer_profile', 301, '::1', '{\"label\":\"Ghaith bejaoui\",\"segment\":\"POSTPAID\"}', '2026-04-18 11:37:45'),
+(4, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":5,\"offer_ids\":[1,3],\"comparisons\":[{\"offer_id\":1,\"total_cost\":447.04,\"satisfaction_score\":47,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":598.71,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 11:38:17'),
+(5, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":6,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":77.99,\"satisfaction_score\":44}]}', '2026-04-18 11:38:23'),
+(6, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,3],\"comparisons\":[{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":276.63,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 16:18:41'),
+(7, 1, 'LOGIN_FAILED', 'auth', NULL, '::ffff:127.0.0.1', '{\"email\":\"admin@telecom.com\",\"username\":\"admin\",\"reason\":\"invalid_password\"}', '2026-04-18 16:32:25'),
+(8, 1, 'LOGIN', 'auth', NULL, '::ffff:127.0.0.1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 16:32:40'),
+(9, 1, 'CREATE', 'scenario', 1, '::ffff:127.0.0.1', '{\"name\":\"Test Scenario\",\"profile_id\":1,\"offer_ids_count\":3}', '2026-04-18 16:33:41'),
+(10, 1, 'DELETE', 'scenario', 1, '::ffff:127.0.0.1', '{}', '2026-04-18 16:34:01'),
+(11, 1, 'CREATE', 'scenario', 2, '::1', '{\"name\":\"test scenario\",\"profile_id\":14,\"offer_ids_count\":1}', '2026-04-18 16:38:57'),
+(12, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":4,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":55.99,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":103.72,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":29.13,\"satisfaction_score\":81},{\"offer_id\":6,\"total_cost\":52.24,\"satisfaction_score\":64}]}', '2026-04-18 16:39:09'),
+(13, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":2,\"offer_ids\":[1,3,5],\"comparisons\":[{\"offer_id\":5,\"total_cost\":211.96,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":166.92,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":222.42,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 16:39:15'),
+(14, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":9,\"offer_ids\":[3,5],\"comparisons\":[{\"offer_id\":5,\"total_cost\":154.75,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":246.57,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 16:39:19'),
+(15, 1, 'UPDATE', 'scenario', 2, '::1', '{\"name\":\"test scenario\",\"status\":\"DRAFT\"}', '2026-04-18 16:39:51'),
+(16, 1, 'UPDATE', 'scenario', 2, '::1', '{\"name\":\"test scenario\",\"status\":\"DRAFT\"}', '2026-04-18 16:40:20'),
+(17, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":14,\"offer_ids\":[14,15,16],\"comparisons\":[{\"offer_id\":15,\"total_cost\":96.26,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":14,\"total_cost\":153.11,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":16,\"total_cost\":133.58,\"satisfaction_score\":42,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 16:40:30'),
+(18, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":14,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":75.6,\"satisfaction_score\":97},{\"offer_id\":2,\"total_cost\":146.23,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":205.42,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":111.42,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":145.86,\"satisfaction_score\":64}]}', '2026-04-18 16:40:42'),
+(19, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":1,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67},{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64},{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":180.1,\"satisfaction_score\":64}]}', '2026-04-18 16:40:48'),
+(20, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":10,\"offer_ids\":[4,2,7],\"comparisons\":[{\"offer_id\":4,\"total_cost\":380.67,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":2,\"total_cost\":406.91,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":7,\"total_cost\":310.52,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":1}]}', '2026-04-18 16:41:07'),
+(21, 1, 'UPDATE', 'scenario', 2, '::1', '{\"name\":\"test scenario\",\"status\":\"ACTIVE\"}', '2026-04-18 16:41:55'),
+(22, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":301,\"offer_ids\":[1,2,3],\"comparisons\":[{\"offer_id\":2,\"total_cost\":969.83,\"satisfaction_score\":81,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":1022.56,\"satisfaction_score\":77,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":3,\"total_cost\":1014.23,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 16:42:05'),
+(23, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":8,\"offer_ids\":[3,2,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":365.54,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":398.9,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":570.78,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 16:43:15'),
+(24, 1, 'DUPLICATE', 'scenario', 3, '::1', '{\"original_id\":\"2\",\"name\":\"test scenario (Copy)\"}', '2026-04-18 16:43:48'),
+(25, 1, 'DELETE', 'scenario', 3, '::1', '{}', '2026-04-18 16:43:51'),
+(26, 1, 'CREATE', 'scenario', 4, '::ffff:127.0.0.1', '{\"name\":\"Test Scenario from Sim\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:46:38'),
+(27, 1, 'CREATE', 'scenario', 5, '::ffff:127.0.0.1', '{\"name\":\"Test Save Scenario\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:47:11'),
+(28, 1, 'CREATE', 'scenario', 6, '::ffff:127.0.0.1', '{\"name\":\"Final Test Scenario\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:47:33'),
+(29, 1, 'CREATE', 'scenario', 7, '::ffff:127.0.0.1', '{\"name\":\"API Flow\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:48:20'),
+(30, 1, 'CREATE', 'scenario', 8, '::ffff:127.0.0.1', '{\"name\":\"API Flow\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:48:29'),
+(31, 1, 'CREATE', 'scenario', 9, '::ffff:127.0.0.1', '{\"name\":\"API Flow\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:48:54'),
+(32, 1, 'UPDATE', 'scenario', 9, '::1', '{\"name\":\"API Flow\",\"status\":\"DRAFT\"}', '2026-04-18 16:49:34'),
+(33, 1, 'CREATE', 'scenario', 10, '::ffff:127.0.0.1', '{\"name\":\"API Flow\",\"profile_id\":1,\"offer_ids_count\":2}', '2026-04-18 16:49:38'),
+(34, 1, 'SAVE_RESULTS', 'scenario', 10, '::ffff:127.0.0.1', '{\"results_count\":1}', '2026-04-18 16:49:38'),
+(35, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":3,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":55.7,\"satisfaction_score\":52},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":68},{\"offer_id\":50,\"total_cost\":87.43,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":95.22,\"satisfaction_score\":52},{\"offer_id\":31,\"total_cost\":104.94,\"satisfaction_score\":53}]}', '2026-04-18 16:50:16'),
+(36, 1, 'CREATE', 'scenario', 11, '::1', '{\"name\":\"test1\",\"profile_id\":3,\"offer_ids_count\":0}', '2026-04-18 16:50:31'),
+(37, 1, 'SAVE_RESULTS', 'scenario', 11, '::1', '{\"results_count\":5}', '2026-04-18 16:50:32'),
+(38, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":6,\"offer_ids\":[3,5],\"comparisons\":[{\"offer_id\":5,\"total_cost\":104.49,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 16:51:02'),
+(39, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":2,\"offer_ids\":[2,3,1],\"comparisons\":[{\"offer_id\":2,\"total_cost\":131.58,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":166.92,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":222.42,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 16:51:08'),
+(40, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":6,\"offer_ids\":[1,3,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":117.82,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 16:54:13'),
+(41, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,3,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 16:54:20'),
+(42, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,3,4,11,9],\"comparisons\":[{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64,\"rank_by_score\":3,\"rank_by_cost\":5},{\"offer_id\":9,\"total_cost\":101.1,\"satisfaction_score\":46,\"rank_by_score\":4,\"rank_by_cost\":1},{\"offer_id\":11,\"total_cost\":154.9,\"satisfaction_score\":42,\"rank_by_score\":5,\"rank_by_cost\":4}]}', '2026-04-18 16:54:26'),
+(43, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,3,4,11,9,19],\"comparisons\":[{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":4},{\"offer_id\":19,\"total_cost\":127.2,\"satisfaction_score\":69,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":3,\"rank_by_cost\":2},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64,\"rank_by_score\":4,\"rank_by_cost\":6},{\"offer_id\":9,\"total_cost\":101.1,\"satisfaction_score\":46,\"rank_by_score\":5,\"rank_by_cost\":1},{\"offer_id\":11,\"total_cost\":154.9,\"satisfaction_score\":42,\"rank_by_score\":6,\"rank_by_cost\":5}]}', '2026-04-18 16:54:30'),
+(44, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,3,4,11,9,19,39,36],\"comparisons\":[{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":6},{\"offer_id\":19,\"total_cost\":127.2,\"satisfaction_score\":69,\"rank_by_score\":2,\"rank_by_cost\":4},{\"offer_id\":36,\"total_cost\":141.53,\"satisfaction_score\":69,\"rank_by_score\":3,\"rank_by_cost\":5},{\"offer_id\":39,\"total_cost\":115.58,\"satisfaction_score\":67,\"rank_by_score\":4,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":5,\"rank_by_cost\":3},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64,\"rank_by_score\":6,\"rank_by_cost\":8},{\"offer_id\":9,\"total_cost\":101.1,\"satisfaction_score\":46,\"rank_by_score\":7,\"rank_by_cost\":1},{\"offer_id\":11,\"total_cost\":154.9,\"satisfaction_score\":42,\"rank_by_score\":8,\"rank_by_cost\":7}]}', '2026-04-18 16:54:35'),
+(45, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,3,4,11,9,19,39,36,48,46],\"comparisons\":[{\"offer_id\":46,\"total_cost\":60.15,\"satisfaction_score\":100,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":4,\"total_cost\":154.4,\"satisfaction_score\":71,\"rank_by_score\":2,\"rank_by_cost\":7},{\"offer_id\":19,\"total_cost\":127.2,\"satisfaction_score\":69,\"rank_by_score\":3,\"rank_by_cost\":5},{\"offer_id\":36,\"total_cost\":141.53,\"satisfaction_score\":69,\"rank_by_score\":4,\"rank_by_cost\":6},{\"offer_id\":39,\"total_cost\":115.58,\"satisfaction_score\":67,\"rank_by_score\":5,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":6,\"rank_by_cost\":4},{\"offer_id\":3,\"total_cost\":217.04,\"satisfaction_score\":64,\"rank_by_score\":7,\"rank_by_cost\":10},{\"offer_id\":9,\"total_cost\":101.1,\"satisfaction_score\":46,\"rank_by_score\":8,\"rank_by_cost\":2},{\"offer_id\":11,\"total_cost\":154.9,\"satisfaction_score\":42,\"rank_by_score\":9,\"rank_by_cost\":8},{\"offer_id\":48,\"total_cost\":188.67,\"satisfaction_score\":42,\"rank_by_score\":10,\"rank_by_cost\":9}]}', '2026-04-18 16:54:39'),
+(46, 1, 'CREATE', 'scenario', 12, '::1', '{\"name\":\"21\",\"profile_id\":1,\"offer_ids_count\":10}', '2026-04-18 16:54:53'),
+(47, 1, 'SAVE_RESULTS', 'scenario', 12, '::1', '{\"results_count\":10}', '2026-04-18 16:54:54'),
+(48, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 16:58:30'),
+(49, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":2,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":131.58,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":166.92,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 16:58:49'),
+(50, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":2,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":131.58,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":166.92,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 16:58:54'),
+(51, 1, 'CREATE', 'scenario', 13, '::1', '{\"name\":\"client 2 offer 1,2\",\"profile_id\":2,\"offer_ids_count\":2}', '2026-04-18 16:59:08'),
+(52, 1, 'SAVE_RESULTS', 'scenario', 13, '::1', '{\"results_count\":2}', '2026-04-18 16:59:08'),
+(53, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:00:55'),
+(54, 1, 'SAVE_RESULTS', 'scenario', 5, '::1', '{\"results_count\":2}', '2026-04-18 17:00:55'),
+(55, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:01:01'),
+(56, 1, 'SAVE_RESULTS', 'scenario', 7, '::1', '{\"results_count\":2}', '2026-04-18 17:01:01'),
+(57, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:01:07'),
+(58, 1, 'SAVE_RESULTS', 'scenario', 6, '::1', '{\"results_count\":2}', '2026-04-18 17:01:07'),
+(59, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":301,\"offer_ids\":[1,2,3],\"comparisons\":[{\"offer_id\":2,\"total_cost\":969.83,\"satisfaction_score\":81,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":1022.56,\"satisfaction_score\":77,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":3,\"total_cost\":1014.23,\"satisfaction_score\":44,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 17:01:12'),
+(60, 1, 'SAVE_RESULTS', 'scenario', 2, '::1', '{\"results_count\":3}', '2026-04-18 17:01:12'),
+(61, 1, 'UPDATE', 'scenario', 11, '::1', '{\"name\":\"test1\",\"status\":\"ACTIVE\"}', '2026-04-18 17:01:30'),
+(62, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:01:41'),
+(63, 1, 'SAVE_RESULTS', 'scenario', 7, '::1', '{\"results_count\":2}', '2026-04-18 17:01:41'),
+(64, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:03:11'),
+(65, 1, 'SAVE_RESULTS', 'scenario', 5, '::1', '{\"results_count\":2}', '2026-04-18 17:03:11'),
+(66, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:07:10'),
+(67, 1, 'SAVE_RESULTS', 'scenario', 5, '::1', '{\"results_count\":2}', '2026-04-18 17:07:10'),
+(68, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:07:32'),
+(69, 1, 'SAVE_RESULTS', 'scenario', 4, '::1', '{\"results_count\":2}', '2026-04-18 17:07:32'),
+(70, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:07:35'),
+(71, 1, 'SAVE_RESULTS', 'scenario', 8, '::1', '{\"results_count\":2}', '2026-04-18 17:07:35'),
+(72, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:07:44'),
+(73, 1, 'SAVE_RESULTS', 'scenario', 9, '::1', '{\"results_count\":2}', '2026-04-18 17:07:44'),
+(74, 1, 'CREATE', 'scenario', 14, '::1', '{\"name\":\"hh\",\"profile_id\":17,\"offer_ids_count\":3}', '2026-04-18 17:08:05'),
+(75, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":17,\"offer_ids\":[1,8,9],\"comparisons\":[{\"offer_id\":8,\"total_cost\":78.84,\"satisfaction_score\":100,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":102.56,\"satisfaction_score\":77,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":9,\"total_cost\":93.68,\"satisfaction_score\":46,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 17:08:07'),
+(76, 1, 'SAVE_RESULTS', 'scenario', 14, '::1', '{\"results_count\":3}', '2026-04-18 17:08:07'),
+(77, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":4,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":55.99,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":103.72,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":29.13,\"satisfaction_score\":81},{\"offer_id\":6,\"total_cost\":52.24,\"satisfaction_score\":64}]}', '2026-04-18 17:13:08'),
+(78, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 17:19:17'),
+(79, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 17:24:32'),
+(80, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":8,\"offer_ids\":[1,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":365.54,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":448.16,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 17:24:37'),
+(81, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":301,\"offer_ids\":[2,4,1],\"comparisons\":[{\"offer_id\":2,\"total_cost\":969.83,\"satisfaction_score\":81,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":4,\"total_cost\":1011.75,\"satisfaction_score\":81,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":1022.56,\"satisfaction_score\":77,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 17:27:30'),
+(82, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":55,\"offer_ids\":[2,1,5],\"comparisons\":[{\"offer_id\":2,\"total_cost\":384.01,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":3},{\"offer_id\":5,\"total_cost\":298.34,\"satisfaction_score\":49,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":316.76,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 17:28:04'),
+(83, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,5,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":141.28,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":5,\"total_cost\":150.88,\"satisfaction_score\":49,\"rank_by_score\":2,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 17:28:10'),
+(84, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":301,\"offer_ids\":[1,5,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":1011.75,\"satisfaction_score\":81,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":5,\"total_cost\":1007.58,\"satisfaction_score\":79,\"rank_by_score\":2,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":1022.56,\"satisfaction_score\":77,\"rank_by_score\":3,\"rank_by_cost\":3}]}', '2026-04-18 17:28:31'),
+(85, 3, 'LOGIN', 'auth', NULL, '::ffff:127.0.0.1', '{\"username\":\"Guest\",\"role\":\"GUEST\"}', '2026-04-18 17:48:12'),
+(86, 3, 'SIMULATE_COMPARE', 'simulation', NULL, '::ffff:127.0.0.1', '{\"profile_id\":1,\"offer_ids\":[1,2],\"comparisons\":[{\"offer_id\":2,\"total_cost\":166.34,\"satisfaction_score\":71,\"rank_by_score\":1,\"rank_by_cost\":2},{\"offer_id\":1,\"total_cost\":118.95,\"satisfaction_score\":67,\"rank_by_score\":2,\"rank_by_cost\":1}]}', '2026-04-18 17:48:57'),
+(87, 3, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"Guest\",\"role\":\"GUEST\"}', '2026-04-18 17:50:27'),
+(88, 3, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":4,\"offer_ids\":[4,1],\"comparisons\":[{\"offer_id\":4,\"total_cost\":29.13,\"satisfaction_score\":81,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 17:50:42'),
+(89, 3, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":7,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":157.6,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":276.63,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":141.28,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":161.71,\"satisfaction_score\":44}]}', '2026-04-18 17:50:47'),
+(90, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 17:50:56'),
+(91, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 17:53:38'),
+(92, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 17:55:09'),
+(93, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":4,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":51.91,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":55.99,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":103.72,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":29.13,\"satisfaction_score\":81},{\"offer_id\":6,\"total_cost\":52.24,\"satisfaction_score\":64}]}', '2026-04-18 17:58:13'),
+(94, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":6,\"offer_ids\":[1,2,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 17:58:45'),
+(95, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 17:58:48'),
+(96, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,5],\"comparisons\":[{\"offer_id\":5,\"total_cost\":150.88,\"satisfaction_score\":49,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 17:58:53'),
+(97, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[2,5,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":141.28,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":157.6,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":5,\"total_cost\":150.88,\"satisfaction_score\":49,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 18:01:04'),
+(98, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":11,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":239.15,\"satisfaction_score\":47},{\"offer_id\":2,\"total_cost\":270.53,\"satisfaction_score\":51},{\"offer_id\":3,\"total_cost\":362.93,\"satisfaction_score\":44},{\"offer_id\":4,\"total_cost\":218.6,\"satisfaction_score\":51},{\"offer_id\":6,\"total_cost\":208.08,\"satisfaction_score\":64}]}', '2026-04-18 18:01:23'),
+(99, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":6,\"offer_ids\":[1,2,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":47.91,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":92.15,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":3},{\"offer_id\":1,\"total_cost\":65.69,\"satisfaction_score\":47,\"rank_by_score\":3,\"rank_by_cost\":2}]}', '2026-04-18 18:02:18'),
+(100, 1, 'CREATE', 'user', 4, '::1', '{\"username\":\"tahan\",\"role\":\"GUEST\"}', '2026-04-18 18:17:06'),
+(101, NULL, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"tahan\",\"role\":\"GUEST\"}', '2026-04-18 18:17:16'),
+(102, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 18:17:21'),
+(103, 1, 'DELETE', 'user', 4, '::1', '{}', '2026-04-18 18:17:25'),
+(104, 1, 'CREATE', 'user', 5, '::1', '{\"username\":\"ff\",\"role\":\"GUEST\"}', '2026-04-18 18:18:57'),
+(105, 1, 'DELETE', 'user', 5, '::1', '{}', '2026-04-18 18:19:03'),
+(106, NULL, 'LOGIN_FAILED', 'auth', NULL, '::1', '{\"email\":\"tahan@telecom.com\",\"reason\":\"user_not_found\"}', '2026-04-18 19:03:21'),
+(107, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:03:25'),
+(108, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":7,\"offer_ids\":[1,4],\"comparisons\":[{\"offer_id\":4,\"total_cost\":141.28,\"satisfaction_score\":51,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":1,\"total_cost\":152.62,\"satisfaction_score\":47,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 19:13:09'),
+(109, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":14,\"offer_ids\":[1,5],\"comparisons\":[{\"offer_id\":1,\"total_cost\":75.6,\"satisfaction_score\":97,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":5,\"total_cost\":121.26,\"satisfaction_score\":49,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 19:13:24'),
+(110, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":9,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":1,\"total_cost\":107.4,\"satisfaction_score\":97},{\"offer_id\":2,\"total_cost\":163.63,\"satisfaction_score\":71},{\"offer_id\":3,\"total_cost\":246.57,\"satisfaction_score\":64},{\"offer_id\":4,\"total_cost\":121.6,\"satisfaction_score\":71},{\"offer_id\":6,\"total_cost\":153.84,\"satisfaction_score\":64}]}', '2026-04-18 19:13:28'),
+(111, 1, 'SIMULATE_COMPARE', 'simulation', NULL, '::1', '{\"profile_id\":9,\"offer_ids\":[2,1],\"comparisons\":[{\"offer_id\":1,\"total_cost\":107.4,\"satisfaction_score\":77,\"rank_by_score\":1,\"rank_by_cost\":1},{\"offer_id\":2,\"total_cost\":163.63,\"satisfaction_score\":51,\"rank_by_score\":2,\"rank_by_cost\":2}]}', '2026-04-18 19:13:31'),
+(112, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:13:53'),
+(113, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:14:03'),
+(114, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:14:11'),
+(115, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:17:27'),
+(116, 1, 'LOGIN_FAILED', 'auth', NULL, '::1', '{\"email\":\"admin@telecom.com\",\"username\":\"admin\",\"reason\":\"invalid_password\"}', '2026-04-18 19:19:23'),
+(117, 1, 'LOGIN_FAILED', 'auth', NULL, '::1', '{\"email\":\"admin@telecom.com\",\"username\":\"admin\",\"reason\":\"invalid_password\"}', '2026-04-18 19:19:27'),
+(118, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:19:30'),
+(119, 3, 'LOGIN_FAILED', 'auth', NULL, '::1', '{\"email\":\"guest@telecom.com\",\"username\":\"Guest\",\"reason\":\"invalid_password\"}', '2026-04-18 19:21:44'),
+(120, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:22:23'),
+(121, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:26:27'),
+(122, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 19:29:23'),
+(123, 1, 'LOGIN', 'auth', NULL, '::1', '{\"username\":\"admin\",\"role\":\"ADMIN\"}', '2026-04-18 22:17:16'),
+(124, 1, 'SIMULATE_RECOMMEND', 'simulation', NULL, '::1', '{\"profile_id\":5,\"limit\":5,\"segment\":null,\"recommended_offers\":[{\"offer_id\":32,\"total_cost\":59.47,\"satisfaction_score\":92},{\"offer_id\":60,\"total_cost\":80.29,\"satisfaction_score\":98},{\"offer_id\":50,\"total_cost\":124.58,\"satisfaction_score\":47},{\"offer_id\":17,\"total_cost\":144.91,\"satisfaction_score\":52},{\"offer_id\":27,\"total_cost\":148.25,\"satisfaction_score\":51}]}', '2026-04-18 22:28:42');
+
 -- --------------------------------------------------------
 
 --
@@ -45,7 +175,7 @@ CREATE TABLE `audit_logs` (
 --
 
 CREATE TABLE `customer_profiles` (
-  `profile_id` int(11) NOT NULL AUTO_INCREMENT,
+  `profile_id` int(11) NOT NULL,
   `label` varchar(100) NOT NULL,
   `minutes_avg` int(11) DEFAULT 0,
   `sms_avg` int(11) DEFAULT 0,
@@ -53,8 +183,7 @@ CREATE TABLE `customer_profiles` (
   `night_usage_pct` int(11) DEFAULT 0,
   `roaming_days` int(11) DEFAULT 0,
   `budget_max` decimal(10,2) DEFAULT 0.00,
-  `priority` enum('PRICE','QUALITY','BALANCED') DEFAULT 'BALANCED',
-  PRIMARY KEY (`profile_id`)
+  `priority` enum('PRICE','QUALITY','BALANCED') DEFAULT 'BALANCED'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -361,7 +490,8 @@ INSERT INTO `customer_profiles` (`profile_id`, `label`, `minutes_avg`, `sms_avg`
 (297, 'Client 297', 3049, 1366, '126.53', 75, 10, '37.91', 'BALANCED'),
 (298, 'Client 298', 3048, 2141, '129.19', 21, 15, '103.62', 'QUALITY'),
 (299, 'Client 299', 2286, 2696, '105.86', 33, 6, '22.49', 'PRICE'),
-(300, 'Client 300', 755, 2148, '30.77', 76, 5, '112.77', 'BALANCED');
+(300, 'Client 300', 755, 2148, '30.77', 76, 5, '112.77', 'BALANCED'),
+(301, 'Ghaith bejaoui', 200, 50, '25.00', 35, 200, '50.00', 'PRICE');
 
 -- --------------------------------------------------------
 
@@ -370,7 +500,7 @@ INSERT INTO `customer_profiles` (`profile_id`, `label`, `minutes_avg`, `sms_avg`
 --
 
 CREATE TABLE `offers` (
-  `offer_id` int(11) NOT NULL AUTO_INCREMENT,
+  `offer_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `segment` enum('PREPAID','POSTPAID','BUSINESS') NOT NULL,
   `monthly_price` decimal(10,2) NOT NULL,
@@ -383,8 +513,7 @@ CREATE TABLE `offers` (
   `over_sms_price` decimal(10,4) DEFAULT 0.0500,
   `over_data_price` decimal(10,4) DEFAULT 0.5000,
   `roaming_included_days` int(11) DEFAULT 0,
-  `status` enum('PUBLISHED','DRAFT','RETIRED') DEFAULT 'PUBLISHED',
-  PRIMARY KEY (`offer_id`)
+  `status` enum('PUBLISHED','DRAFT','RETIRED') DEFAULT 'PUBLISHED'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -451,7 +580,8 @@ INSERT INTO `offers` (`offer_id`, `name`, `segment`, `monthly_price`, `quota_min
 (57, 'Offer 57', 'PREPAID', '17.22', 350, 1287, '8.82', 30, '8.82', '0.0483', '0.0512', '0.3853', 0, 'PUBLISHED'),
 (58, 'Offer 58', 'PREPAID', '14.48', 356, 338, '11.88', 30, '11.88', '0.0936', '0.0591', '0.6832', 1, 'PUBLISHED'),
 (59, 'Offer 59', 'PREPAID', '20.75', 307, 1120, '9.20', 30, '9.20', '0.0669', '0.0459', '0.7630', 2, 'DRAFT'),
-(60, 'Offer 60', 'BUSINESS', '80.29', 3504, 3933, '169.98', 30, '169.98', '0.0609', '0.0686', '0.5447', 18, 'PUBLISHED');
+(60, 'Offer 60', 'BUSINESS', '80.29', 3504, 3933, '169.98', 30, '169.98', '0.0609', '0.0686', '0.5447', 18, 'PUBLISHED'),
+(61, 'valid', 'POSTPAID', '25.00', 2000, 2000, '20.00', 30, '0.00', '0.0000', '0.0000', '0.0000', 0, 'PUBLISHED');
 
 -- --------------------------------------------------------
 
@@ -621,15 +751,14 @@ INSERT INTO `offer_options` (`offer_id`, `option_id`) VALUES
 --
 
 CREATE TABLE `options` (
-  `option_id` int(11) NOT NULL AUTO_INCREMENT,
+  `option_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `type` enum('DATA_ADDON','VOICE_ADDON','SMS_ADDON','ROAMING','LOYALTY') NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `data_gb` decimal(10,2) DEFAULT 0.00,
   `minutes` int(11) DEFAULT 0,
   `sms` int(11) DEFAULT 0,
-  `validity_days` int(11) DEFAULT 30,
-  PRIMARY KEY (`option_id`)
+  `validity_days` int(11) DEFAULT 30
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -690,53 +819,96 @@ CREATE TABLE `scenarios` (
   `user_id` int(11) NOT NULL,
   `name` varchar(150) NOT NULL,
   `description` text DEFAULT NULL,
+  `profile_id` int(11) DEFAULT NULL,
+  `offer_ids` text DEFAULT NULL,
+  `comparison_data` text DEFAULT NULL,
+  `status` enum('DRAFT','ACTIVE','ARCHIVED') DEFAULT 'DRAFT',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `scenario_simulations`
+-- Dumping data for table `scenarios`
 --
 
-CREATE TABLE `scenario_simulations` (
-  `scenario_id` int(11) NOT NULL,
-  `simulation_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `simulations`
---
-
-CREATE TABLE `simulations` (
-  `simulation_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `profile_id` int(11) NOT NULL,
-  `run_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('PENDING','COMPLETED','FAILED') NOT NULL DEFAULT 'COMPLETED'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT INTO `scenarios` (`scenario_id`, `user_id`, `name`, `description`, `profile_id`, `offer_ids`, `comparison_data`, `status`, `created_at`, `updated_at`) VALUES
+(2, 1, 'test scenario', 'test', 301, '[1,2,3]', NULL, 'ACTIVE', '2026-04-18 16:38:57', '2026-04-18 17:01:12'),
+(4, 1, 'Test Scenario from Sim', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:46:38', '2026-04-18 17:07:32'),
+(5, 1, 'Test Save Scenario', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:47:11', '2026-04-18 17:07:10'),
+(6, 1, 'Final Test Scenario', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:47:33', '2026-04-18 17:01:07'),
+(7, 1, 'API Flow', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:48:20', '2026-04-18 17:01:41'),
+(8, 1, 'API Flow', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:48:29', '2026-04-18 17:07:35'),
+(9, 1, 'API Flow', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:48:54', '2026-04-18 17:07:44'),
+(10, 1, 'API Flow', NULL, 1, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:49:38', '2026-04-18 16:49:38'),
+(11, 1, 'test1', 'Simulation: recommend mode', 3, '[1,5,8]', NULL, 'ACTIVE', '2026-04-18 16:50:31', '2026-04-18 17:01:30'),
+(12, 1, '21', 'Simulation: compare mode', 1, '[1,3,4,11,9,19,39,36,48,46]', NULL, 'ACTIVE', '2026-04-18 16:54:53', '2026-04-18 16:54:54'),
+(13, 1, 'client 2 offer 1,2', 'Simulation: compare mode', 2, '[1,2]', NULL, 'ACTIVE', '2026-04-18 16:59:08', '2026-04-18 16:59:08'),
+(14, 1, 'hh', 'ff', 17, '[1,8,9]', NULL, 'ACTIVE', '2026-04-18 17:08:05', '2026-04-18 17:08:07');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `simulation_results`
+-- Table structure for table `scenario_results`
 --
 
-CREATE TABLE `simulation_results` (
+CREATE TABLE `scenario_results` (
   `result_id` int(11) NOT NULL,
-  `simulation_id` int(11) NOT NULL,
-  `offer_id` int(11) NOT NULL,
-  `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `overage_minutes_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `overage_sms_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `overage_data_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `roaming_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `satisfaction_score` int(11) NOT NULL DEFAULT 0,
-  `rank_position` int(11) NOT NULL DEFAULT 1
+  `scenario_id` int(11) NOT NULL,
+  `profile_id` int(11) DEFAULT NULL,
+  `offer_id` int(11) DEFAULT NULL,
+  `base_cost` decimal(10,2) DEFAULT NULL,
+  `overage_cost` decimal(10,2) DEFAULT NULL,
+  `roaming_cost` decimal(10,2) DEFAULT NULL,
+  `total_cost` decimal(10,2) DEFAULT NULL,
+  `satisfaction_score` int(11) DEFAULT NULL,
+  `recommendation` varchar(50) DEFAULT NULL,
+  `rank_by_cost` int(11) DEFAULT NULL,
+  `rank_by_score` int(11) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `scenario_results`
+--
+
+INSERT INTO `scenario_results` (`result_id`, `scenario_id`, `profile_id`, `offer_id`, `base_cost`, `overage_cost`, `roaming_cost`, `total_cost`, `satisfaction_score`, `recommendation`, `rank_by_cost`, `rank_by_score`, `notes`, `created_at`) VALUES
+(3, 10, 1, 1, '50.00', '5.00', '0.00', '55.00', 85, 'good_match', 1, 1, NULL, '2026-04-18 16:49:38'),
+(4, 11, 3, 32, '53.24', '2.46', '0.00', '55.70', 52, 'okay_match', NULL, 1, NULL, '2026-04-18 16:50:31'),
+(5, 11, 3, 60, '80.29', '0.00', '0.00', '80.29', 68, 'okay_match', NULL, 2, NULL, '2026-04-18 16:50:31'),
+(6, 11, 3, 50, '27.93', '59.50', '0.00', '87.43', 47, 'not_recommended', NULL, 3, NULL, '2026-04-18 16:50:31'),
+(7, 11, 3, 17, '78.58', '16.64', '0.00', '95.22', 52, 'okay_match', NULL, 4, NULL, '2026-04-18 16:50:31'),
+(8, 11, 3, 31, '52.66', '52.28', '0.00', '104.94', 53, 'okay_match', NULL, 5, NULL, '2026-04-18 16:50:31'),
+(9, 12, 1, 46, '35.05', '10.10', '15.00', '60.15', 100, 'good_match', 1, 1, NULL, '2026-04-18 16:54:53'),
+(10, 12, 1, 4, '21.75', '57.65', '75.00', '154.40', 71, 'good_match', 7, 2, NULL, '2026-04-18 16:54:53'),
+(11, 12, 1, 19, '24.34', '32.86', '70.00', '127.20', 69, 'okay_match', 5, 3, NULL, '2026-04-18 16:54:53'),
+(12, 12, 1, 36, '45.70', '65.83', '30.00', '141.53', 69, 'okay_match', 6, 4, NULL, '2026-04-18 16:54:54'),
+(13, 12, 1, 39, '53.94', '16.64', '45.00', '115.58', 67, 'okay_match', 3, 5, NULL, '2026-04-18 16:54:54'),
+(14, 12, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 4, 6, NULL, '2026-04-18 16:54:54'),
+(15, 12, 1, 3, '21.55', '125.49', '70.00', '217.04', 64, 'okay_match', 10, 7, NULL, '2026-04-18 16:54:54'),
+(16, 12, 1, 9, '13.73', '22.36', '65.00', '101.10', 46, 'not_recommended', 2, 8, NULL, '2026-04-18 16:54:54'),
+(17, 12, 1, 11, '19.45', '70.45', '65.00', '154.90', 42, 'not_recommended', 8, 9, NULL, '2026-04-18 16:54:54'),
+(18, 12, 1, 48, '23.37', '95.30', '70.00', '188.67', 42, 'not_recommended', 9, 10, NULL, '2026-04-18 16:54:54'),
+(19, 13, 2, 2, '34.83', '81.75', '15.00', '131.58', 51, 'okay_match', 1, 1, NULL, '2026-04-18 16:59:08'),
+(20, 13, 2, 1, '37.56', '64.36', '65.00', '166.92', 47, 'not_recommended', 2, 2, NULL, '2026-04-18 16:59:08'),
+(25, 6, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:01:07'),
+(26, 6, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:01:07'),
+(27, 2, 301, 2, '34.83', '0.00', '935.00', '969.83', 81, 'good_match', 1, 1, NULL, '2026-04-18 17:01:12'),
+(28, 2, 301, 1, '37.56', '0.00', '985.00', '1022.56', 77, 'good_match', 3, 2, NULL, '2026-04-18 17:01:12'),
+(29, 2, 301, 3, '21.55', '7.68', '985.00', '1014.23', 44, 'not_recommended', 2, 3, NULL, '2026-04-18 17:01:12'),
+(30, 7, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:01:41'),
+(31, 7, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:01:41'),
+(34, 5, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:07:10'),
+(35, 5, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:07:10'),
+(36, 4, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:07:32'),
+(37, 4, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:07:32'),
+(38, 8, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:07:35'),
+(39, 8, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:07:35'),
+(40, 9, 1, 2, '34.83', '111.51', '20.00', '166.34', 71, 'good_match', 2, 1, NULL, '2026-04-18 17:07:44'),
+(41, 9, 1, 1, '37.56', '11.39', '70.00', '118.95', 67, 'okay_match', 1, 2, NULL, '2026-04-18 17:07:44'),
+(42, 14, 17, 8, '38.84', '0.00', '40.00', '78.84', 100, 'good_match', 1, 1, NULL, '2026-04-18 17:08:07'),
+(43, 14, 17, 1, '37.56', '0.00', '65.00', '102.56', 77, 'good_match', 3, 2, NULL, '2026-04-18 17:08:07'),
+(44, 14, 17, 9, '13.73', '19.96', '60.00', '93.68', 46, 'not_recommended', 2, 3, NULL, '2026-04-18 17:08:07');
 
 -- --------------------------------------------------------
 
@@ -749,7 +921,7 @@ CREATE TABLE `users` (
   `username` varchar(100) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `role` enum('ADMIN','ANALYST') NOT NULL DEFAULT 'ANALYST',
+  `role` enum('ADMIN','ANALYST','GUEST') NOT NULL DEFAULT 'ANALYST',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -760,7 +932,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `username`, `email`, `password_hash`, `role`, `created_at`, `updated_at`) VALUES
 (1, 'admin', 'admin@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ADMIN', '2026-03-30 21:47:23', '2026-03-30 22:39:41'),
-(2, 'analyst', 'analyst@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ANALYST', '2026-03-30 21:54:48', '2026-03-30 22:39:46');
+(2, 'analyst', 'analyst@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'ANALYST', '2026-03-30 21:54:48', '2026-03-30 22:39:46'),
+(3, 'Guest', 'guest@telecom.com', '$2b$10$8uyzdEC4L1YDvkBYCHNYrOYxAZUI8KeyXk6rx31FDZq3VEQkBkfE.', 'GUEST', '2026-04-18 17:32:40', '2026-04-18 17:32:40');
 
 --
 -- Indexes for dumped tables
@@ -776,12 +949,14 @@ ALTER TABLE `audit_logs`
 --
 -- Indexes for table `customer_profiles`
 --
--- (PRIMARY KEY already defined in CREATE TABLE)
+ALTER TABLE `customer_profiles`
+  ADD PRIMARY KEY (`profile_id`);
 
 --
 -- Indexes for table `offers`
 --
--- (PRIMARY KEY already defined in CREATE TABLE)
+ALTER TABLE `offers`
+  ADD PRIMARY KEY (`offer_id`);
 
 --
 -- Indexes for table `offer_options`
@@ -793,7 +968,8 @@ ALTER TABLE `offer_options`
 --
 -- Indexes for table `options`
 --
--- (PRIMARY KEY already defined in CREATE TABLE)
+ALTER TABLE `options`
+  ADD PRIMARY KEY (`option_id`);
 
 --
 -- Indexes for table `scenarios`
@@ -803,27 +979,10 @@ ALTER TABLE `scenarios`
   ADD KEY `fk_scen_user` (`user_id`);
 
 --
--- Indexes for table `scenario_simulations`
+-- Indexes for table `scenario_results`
 --
-ALTER TABLE `scenario_simulations`
-  ADD PRIMARY KEY (`scenario_id`,`simulation_id`),
-  ADD KEY `fk_ss_simulation` (`simulation_id`);
-
---
--- Indexes for table `simulations`
---
-ALTER TABLE `simulations`
-  ADD PRIMARY KEY (`simulation_id`),
-  ADD KEY `fk_sim_user` (`user_id`),
-  ADD KEY `fk_sim_profile` (`profile_id`);
-
---
--- Indexes for table `simulation_results`
---
-ALTER TABLE `simulation_results`
-  ADD PRIMARY KEY (`result_id`),
-  ADD KEY `fk_res_simulation` (`simulation_id`),
-  ADD KEY `fk_res_offer` (`offer_id`);
+ALTER TABLE `scenario_results`
+  ADD PRIMARY KEY (`result_id`);
 
 --
 -- Indexes for table `users`
@@ -841,73 +1000,43 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `scenarios`
---
-ALTER TABLE `scenarios`
-  MODIFY `scenario_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `simulations`
---
-ALTER TABLE `simulations`
-  MODIFY `simulation_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `simulation_results`
---
-ALTER TABLE `simulation_results`
-  MODIFY `result_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `audit_logs`
---
-ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
 
 --
 -- AUTO_INCREMENT for table `customer_profiles`
 --
 ALTER TABLE `customer_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=302;
 
 --
 -- AUTO_INCREMENT for table `offers`
 --
 ALTER TABLE `offers`
-  MODIFY `offer_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `offer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `options`
 --
 ALTER TABLE `options`
-  MODIFY `option_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `option_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `scenarios`
 --
 ALTER TABLE `scenarios`
-  MODIFY `scenario_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `scenario_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT for table `simulations`
+-- AUTO_INCREMENT for table `scenario_results`
 --
-ALTER TABLE `simulations`
-  MODIFY `simulation_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `simulation_results`
---
-ALTER TABLE `simulation_results`
-  MODIFY `result_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `scenario_results`
+  MODIFY `result_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
@@ -931,27 +1060,6 @@ ALTER TABLE `offer_options`
 --
 ALTER TABLE `scenarios`
   ADD CONSTRAINT `fk_scen_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `scenario_simulations`
---
-ALTER TABLE `scenario_simulations`
-  ADD CONSTRAINT `fk_ss_scenario` FOREIGN KEY (`scenario_id`) REFERENCES `scenarios` (`scenario_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_ss_simulation` FOREIGN KEY (`simulation_id`) REFERENCES `simulations` (`simulation_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `simulations`
---
-ALTER TABLE `simulations`
-  ADD CONSTRAINT `fk_sim_profile` FOREIGN KEY (`profile_id`) REFERENCES `customer_profiles` (`profile_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_sim_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `simulation_results`
---
-ALTER TABLE `simulation_results`
-  ADD CONSTRAINT `fk_res_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`offer_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_res_simulation` FOREIGN KEY (`simulation_id`) REFERENCES `simulations` (`simulation_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

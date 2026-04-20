@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 .env
 .env.*
+.kilo/
 node_modules/
 vendor/
 Cahier_des_charges_PFE_Simulation_Offres_Telecom.docx

@@ -31,6 +31,8 @@ const router = express.Router();
  *     summary: Returns all offer-option relationships
  *     tags: [Offer Options]
  *     description: "EN: Get all offer-option relationships - FR: Obtenir toutes les relations offre-option"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of all offer-option relationships
@@ -63,6 +65,8 @@ router.get('/', async (req, res) => {
  *     summary: Get all options for a specific offer
  *     tags: [Offer Options]
  *     description: "EN: Get all options associated with a specific offer - FR: Obtenir toutes les options associées à une offre spécifique"
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -101,6 +105,8 @@ router.get('/offer/:id', async (req, res) => {
  *     summary: Get all offers that have a specific option
  *     tags: [Offer Options]
  *     description: "EN: Get all offers that include a specific option - FR: Obtenir toutes les offres qui incluent une option spécifique"
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -139,6 +145,8 @@ router.get('/option/:id', async (req, res) => {
  *     summary: Add an option to an offer
  *     tags: [Offer Options]
  *     description: "EN: Link an option to an offer - FR: Lier une option à une offre"
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -202,6 +210,8 @@ router.post('/', async (req, res) => {
  *     summary: Remove an option from an offer
  *     tags: [Offer Options]
  *     description: "EN: Unlink an option from an offer - FR: Délier une option d'une offre"
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

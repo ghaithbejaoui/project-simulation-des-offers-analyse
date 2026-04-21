@@ -91,6 +91,8 @@ The calculation formulas **exactly match** the specification:
 
 ## Database Tables
 
+See [DATABASE.md](./DATABASE.md) for complete schema documentation.
+
 | Table | Records | Purpose |
 |-------|---------|---------|
 | offers | 61 | Telecom offers catalog |
@@ -99,7 +101,7 @@ The calculation formulas **exactly match** the specification:
 | offer_options | 145 | Offer-option relationships |
 | scenarios | 14 | Saved simulation scenarios |
 | scenario_results | 44 | Simulation results per scenario |
-| audit_logs | 150+ | Audit trail |
+| audit_logs | 200+ | Audit trail |
 | users | 3 | ADMIN, ANALYST, GUEST |
 | fact_simulations | 500+ | BI fact table |
 | vw_arpu | - | ARPU by offer |
@@ -187,31 +189,29 @@ The calculation formulas **exactly match** the specification:
 
 ---
 
-## Missing Items
+## Completed Items
 
-### High Priority (Required by Cahier de Charges)
-1. ~~PDF Export~~ - Now implemented with pdfkit
-2. ~~XLSX Export~~ - Now implemented with xlsx library
-3. **Power BI Dashboards** - UI uses real BI API now
+### High Priority (Cahier de Charges)
+1. ✅ PDF Export - Implemented with pdfkit
+2. ✅ XLSX Export - Implemented with xlsx library
+3. ✅ Power BI Dashboards - UI uses real BI API now
+4. ✅ Guest login flow - Implemented with /api/auth/guest endpoint
 
 ### Medium Priority (Quality)
-4. ~~Input validation (Joi)~~ - Added to offer creation
-5. ~~Rate limiting~~ - Added with express-rate-limit
-6. ~~Helmet.js~~ - Added security headers
-7. ~~Guest login flow~~ - Implemented with /api/auth/guest endpoint
+5. ✅ Input validation (Joi) - Added to offer creation
+6. ✅ Rate limiting - Added with express-rate-limit
+7. ✅ Helmet.js - Added security headers
 
 ### Lower Priority (Post-PFE)
-8. ~~Docker containerization~~ - Dockerfiles and docker-compose added
-9. ~~Test suite~~ - Added basic simulation tests
+8. ✅ Docker containerization - Dockerfiles and docker-compose added
+9. ✅ Test suite - Added basic simulation tests
 
 ---
 
 ## Known Issues
 
-1. **Dashboard hardcoded data** - Uses static values instead of live BI API
-2. **Guest role incomplete** - Exists in DB but no dedicated login
-3. **Missing FK constraints** - offer_options and scenario_results lack foreign keys
-4. **fact_simulations populated but unused** - BI table exists but dashboard doesn't query it
+1. **Missing FK constraints** - Tables lack enforced foreign keys at DB level
+2. **Dashboard cached data** - Some values may be cached
 
 ---
 
@@ -333,24 +333,25 @@ project_pfe/
 
 ## Future Work
 
-### Phase 1: Complete BI Dashboards
-- Connect Dashboard.jsx to real BI API endpoints
+### Phase 1: BI Dashboards
+- Create Marketing, Product, Direction views in Power BI
+- Connect Dashboard.jsx to real BI API endpoints (already done)
+
+### Phase 2: Power BI Desktop
+- Export data for Power BI Desktop dashboards
 - Create Marketing, Product, Direction views
 
-### Phase 2: Export Enhancements
-- Implement true XLSX with xlsx npm package
-- Add PDF export with pdfkit
-
-### Phase 3: Security & Quality
-- Add Joi validation middleware
-- Add rate limiting
-- Add Helmet.js headers
-
-### Phase 4: Testing & DevOps
-- Add Jest test suite
-- Dockerize application
+### Phase 3: Testing & DevOps
+- Add more comprehensive test suite
+- CI/CD pipeline setup
 
 ---
 
-**Last Updated:** 2026-04-20  
-**Document Version:** 2.0
+## Documentation
+
+- [DATABASE.md](./DATABASE.md) - Complete database schema and documentation
+
+---
+
+**Last Updated:** 2026-04-21  
+**Document Version:** 3.0

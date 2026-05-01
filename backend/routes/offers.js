@@ -8,7 +8,7 @@ const router = express.Router();
 // Validation schemas
 const offerSchema = Joi.object({
   name: Joi.string().max(100).required(),
-  segment: Joi.string().valid('PREPAID', 'POSTPAID', 'BUSINESS').required(),
+  segment: Joi.string().valid('PREPAID', 'POSTPAID', 'BUSINESS', 'DATA_ONLY').required(),
   monthly_price: Joi.number().min(0).required(),
   quota_minutes: Joi.number().integer().min(0),
   quota_sms: Joi.number().integer().min(0),
@@ -37,7 +37,7 @@ const offerSchema = Joi.object({
  *           description: Name of the offer
  *         segment:
  *           type: string
- *           enum: [PREPAID, POSTPAID, BUSINESS]
+ *           enum: [PREPAID, POSTPAID, BUSINESS, DATA_ONLY]
  *           description: Customer segment
  *         monthly_price:
  *           type: number
@@ -161,7 +161,7 @@ router.get('/:id', requireAuth, async (req, res) => {
  *                 type: string
  *               segment:
  *                 type: string
- *                 enum: [PREPAID, POSTPAID, BUSINESS]
+ *                 enum: [PREPAID, POSTPAID, BUSINESS, DATA_ONLY]
  *               monthly_price:
  *                 type: number
  *               quota_minutes:

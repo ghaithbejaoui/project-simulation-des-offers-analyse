@@ -668,7 +668,7 @@ INSERT INTO `fact_simulations` (`id`, `simulated_at`, `offer_id`, `offer_name`, 
 CREATE TABLE `offers` (
   `offer_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `segment` enum('PREPAID','POSTPAID','BUSINESS') NOT NULL,
+  `segment` enum('PREPAID','POSTPAID','BUSINESS','DATA_ONLY') NOT NULL,
   `monthly_price` decimal(10,2) NOT NULL,
   `quota_minutes` int(11) DEFAULT 0,
   `quota_sms` int(11) DEFAULT 0,

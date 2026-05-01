@@ -200,18 +200,18 @@ function OptionModal({ option, onClose, onSave }) {
          <div style={{ gridColumn: "span 2" }}><FormField label={t("options.form.optionName")} value={form.name} onChange={v => set("name", v)} placeholder="e.g. Night Data 5GB" /></div>
          <div>
            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>{t("options.form.type")}</label>
-           <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...inputStyle, height: 38, fontSize: 13 }}>
-             {OPTION_TYPES.map(t => (
-               <option key={t} value={t}>
-                 {t === "DATA_ADDON" ? "📶 " + t("options.type.dataAddon") :
-                  t === "VOICE_ADDON" ? "🎙 " + t("options.type.voiceAddon") :
-                  t === "SMS_ADDON" ? "💬 " + t("options.type.smsAddon") :
-                  t === "ROAMING" ? "✈ " + t("options.type.roaming") :
-                  t === "LOYALTY" ? "⭐ " + t("options.type.loyalty") :
-                  t.replace("_", " ")}
-               </option>
-             ))}
-           </select>
+            <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...inputStyle, height: 38, fontSize: 13 }}>
+              {OPTION_TYPES.map(optionType => (
+                <option key={optionType} value={optionType}>
+                  {optionType === "DATA_ADDON" ? "📶 " + t("options.type.dataAddon") :
+                   optionType === "VOICE_ADDON" ? "🎙 " + t("options.type.voiceAddon") :
+                   optionType === "SMS_ADDON" ? "💬 " + t("options.type.smsAddon") :
+                   optionType === "ROAMING" ? "✈ " + t("options.type.roaming") :
+                   optionType === "LOYALTY" ? "⭐ " + t("options.type.loyalty") :
+                   optionType.replace("_", " ")}
+                </option>
+              ))}
+            </select>
          </div>
          <FormField label={t("options.form.price")} value={form.price} onChange={v => set("price", v)} type="number" placeholder="0.00" />
          <FormField label={t("options.form.dataBonus")} value={form.data_gb} onChange={v => set("data_gb", v)} type="number" placeholder="0" />

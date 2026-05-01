@@ -45,7 +45,7 @@ const router = express.Router();
  *           default: 5
  *         segment:
  *           type: string
- *           enum: [PREPAID, POSTPAID, BUSINESS]
+ *           enum: [PREPAID, POSTPAID, BUSINESS, DATA_ONLY]
  * 
  *     CompareInput:
  *       type: object
@@ -122,8 +122,19 @@ router.post('/', requireAuth, async (req, res) => {
         roaming_days: roaming_days || 0,
         budget_max: budget_max || Infinity,
         priority: priority || 'BALANCED'
-      };
+       };
     }
+
+    // Compute segment for profile
+    let profileSegment = 'POSTPAID';
+    if (profile.data_avg_gb > 40 && profile.minutes_avg === 0 && profile.sms_avg === 0) {
+      profileSegment = 'DATA_ONLY';
+    } else if (profile.budget_max <= 30) {
+      profileSegment = 'PREPAID';
+    } else if (profile.budget_max >= 100 && (profile.minutes_avg > 500 || profile.data_avg_gb > 30)) {
+      profileSegment = 'BUSINESS';
+    }
+    profile.segment = profileSegment;
 
     const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [offer_id]);
     if (offerRows.length === 0) return res.status(404).json({ message: 'Offer not found' });
@@ -144,20 +155,60 @@ router.post('/', requireAuth, async (req, res) => {
     const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
     const roamingCost = overRoamingDays * 5;
     const discounts = Math.abs(Math.min(0, optionsCost));
-    let totalCost = baseCost + overageCost + roamingCost - discounts;
+    let totalCost = baseCost + overageCost + roamingCost + optionsCost - discounts;
 
     let score = 100;
     const budgetRatio = totalCost / (profile.budget_max || 1);
     if (budgetRatio <= 0.7) score += 10;
     else if (budgetRatio <= 1.0) score += 0;
     else score -= 30;
-    if (offer.segment === 'BUSINESS') score += 10;
-    else if (offer.segment === 'POSTPAID') score += 5;
+    if (profile.segment === 'BUSINESS') score += 10;
+    else if (profile.segment === 'POSTPAID') score += 5;
     score += Math.min(offer.options.length * 2, 10);
     const fairUseExceeded = (profile.data_avg_gb || 0) > (offer.fair_use_gb || 0);
     if (fairUseExceeded) score -= 20;
     if (overMinutes + overSms + overData > 0) score -= 10;
-     let satisfactionScore = Math.max(0, Math.min(100, score));
+    let satisfactionScore = Math.max(0, Math.min(100, score));
+
+    // Generate justification/explainability
+    const justification = [];
+    if (budgetRatio <= 0.7) {
+      justification.push(`Within budget: ${((profile.budget_max - totalCost) / (profile.budget_max || 1) * 100).toFixed(1)}% savings`);
+    } else if (budgetRatio > 1.0) {
+      justification.push(`Exceeds budget by ${((totalCost - (profile.budget_max || 1)) / (profile.budget_max || 1) * 100).toFixed(1)}%`);
+    }
+    if (profile.segment === 'BUSINESS') {
+      justification.push('Optimal for business segment with high usage');
+    } else if (profile.segment === 'PREPAID') {
+      justification.push('Budget-friendly for cost-conscious customers');
+    } else if (profile.segment === 'DATA_ONLY') {
+      justification.push('Designed for data-heavy usage patterns');
+    }
+    if (offer.options && offer.options.length > 0) {
+      justification.push(`Includes ${offer.options.length} add-on option(s)`);
+    }
+    if (overMinutes > 0) {
+      justification.push(`${overMinutes.toFixed(0)} extra minutes at ${offer.over_minute_price}/min`);
+    }
+    if (overSms > 0) {
+      justification.push(`${overSms.toFixed(0)} extra SMS at ${offer.over_sms_price}/SMS`);
+    }
+    if (overData > 0) {
+      justification.push(`${overData.toFixed(1)}GB over quota at ${offer.over_data_price}/GB`);
+    }
+    if (roamingCost > 0) {
+      justification.push(`${overRoamingDays} roaming days at 5/day`);
+    }
+    if (fairUseExceeded) {
+      justification.push('Warning: Fair use limit exceeded - possible throttling');
+    }
+    if (satisfactionScore >= 80) {
+      justification.push('Highly recommended for this profile');
+    } else if (satisfactionScore >= 50) {
+      justification.push('Good match for this profile');
+    } else {
+      justification.push('Not optimal - consider alternatives');
+    }
 
 // Audit log
       const user_id = req.user?.user_id || null;
@@ -194,15 +245,16 @@ router.post('/', requireAuth, async (req, res) => {
           satisfaction_score: satisfactionScore
         },
         total_cost: parseFloat(totalCost.toFixed(2)),
-        satisfaction_score: satisfactionScore
+        satisfaction_score: satisfactionScore,
+        justification: justification.join('. ')
       };
 
       await logSimulation(result, 'single');
       res.json(result);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
   /**
    * @swagger
@@ -231,27 +283,42 @@ router.post('/recommend', requireAuth, async (req, res) => {
   if (limit && (isNaN(Number(limit)) || limit < 1 || limit > 100)) {
     return res.status(400).json({ message: 'limit must be a number between 1 and 100' });
   }
-  if (segment && !['PREPAID', 'POSTPAID', 'BUSINESS'].includes(segment)) {
-    return res.status(400).json({ message: 'segment must be PREPAID, POSTPAID, or BUSINESS' });
+  if (segment && !['PREPAID', 'POSTPAID', 'BUSINESS', 'DATA_ONLY'].includes(segment)) {
+    return res.status(400).json({ message: 'segment must be PREPAID, POSTPAID, BUSINESS, or DATA_ONLY' });
   }
 
   let profile;
 
   try {
-    if (profile_id) {
-      const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
-      if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
-      profile = rows[0];
-    } else {
-      profile = {
-        minutes_avg: req.body.minutes_avg || 0, sms_avg: req.body.sms_avg || 0,
-        data_avg_gb: req.body.data_avg_gb || 0, roaming_days: req.body.roaming_days || 0,
-        budget_max: req.body.budget_max || Infinity, priority: req.body.priority || 'BALANCED'
-      };
-    }
+   if (profile_id) {
+     const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [profile_id]);
+     if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
+     profile = rows[0];
+     // Override profile priority with request priority if provided
+     if (req.body.priority) {
+       profile.priority = req.body.priority;
+     }
+   } else {
+     profile = {
+       minutes_avg: req.body.minutes_avg || 0, sms_avg: req.body.sms_avg || 0,
+       data_avg_gb: req.body.data_avg_gb || 0, roaming_days: req.body.roaming_days || 0,
+       budget_max: req.body.budget_max || Infinity, priority: req.body.priority || 'BALANCED'
+     };
+   }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
+
+  // Compute segment for profile
+  let profileSegment = 'POSTPAID';
+  if (profile.data_avg_gb > 40 && profile.minutes_avg === 0 && profile.sms_avg === 0) {
+    profileSegment = 'DATA_ONLY';
+  } else if (profile.budget_max <= 30) {
+    profileSegment = 'PREPAID';
+  } else if (profile.budget_max >= 100 && (profile.minutes_avg > 500 || profile.data_avg_gb > 30)) {
+    profileSegment = 'BUSINESS';
+  }
+  profile.segment = profileSegment;
 
   try {
     let query = 'SELECT * FROM offers WHERE status = ?';
@@ -277,19 +344,19 @@ router.post('/recommend', requireAuth, async (req, res) => {
         const discounts = Math.abs(Math.min(0, optionsCost));
         const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
         const roamingCost = overRoamingDays * 5;
-        const totalCost = baseCost + overageCost + roamingCost - discounts;
+        const totalCost = baseCost + overageCost + roamingCost + optionsCost - discounts;
 
        let score = 100;
        const budgetRatio = totalCost / (profile.budget_max || 1);
-       if (budgetRatio <= 0.7) score += 10;
-       else if (budgetRatio <= 1.0) score += 0;
-       else score -= 30;
-       if (offer.segment === 'BUSINESS') score += 10;
-       else if (offer.segment === 'POSTPAID') score += 5;
-       score += Math.min(offerOptions.length * 2, 10);
-       if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
-       if (overMinutes + overSms + overData > 0) score -= 10;
-       score = Math.max(0, Math.min(100, score));
+        if (budgetRatio <= 0.7) score += 10;
+        else if (budgetRatio <= 1.0) score += 0;
+        else score -= 30;
+        if (profile.segment === 'BUSINESS') score += 10;
+        else if (profile.segment === 'POSTPAID') score += 5;
+        score += Math.min(offerOptions.length * 2, 10);
+        if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
+        if (overMinutes + overSms + overData > 0) score -= 10;
+        score = Math.max(0, Math.min(100, score));
 
        return {
          offer_id: offer.offer_id,
@@ -314,9 +381,10 @@ router.post('/recommend', requireAuth, async (req, res) => {
        };
      });
 
-    if (profile.priority === 'PRICE') recommendations.sort((a, b) => a.estimated_cost - b.estimated_cost);
-     else if (profile.priority === 'QUALITY') recommendations.sort((a, b) => b.score - a.score);
-     else recommendations.sort((a, b) => (b.score / b.estimated_cost) - (a.score / a.estimated_cost));
+      const priority = profile.priority?.toUpperCase() || 'BALANCED';
+      if (priority === 'PRICE') recommendations.sort((a, b) => a.estimated_cost - b.estimated_cost);
+      else if (priority === 'QUALITY') recommendations.sort((a, b) => b.satisfaction_score - a.satisfaction_score);
+      else recommendations.sort((a, b) => (b.satisfaction_score / b.estimated_cost) - (a.satisfaction_score / a.estimated_cost));
 
 // Audit log - log the recommendation request
       const user_id = req.user?.user_id || null;
@@ -341,9 +409,9 @@ router.post('/recommend', requireAuth, async (req, res) => {
       const topResult = recommendations[0] ? { ...recommendations[0], profile } : null;
       if (topResult) await logSimulation(topResult, 'recommend');
 
-      res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
+       res.json({ profile, count: Math.min(limit, recommendations.length), recommendations: recommendations.slice(0, limit) });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -398,8 +466,19 @@ router.post('/compare', requireAuth, async (req, res) => {
         roaming_days: roaming_days || 0,
         budget_max: budget_max || Infinity,
         priority: priority || 'BALANCED'
-      };
+       };
     }
+
+    // Compute segment for profile
+    let profileSegment = 'POSTPAID';
+    if (profile.data_avg_gb > 40 && profile.minutes_avg === 0 && profile.sms_avg === 0) {
+      profileSegment = 'DATA_ONLY';
+    } else if (profile.budget_max <= 30) {
+      profileSegment = 'PREPAID';
+    } else if (profile.budget_max >= 100 && (profile.minutes_avg > 500 || profile.data_avg_gb > 30)) {
+      profileSegment = 'BUSINESS';
+    }
+    profile.segment = profileSegment;
 
     const placeholders = offer_ids.map(() => '?').join(',');
     const [offerRows] = await db.query(`SELECT * FROM offers WHERE offer_id IN (${placeholders})`, offer_ids);
@@ -425,15 +504,15 @@ router.post('/compare', requireAuth, async (req, res) => {
       const roamingCost = overRoamingDays * 5;
       const totalCost = baseCost + overageCost + roamingCost - discounts;
 
-      let score = 100;
-      const budgetRatio = totalCost / (Number(profile.budget_max) || 1);
-      if (budgetRatio <= 0.7) score += 10;
-      else if (budgetRatio > 1.0) score -= 30;
-      if (offer.segment === 'BUSINESS') score += 10;
-      else if (offer.segment === 'POSTPAID') score += 5;
-      score += Math.min(offerOptions.length * 2, 10);
-      if ((Number(profile.data_avg_gb) || 0) > (Number(offer.fair_use_gb) || 0)) score -= 20;
-      if (overMinutes + overSms + overData > 0) score -= 10;
+       let score = 100;
+       const budgetRatio = totalCost / (Number(profile.budget_max) || 1);
+       if (budgetRatio <= 0.7) score += 10;
+       else if (budgetRatio > 1.0) score -= 30;
+       if (profile.segment === 'BUSINESS') score += 10;
+       else if (profile.segment === 'POSTPAID') score += 5;
+       score += Math.min(offerOptions.length * 2, 10);
+       if ((Number(profile.data_avg_gb) || 0) > (Number(offer.fair_use_gb) || 0)) score -= 20;
+       if (overMinutes + overSms + overData > 0) score -= 10;
       score = Math.max(0, Math.min(100, score));
 
        return {
@@ -515,10 +594,10 @@ router.post('/compare', requireAuth, async (req, res) => {
        summary: {
          cheapest: sortedByCost[0]?.offer_name,
          best_score: sortedByScore[0]?.offer_name
-       }
-     });
+        }
+      });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -573,7 +652,20 @@ router.post('/batch', requireAuth, async (req, res) => {
     }
     if (profiles.length === 0) return res.status(404).json({ message: 'No profiles found' });
 
-     const results = profiles.map(profile => {
+    // Add segment to each profile for audit log
+    profiles = profiles.map(p => {
+      let segment = 'POSTPAID';
+      if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
+        segment = 'DATA_ONLY';
+      } else if (p.budget_max <= 30) {
+        segment = 'PREPAID';
+      } else if (p.budget_max >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
+        segment = 'BUSINESS';
+      }
+      return { ...p, segment };
+    });
+
+    const results = profiles.map(profile => {
        const baseCost = Number(offer.monthly_price) || 0;
        const overMinutes = Math.max(0, (profile.minutes_avg || 0) - (Number(offer.quota_minutes) || 0));
        const overSms = Math.max(0, (profile.sms_avg || 0) - (Number(offer.quota_sms) || 0));
@@ -586,18 +678,18 @@ router.post('/batch', requireAuth, async (req, res) => {
        const discounts = Math.abs(Math.min(0, optionsCost));
        const overRoamingDays = Math.max(0, (profile.roaming_days || 0) - (Number(offer.roaming_included_days) || 0));
        const roamingCost = overRoamingDays * 5;
-       const totalCost = baseCost + overageCost + roamingCost - discounts;
+       const totalCost = baseCost + overageCost + roamingCost + optionsCost - discounts;
 
-      let score = 100;
-      const budgetRatio = totalCost / (profile.budget_max || 1);
-      if (budgetRatio <= 0.7) score += 10;
-      else if (budgetRatio > 1.0) score -= 30;
-      if (offer.segment === 'BUSINESS') score += 10;
-      else if (offer.segment === 'POSTPAID') score += 5;
-      score += Math.min(offerOptions.length * 2, 10);
-      if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
-      if (overMinutes + overSms + overData > 0) score -= 10;
-      score = Math.max(0, Math.min(100, score));
+       let score = 100;
+       const budgetRatio = totalCost / (profile.budget_max || 1);
+       if (budgetRatio <= 0.7) score += 10;
+       else if (budgetRatio > 1.0) score -= 30;
+       if (profile.segment === 'BUSINESS') score += 10;
+       else if (profile.segment === 'POSTPAID') score += 5;
+       score += Math.min(offerOptions.length * 2, 10);
+       if ((profile.data_avg_gb || 0) > (offer.fair_use_gb || 0)) score -= 20;
+       if (overMinutes + overSms + overData > 0) score -= 10;
+       score = Math.max(0, Math.min(100, score));
 
       let recommendation;
       if (score >= 70 && totalCost <= profile.budget_max) recommendation = 'good_match';
@@ -637,8 +729,8 @@ router.post('/batch', requireAuth, async (req, res) => {
         details: {
           offer_id: offer.offer_id,
           total_profiles: results.length,
-          good_matches,
-          okay_matches,
+          good_matches: goodMatches,
+          okay_matches: okayMatches,
           avg_total_cost: parseFloat((totalCostSum / results.length).toFixed(2)),
           avg_satisfaction: parseFloat(avgSatisfaction.toFixed(2))
         }
@@ -681,7 +773,7 @@ router.post('/batch', requireAuth, async (req, res) => {
        }
      });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 

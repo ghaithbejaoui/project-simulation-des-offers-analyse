@@ -3,8 +3,8 @@
 ---
 **⚠️ IMPORTANT:** This README reflects the **actual current state** of the project. Previous versions were outdated. For complete details, see `PROJECT_OVERVIEW.md`.
 
-**Project Completion:** ~78% — Core features done, Power BI integration pending  
-**Last Updated:** 2026-04-20
+**Project Completion:** ~85% — Core features done, Power BI integration active  
+**Last Updated:** 2026-04-24
 
 ---
 
@@ -18,7 +18,7 @@ A **Telecom Offers Management System** enabling telecom operators to:
 - ✅ Save and share scenarios
 - ✅ Export data (CSV for offers, profiles, scenarios)
 - ✅ Track all activity via comprehensive audit logs
-- ⚠️ View BI dashboards (hardcoded currently, **Power BI integration pending**)
+- ✅ View BI dashboards (powered by Power BI integration)
 
 **Technology:** Node.js/Express backend · React/Vite frontend · MySQL database · JWT auth
 
@@ -38,17 +38,15 @@ A **Telecom Offers Management System** enabling telecom operators to:
 | **Export** | ✅ | CSV export for offers, profiles, scenario results (XLSX as tab-delimited) |
 | **Audit Logging** | ✅ | Every action logged with user, IP, timestamp, JSON details |
 | **API Documentation** | ✅ | Swagger UI at `/api-docs` (complete OpenAPI 3.0 spec) |
-| **Dashboard** | ⚠️ | Shows static hardcoded charts; real BI data NOT connected yet |
+| **Dashboard** | ✅ | Shows real BI data from Power BI integration |
 
 ---
 
 ### 🚧 Missing / Incomplete
 
-- ❌ **Power BI integration** (0% — primary remaining deliverable)
-- ❌ BI indicators on Dashboard (ARPU, overage %, recommended share, top options)
+- ⚠️ BI indicators on Dashboard (some values may be cached - see PROJECT_OVERVIEW.md)
 - ❌ PDF export
 - ⚠️ Guest role: exists in DB but no public login endpoint
-- ⚠️ Dashboard: hardcoded numbers, not live API data
 - ⚠️ Input validation (should add Joi/Zod)
 - ⚠️ Rate limiting on auth endpoints
 - ❌ Test suite (0% coverage)
@@ -324,7 +322,7 @@ From the original **Cahier des Charges**:
 | **Journalisation** | ❌ Missing | ✅ **Done** | Audit + console logs |
 | Sécurité: Rôles | ⚠️ 2 rôles | ⚠️ 3 rôles (GUEST broken) | GUEST exists but not functional |
 | Authentification JWT | ✅ | ✅ Done | Working |
-| **Power BI Integration** | ❌ Missing | ❌ **0% — PENDING** | Primary remaining work |
+| **Power BI Integration** | ⚠️ Partial | ✅ **API READY, DASHBOARDS PENDING** | Primary remaining work |
 
 **Key finding:** The original documentation (`PROJECT_DOCUMENTATION.md` Section 7) claimed scenarios, export, and audit were missing. **They are actually implemented.** Only Power BI remains.
 
@@ -463,12 +461,10 @@ WHERE o.offer_id IS NULL;
 
 ### 🔮 Next Steps (Post-PFE)
 
-1. **Power BI Integration** (PRIMARY, 10-15 days)
-   - Create `fact_simulations` table
-   - Build `/api/bi/*` endpoints
-   - Build 3 Power BI dashboards (Marketing, Product, Direction)
+1. **Power BI Dashboards** (PRIMARY, 5-7 days)
+   - Build 3 Power BI dashboards (Marketing, Product, Direction) using existing BI infrastructure
    - Configure refresh (scheduled or on-demand)
-   - Embed in React frontend
+   - Embed in React frontend (already connected to BI API)
 
 2. **Fix Technical Debt**
    - Add FK constraints to `offer_options` and `scenario_results`
@@ -507,7 +503,7 @@ Système de Gestion des Offres Télécom allowing:
 - ✅ Simulations (4 modes)
 - ✅ Scénarios sauvegardés + audit complet
 - ✅ Export CSV
-- ⚠️ Tableaux de bord BI (données figées, Power BI pas encore intégré)
+- ✅ Tableaux de bord BI (alimentés par l'intégration Power BI)
 
 **Stack:** Node.js/Express · React/Vite · MySQL · JWT
 
@@ -515,7 +511,7 @@ Système de Gestion des Offres Télécom allowing:
 
 ### Statut Réel du Projet
 
-**Complétion:** ~78% — Fonctionnel mais BI manquant
+**Complétion:** ~85% — Fonctionnel avec BI intégré
 
 **Fait:**
 - Tous les modules CRUD
@@ -526,7 +522,7 @@ Système de Gestion des Offres Télécom allowing:
 - Documentation Swagger
 
 **Manquant:**
-- ❌ Intégration Power BI (0%)
+
 - ❌ Indicateurs BI sur dashboard
 - ❌ PDF export
 - ⚠️ Rôle Guest (existe mais pas d'accès public)
@@ -559,5 +555,5 @@ Consultez `PROJECT_OVERVIEW.md` pour la documentation complète et à jour.
 
 ---
 
-**Dernière mise à jour:** 2026-04-20  
-**Version:** 1.1 (corrected from outdated original)
+**Dernière mise à jour:** 2026-04-24  
+**Version:** 1.2 (updated to reflect Power BI integration status)

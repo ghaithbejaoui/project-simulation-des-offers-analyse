@@ -340,10 +340,10 @@ export default function Simulation() {
 
   // Form state for custom profile
   const [useCustom, setUseCustom] = useState(false);
-  const [customProfile, setCustomProfile] = useState({
-    avg_minutes: 200, avg_sms: 50, avg_data_gb: 20, night_usage_pct: 10,
-    roaming_days: 0, budget_max: 60, priority: "balanced", segment: "POSTPAID",
-  });
+   const [customProfile, setCustomProfile] = useState({
+     avg_minutes: 200, avg_sms: 50, avg_data_gb: 20, night_usage_pct: 10,
+     roaming_days: 0, budget_max: 60, priority: "quality", segment: "POSTPAID",
+   });
 
   useEffect(() => {
     const loadData = async () => {
@@ -386,27 +386,27 @@ export default function Simulation() {
 
        if (mode === "single") {
          if (!selectedOffers[0]) { setError("Select an offer."); setLoading(false); return; }
-         url = `${API}/simulation`;
-         if (profile.profile_id || profile.id) {
-           body = { profile_id: profile.profile_id || profile.id, offer_id: selectedOffers[0] };
-         } else {
-           body = { ...buildProfileData(profile), offer_id: selectedOffers[0] };
-         }
+          url = `${API}/simulation`;
+           if (profile.profile_id || profile.id) {
+             body = { profile_id: profile.profile_id || profile.id, offer_id: selectedOffers[0], priority: customProfile.priority };
+           } else {
+            body = { ...buildProfileData(profile), offer_id: selectedOffers[0] };
+          }
        } else if (mode === "compare") {
          if (selectedOffers.length < 2) { setError("Select at least 2 offers."); setLoading(false); return; }
-         url = `${API}/simulation/compare`;
-         if (profile.profile_id || profile.id) {
-           body = { profile_id: profile.profile_id || profile.id, offer_ids: selectedOffers };
-         } else {
-           body = { ...buildProfileData(profile), offer_ids: selectedOffers };
-         }
+          url = `${API}/simulation/compare`;
+           if (profile.profile_id || profile.id) {
+             body = { profile_id: profile.profile_id || profile.id, offer_ids: selectedOffers, priority: customProfile.priority };
+           } else {
+            body = { ...buildProfileData(profile), offer_ids: selectedOffers };
+          }
        } else if (mode === "recommend") {
-         url = `${API}/simulation/recommend`;
-         if (profile.profile_id || profile.id) {
-           body = { profile_id: profile.profile_id || profile.id, limit: 5 };
-         } else {
-           body = { ...buildProfileData(profile), limit: 5 };
-         }
+          url = `${API}/simulation/recommend`;
+           if (profile.profile_id || profile.id) {
+             body = { profile_id: profile.profile_id || profile.id, limit: 5, priority: customProfile.priority };
+           } else {
+            body = { ...buildProfileData(profile), limit: 5 };
+          }
         } else if (mode === "batch") {
           if (!batchOfferId) { setError("Select an offer for batch analysis."); setLoading(false); return; }
           url = `${API}/simulation/batch`;

@@ -112,4 +112,63 @@ router.get('/simulations', async (req, res) => {
   }
 });
 
+router.get('/churn-risk', async (req, res) => {
+  try {
+    const rows = await q(`
+      SELECT
+        o.offer_id,
+        o.name AS offer_name,
+        o.segment,
+        o.monthly_price,
+        COUNT(fs.simulation_id) AS sim_count,
+        AVG(fs.total_cost) AS avg_cost,
+        AVG(fs.satisfaction_score) AS avg_score,
+        SUM(CASE WHEN fs.satisfaction_score < 50 THEN 1 ELSE 0 END) AS low_score_count,
+        ROUND(SUM(CASE WHEN fs.satisfaction_score < 50 THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0), 2) AS churn_risk_pct,
+        SUM(CASE WHEN fs.total_cost > cp.budget_max THEN 1 ELSE 0 END) AS over_budget_count,
+        ROUND(SUM(CASE WHEN fs.total_cost > cp.budget_max THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0), 2) AS over_budget_pct
+      FROM offers o
+      LEFT JOIN fact_simulations fs ON o.offer_id = fs.offer_id
+      LEFT JOIN customer_profiles cp ON fs.profile_id = cp.profile_id
+      GROUP BY o.offer_id, o.name, o.segment, o.monthly_price
+      HAVING sim_count > 0
+      ORDER BY churn_risk_pct DESC, over_budget_pct DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/potential-savings', async (req, res) => {
+  try {
+    const rows = await q(`
+      SELECT
+        fs.profile_id,
+        cp.label AS profile_label,
+        cp.budget_max,
+        MIN(fs.total_cost) AS cheapest_cost,
+        MAX(fs.total_cost) AS expensive_cost,
+        MAX(fs.total_cost) - MIN(fs.total_cost) AS potential_savings,
+        o_best.name AS cheapest_offer,
+        o_worst.name AS expensive_offer
+      FROM fact_simulations fs
+      JOIN customer_profiles cp ON fs.profile_id = cp.profile_id
+      JOIN offers o_best ON fs.offer_id = o_best.offer_id
+      LEFT JOIN (
+        SELECT fs2.profile_id, MAX(fs2.total_cost) AS max_cost
+        FROM fact_simulations fs2 GROUP BY fs2.profile_id
+      ) m ON fs.profile_id = m.profile_id AND fs.total_cost = m.max_cost
+      LEFT JOIN offers o_worst ON fs.offer_id = o_worst.offer_id
+      WHERE fs.satisfaction_score >= 70
+      GROUP BY fs.profile_id, cp.label, cp.budget_max
+      ORDER BY potential_savings DESC
+      LIMIT 20
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

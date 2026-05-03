@@ -19,7 +19,7 @@ const offerSchema = Joi.object({
   over_sms_price: Joi.number().min(0),
   over_data_price: Joi.number().min(0),
   roaming_included_days: Joi.number().integer().min(0),
-  status: Joi.string().valid('PUBLISHED', 'DRAFT', 'ARCHIVED')
+  status: Joi.string().valid('PUBLISHED', 'DRAFT', 'RETIRED')
 });
 
 /**
@@ -71,7 +71,7 @@ const offerSchema = Joi.object({
  *           description: Included roaming days
  *         status:
  *           type: string
- *           enum: [PUBLISHED, DRAFT, ARCHIVED]
+ *           enum: [PUBLISHED, DRAFT, RETIRED]
  *           description: Offer status
  */
 
@@ -193,7 +193,7 @@ router.get('/:id', requireAuth, async (req, res) => {
  *                 default: 0
  *               status:
  *                 type: string
- *                 enum: [PUBLISHED, DRAFT, ARCHIVED]
+ *                 enum: [PUBLISHED, DRAFT, RETIRED]
  *                 default: PUBLISHED
 *     responses:
  *       201:

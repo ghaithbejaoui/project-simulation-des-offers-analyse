@@ -77,7 +77,7 @@ const getToken = () => localStorage.getItem("token");
 const headers = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` });
 
 const SEGMENTS = ["ALL", "PREPAID", "POSTPAID", "BUSINESS", "DATA_ONLY"];
-const STATUSES  = ["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"];
+const STATUSES  = ["ALL", "PUBLISHED", "DRAFT", "RETIRED"];
 
 const EMPTY_FORM = {
   name: "", segment: "POSTPAID", monthly_price: "", quota_minutes: "", quota_sms: "",

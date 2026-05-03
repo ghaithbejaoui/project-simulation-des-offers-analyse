@@ -520,8 +520,8 @@ router.post('/:id/duplicate', requireAuth, async (req, res) => {
     const [results] = await db.query('SELECT * FROM scenario_results WHERE scenario_id = ?', [id]);
     for (const r of results) {
       await db.query(
-        `INSERT INTO scenario_results (scenario_id, profile_id, offer_id, base_cost, overage_cost, roaming_cost, total_cost, satisfaction_score, recommendation, rank_by_cost, rank_by_score, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        `INSERT INTO scenario_results (scenario_id, profile_id, offer_id, base_cost, overage_cost, roaming_cost, total_cost, satisfaction_score, recommendation, rank_by_cost, rank_by_score, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [newScenarioId, r.profile_id, r.offer_id, r.base_cost, r.overage_cost, r.roaming_cost, r.total_cost, r.satisfaction_score, r.recommendation, r.rank_by_cost, r.rank_by_score, r.notes]
       );
     }

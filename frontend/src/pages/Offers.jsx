@@ -93,9 +93,9 @@ function StatusBadge({ status }) {
     PUBLISHED: { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: "var(--green)", label: t("offers.status.published") },
     ACTIVE:    { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: "var(--green)", label: t("offers.status.published") },
     DRAFT:     { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: "var(--yellow)", label: t("offers.status.draft") },
-    ARCHIVED:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.inactive") },
-    INACTIVE:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.inactive") },
-    RETIRED:   { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.inactive") },
+    ARCHIVED:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.archived") },
+    INACTIVE:  { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.archived") },
+    RETIRED:   { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: t("offers.status.retired") },
   };
   const st = map[normalized] || { bg: "rgba(200,212,232,0.06)", border: "rgba(200,212,232,0.18)", color: "var(--text-dim)", label: status };
   return (
@@ -182,9 +182,10 @@ function OfferModal({ offer, onClose, onSave }) {
            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>{t("offers.form.status")}</label>
             <select value={form.status} onChange={e => set("status", e.target.value)} style={{ ...inputStyleStyle, height: 38, fontSize: 13 }}>
              {["PUBLISHED","DRAFT","RETIRED"].map(s => (
-               <option key={s} value={s}>
-                 {s === "PUBLISHED" ? t("offers.status.published") : s === "DRAFT" ? t("offers.status.draft") : t("offers.status.inactive")}
-               </option>
+                <option key={s} value={s}>
+                  {s === "PUBLISHED" ? t("offers.status.published") : s === "DRAFT" ? t("offers.status.draft") :
+                   s === "RETIRED" ? t("offers.status.retired") : t("offers.status.archived")}
+                </option>
              ))}
            </select>
          </div>
@@ -246,14 +247,15 @@ export default function Offers() {
      return () => { document.body.style.overflow = ""; };
    }, [modal]);
 
-   const handleDelete = async (id) => {
-    setDeleting(id);
-    try {
-      await fetch(`${API}/offers/${id}`, { method: "DELETE", headers: headers() });
-      setOffers(o => o.filter(x => x.id !== id));
-    } catch {}
-    finally { setDeleting(null); }
-  };
+    const handleDelete = async (id) => {
+     setDeleting(id);
+     try {
+       await fetch(`${API}/offers/${id}`, { method: "DELETE", headers: headers() });
+       setOffers(o => o.filter(x => x.offer_id !== id));
+     } catch (e) {
+       console.error("Delete failed:", e);
+     } finally { setDeleting(null); }
+   };
 
   const filtered = offers.filter(o => {
     const matchSearch = o.name?.toLowerCase().includes(search.toLowerCase());
@@ -298,21 +300,22 @@ export default function Offers() {
           ))}
         </div>
          <div style={{ display: "flex", gap: 6 }}>
-           {STATUSES.map(s => {
-             const label = s === "ALL" ? t("common.all") :
-                           s === "PUBLISHED" ? t("offers.status.published") :
-                           s === "DRAFT" ? t("offers.status.draft") : t("offers.status.inactive");
-             return (
-               <button key={s} onClick={() => setStatus(s)}
-                 style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${status === s ? "var(--green)" : "var(--border)"}`,
-                   background: status === s ? "rgba(67,199,139,0.1)" : "transparent", color: status === s ? "var(--green)" : "var(--text-muted)",
-                   cursor: "pointer", fontSize: 12, fontWeight: status === s ? 500 : 400, transition: "all 0.18s" }}>
-                 {label}
-               </button>
-             );
-           })}
-         </div>
-        <span style={{ fontSize: 12, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{t("offers.offersFound").replace("{count}", filtered.length)}</span>
+            {STATUSES.map(s => {
+              const label = s === "ALL" ? t("common.all") :
+                            s === "PUBLISHED" ? t("offers.status.published") :
+                            s === "DRAFT" ? t("offers.status.draft") :
+                            s === "RETIRED" ? t("offers.status.retired") : t("offers.status.archived");
+              return (
+                <button key={s} onClick={() => setStatus(s)}
+                  style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${status === s ? "var(--green)" : "var(--border)"}`,
+                    background: status === s ? "rgba(67,199,139,0.1)" : "transparent", color: status === s ? "var(--green)" : "var(--text-muted)",
+                    cursor: "pointer", fontSize: 12, fontWeight: status === s ? 500 : 400, transition: "all 0.18s" }}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+         <span style={{ fontSize: 12, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{t("offers.offersFound").replace("{count}", filtered.length)}</span>
       </div>
 
       {/* Table */}
@@ -341,13 +344,14 @@ export default function Offers() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={9} style={{ padding: 40, textAlign: "center", color: "var(--text-dim)" }}>{t("offers.noOffers")}</td></tr>
             ) : filtered.map((o, i) => (
-              <tr key={o.id} style={{ borderBottom: `0.5px solid rgba(26,143,255,0.06)`, background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)", transition: "background 0.15s" }}
+              <tr key={o.offer_id} style={{ borderBottom: `0.5px solid rgba(26,143,255,0.06)`, background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)", transition: "background 0.15s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(26,143,255,0.05)"}
-                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)"}>
+                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)"}
+                >
                 <td style={{ padding: "12px 16px", color: "var(--text)", fontWeight: 500 }}>{o.name}</td>
                 <td style={{ padding: "12px 16px" }}><SegmentPill segment={o.segment} /></td>
                 <td style={{ padding: "12px 16px", color: "var(--blue)", fontWeight: 600 }}>{Number(o.monthly_price).toFixed(2)} TND</td>
-                <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{o.quota_data ? `${o.quota_data} GB` : t("common.noData")}</td>
+                <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{o.quota_data_gb != null ? `${o.quota_data_gb} GB` : t("common.noData")}</td>
                 <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{o.quota_minutes || t("common.noData")}</td>
                 <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{o.quota_sms || t("common.noData")}</td>
                 <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{o.validity_days}d</td>
@@ -357,9 +361,9 @@ export default function Offers() {
                     {isAdmin() && (
                       <>
                         <button onClick={() => setModal(o)} style={{ ...btnGhostStyleStyle, height: 30, padding: "0 10px", fontSize: 12 }}>{t("common.edit")}</button>
-                        <button onClick={() => handleDelete(o.id)} disabled={deleting === o.id}
-                          style={{ ...btnDangerStyleStyle, height: 30, padding: "0 10px", fontSize: 12, opacity: deleting === o.id ? 0.6 : 1 }}>
-                          {deleting === o.id ? "…" : t("common.delete")}
+                        <button onClick={() => handleDelete(o.offer_id)} disabled={deleting === o.offer_id}
+                          style={{ ...btnDangerStyleStyle, height: 30, padding: "0 10px", fontSize: 12, opacity: deleting === o.offer_id ? 0.6 : 1 }}>
+                          {deleting === o.offer_id ? "…" : t("common.delete")}
                         </button>
                       </>
                     )}
@@ -386,10 +390,10 @@ export default function Offers() {
 
 // Fallback mock data
 const MOCK_OFFERS = [
-  { id: 1, name: "PREPAID STARTER", segment: "PREPAID", monthly_price: 15, quota_data: 5, quota_minutes: 60, quota_sms: 100, validity_days: 30, status: "PUBLISHED" },
-  { id: 2, name: "POSTPAID CLASSIC", segment: "POSTPAID", monthly_price: 39, quota_data: 20, quota_minutes: 300, quota_sms: 500, validity_days: 30, status: "PUBLISHED" },
-  { id: 3, name: "POSTPAID PRO 50GB", segment: "POSTPAID", monthly_price: 69, quota_data: 50, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { id: 4, name: "BUSINESS UNLIMITED", segment: "BUSINESS", monthly_price: 149, quota_data: 100, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { id: 5, name: "DATA ONLY 30GB", segment: "DATA_ONLY", monthly_price: 29, quota_data: 30, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { id: 6, name: "PREPAID NIGHT", segment: "PREPAID", monthly_price: 8, quota_data: 10, quota_minutes: 30, quota_sms: 50, validity_days: 15, status: "DRAFT" },
+  { offer_id: 1, name: "PREPAID STARTER", segment: "PREPAID", monthly_price: 15, quota_data_gb: 5, quota_minutes: 60, quota_sms: 100, validity_days: 30, status: "PUBLISHED" },
+  { offer_id: 2, name: "POSTPAID CLASSIC", segment: "POSTPAID", monthly_price: 39, quota_data_gb: 20, quota_minutes: 300, quota_sms: 500, validity_days: 30, status: "PUBLISHED" },
+  { offer_id: 3, name: "POSTPAID PRO 50GB", segment: "POSTPAID", monthly_price: 69, quota_data_gb: 50, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { offer_id: 4, name: "BUSINESS UNLIMITED", segment: "BUSINESS", monthly_price: 149, quota_data_gb: 100, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { offer_id: 5, name: "DATA ONLY 30GB", segment: "DATA_ONLY", monthly_price: 29, quota_data_gb: 30, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
+  { offer_id: 6, name: "PREPAID NIGHT", segment: "PREPAID", monthly_price: 8, quota_data_gb: 10, quota_minutes: 30, quota_sms: 50, validity_days: 15, status: "DRAFT" },
 ];

@@ -1,48 +1,40 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "../context/LanguageContext";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const ROLES = {
-    admin: { label: "Administrator", color: "#e35b5b", icon: "⬡" },
-    analyst: { label: "Analyst", color: "#1a8fff", icon: "◈" },
-    guest: { label: "Guest", color: "#43c78b", icon: "◎" },
-};
+export default function ForgotPassword() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-export default function Login() {
-    const { t } = useLanguage();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPass, setShowPass] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setMounted(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) {
+    if (!email) {
       setError(t("common.error"));
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials.");
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/dashboard";
+      if (!res.ok) throw new Error(data.message || "Failed to send reset email");
+      setSuccess(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -87,31 +79,10 @@ export default function Login() {
           <div style={styles.divider} />
         </div>
 
-        {/* Role selector */}
-        <div style={styles.roleRow}>
-          {Object.entries(ROLES).map(([key, r]) => (
-            <button
-              key={key}
-              disabled
-              style={{
-                ...styles.roleBtn,
-                borderColor: r.color,
-                color: '#ffffff',
-                background: 'rgba(26,143,255,0.25)',
-                animation: mounted ? `${key === 'admin' ? 'rolePulse' : key === 'analyst' ? 'rolePulseAnalyst' : 'rolePulseGuest'} 15s infinite ${key === 'admin' ? 0 : key === 'analyst' ? 5 : 10}s` : 'none'
-              }}
-              title={r.label}
-            >
-              <span style={{ fontSize: 16, color: '#ffffff' }}>{r.icon}</span>
-              <span style={styles.roleLabel}>{r.label}</span>
-            </button>
-          ))}
-        </div>
-
         {/* Form */}
         <form onSubmit={handleSubmit} style={styles.form} noValidate>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>{t("login.email")}</label>
+            <label style={styles.label}>Email address</label>
             <div style={styles.inputWrap}>
               <svg style={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="2" y="4" width="20" height="16" rx="3" />
@@ -124,45 +95,8 @@ export default function Login() {
                 placeholder="name@operator.com"
                 style={styles.input}
                 autoComplete="email"
+                disabled={loading || success}
               />
-            </div>
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>{t("login.password")}</label>
-            <div style={styles.inputWrap}>
-              <svg style={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <input
-                type={showPass ? "text" : "password"}
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                placeholder="••••••••"
-                style={{ ...styles.input, paddingRight: 44 }}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass((v) => !v)}
-                style={styles.eyeBtn}
-                tabIndex={-1}
-                aria-label={showPass ? "Hide" : "Show"}
-              >
-                {showPass ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
             </div>
           </div>
 
@@ -177,65 +111,32 @@ export default function Login() {
             </div>
           )}
 
-          <div style={styles.forgotRow}>
-            <Link to="/forgot-password" style={styles.forgot}>Forgot password?</Link>
+          {success ? (
+            <div style={styles.successBox}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43c78b" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <span>If your email exists in our system, a password reset link has been sent. Please check your inbox (and spam folder).</span>
+            </div>
+          ) : (
+            <button type="submit" disabled={loading} style={{ ...styles.submitBtn, ...(loading ? styles.submitBtnLoading : {}) }}>
+              {loading ? (
+                <span style={styles.spinnerWrap}>
+                  <span style={styles.spinner} />
+                  Sending...
+                </span>
+              ) : (
+                "Send Reset Link"
+              )}
+            </button>
+          )}
+
+          <div style={styles.footer}>
+            <span style={styles.footerText}>Remembered your password?</span>
+            <a href="/login" style={styles.footerLink}>Login</a>
           </div>
-
-          <button type="submit" disabled={loading} style={{ ...styles.submitBtn, ...(loading ? styles.submitBtnLoading : {}) }}>
-            {loading ? (
-              <span style={styles.spinnerWrap}>
-                <span style={styles.spinner} />
-                {t("login.loggingIn")}
-              </span>
-            ) : (
-              <>
-                {t("login.login")}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 8 }}>
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </>
-            )}
-          </button>
-
-          <button 
-            type="button"
-            disabled={loading}
-            onClick={async () => {
-              setLoading(true);
-              setError("");
-              try {
-                const res = await fetch("http://localhost:5000/api/auth/guest", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Guest login failed");
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href = "/dashboard";
-              } catch (err) {
-                setError(err.message);
-              } finally {
-                setLoading(false);
-              }
-            }}
-            style={{ ...styles.submitBtn, background: "rgba(67,199,139,0.15)", border: "0.5px solid rgba(67,199,139,0.4)", color: "#43c78b", marginTop: 8 }}
-          >
-            Continue as Guest
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 8 }}>
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-              <polyline points="10 17 15 12 10 7" />
-              <line x1="15" y1="12" x2="3" y2="12" />
-            </svg>
-          </button>
         </form>
-
-        {/* Footer */}
-         <div style={styles.footer}>
-           <span style={styles.footerText}>Don't have an account?</span>
-           <Link to="/register" style={styles.footerLink}>Create account</Link>
-         </div>
 
         {/* Bottom badge */}
         <div style={styles.badge}>
@@ -495,37 +396,6 @@ const styles = {
     height: 1,
     background: "linear-gradient(90deg, transparent, rgba(26,143,255,0.3), transparent)",
   },
-  roleRow: {
-    display: "flex",
-    gap: 8,
-    marginBottom: 24,
-  },
-   roleBtn: {
-     flex: 1,
-     display: "flex",
-     flexDirection: "column",
-     alignItems: "center",
-     gap: 4,
-     padding: "8px 4px",
-     background: "rgba(13, 22, 40, 0.4)",
-     border: "0.5px solid rgba(26,143,255,0.1)",
-     borderRadius: 10,
-     cursor: "pointer",
-     color: "rgba(200,212,232,0.25)",
-     fontSize: 10,
-     letterSpacing: "0.04em",
-     fontFamily: "'DM Sans', sans-serif",
-     transition: "all 0.3s ease",
-   },
-   roleBtnActive: {
-     background: "rgba(26,143,255,0.25) !important",
-     color: "#ffffff !important",
-   },
-  roleLabel: {
-    fontSize: 10,
-    fontWeight: 500,
-    letterSpacing: "0.03em",
-  },
   form: {
     display: "flex",
     flexDirection: "column",
@@ -568,20 +438,6 @@ const styles = {
     transition: "border-color 0.2s, background 0.2s",
     letterSpacing: "0.01em",
   },
-  eyeBtn: {
-    position: "absolute",
-    right: 12,
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    color: "rgba(200,212,232,0.4)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 4,
-    borderRadius: 6,
-    transition: "color 0.2s",
-  },
   errorBox: {
     display: "flex",
     alignItems: "center",
@@ -593,16 +449,16 @@ const styles = {
     color: "#f09070",
     fontSize: 13,
   },
-  forgotRow: {
+  successBox: {
     display: "flex",
-    justifyContent: "flex-end",
-    marginTop: -4,
-  },
-  forgot: {
-    fontSize: 12,
-    color: "rgba(200,212,232,0.5)",
-    textDecoration: "none",
-    transition: "color 0.2s",
+    alignItems: "center",
+    gap: 8,
+    padding: "10px 14px",
+    background: "rgba(67,199,139,0.08)",
+    border: "0.5px solid rgba(67,199,139,0.3)",
+    borderRadius: 10,
+    color: "#43c78b",
+    fontSize: 13,
   },
   submitBtn: {
     width: "100%",

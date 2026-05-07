@@ -4,6 +4,9 @@ import { globalStyles } from "./styles/theme";
 import { LanguageProvider } from "./context/LanguageContext";
 
 import Login            from "./pages/Login";
+import ForgotPassword  from "./pages/ForgotPassword";
+import Register        from "./pages/Register";
+import ResetPassword   from "./pages/ResetPassword";
 import Layout           from "./components/Layout";
 import Dashboard        from "./pages/Dashboard";
 import Offers           from "./pages/Offers";
@@ -88,10 +91,13 @@ return (
         <Routes>
           {/* Public */}
           <Route path="/login"    element={<Login />} />
-          <Route path="/"         element={<Navigate to="/dashboard" replace />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/"         element={<Navigate to="/dashboard" replace />} />
 
            {/* Protected — wrapped in shared Layout */}
-  <Route path="/dashboard" element={<Protected><Layout theme={theme}><Dashboard /></Layout></Protected>} />
+   <Route path="/dashboard" element={<Protected><Layout theme={theme}><Dashboard /></Layout></Protected>} />
             <Route path="/offers"    element={<Protected><Layout theme={theme}><Offers /></Layout></Protected>} />
             <Route path="/options"   element={<Protected><Layout theme={theme}><Options /></Layout></Protected>} />
             <Route path="/profiles"  element={<Protected><Layout theme={theme}><CustomerProfiles /></Layout></Protected>} />

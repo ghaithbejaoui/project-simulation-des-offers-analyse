@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+
 const ROLES = {
     admin: { label: "Administrator", color: "#e35b5b", icon: "⬡" },
     analyst: { label: "Analyst", color: "#1a8fff", icon: "◈" },
@@ -33,7 +35,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -95,9 +97,6 @@ export default function Login() {
               disabled
               style={{
                 ...styles.roleBtn,
-                borderColor: r.color,
-                color: '#ffffff',
-                background: 'rgba(26,143,255,0.25)',
                 animation: mounted ? `${key === 'admin' ? 'rolePulse' : key === 'analyst' ? 'rolePulseAnalyst' : 'rolePulseGuest'} 15s infinite ${key === 'admin' ? 0 : key === 'analyst' ? 5 : 10}s` : 'none'
               }}
               title={r.label}
@@ -205,7 +204,7 @@ export default function Login() {
               setLoading(true);
               setError("");
               try {
-                const res = await fetch("http://localhost:5000/api/auth/guest", {
+                const res = await fetch(`${API}/auth/guest`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                 });

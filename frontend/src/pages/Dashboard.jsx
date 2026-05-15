@@ -100,6 +100,8 @@ function ActivityItem({ icon, text, time, color }) {
   );
 }
 
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -117,10 +119,10 @@ useEffect(() => {
           const token = localStorage.getItem("token");
           const headers = { Authorization: `Bearer ${token}` };
           const [offersRes, profilesRes, optionsRes, activityRes, biRes, volumeRes, segmentRes] = await Promise.allSettled([
-            fetch("http://localhost:5000/api/offers", { headers }),
-            fetch("http://localhost:5000/api/customer-profiles", { headers }),
-            fetch("http://localhost:5000/api/options", { headers }),
-            fetch("http://localhost:5000/api/audit/recent?limit=5", { headers }),
+            fetch(`${BASE_URL}/offers`, { headers }),
+            fetch(`${BASE_URL}/customer-profiles`, { headers }),
+            fetch(`${BASE_URL}/options`, { headers }),
+            fetch(`${BASE_URL}/audit/recent?limit=5`, { headers }),
             biService.getKpis(),
             biService.getDailyVolume(30),
             biService.getSegmentSummary(),

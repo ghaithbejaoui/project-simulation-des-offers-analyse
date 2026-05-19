@@ -1,8 +1,26 @@
 const express = require('express');
-const db = require('../config/database');
-const { logAction } = require('./audit');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const Joi = require('joi');
+
 const router = express.Router();
+
+const profileSchema = Joi.object({
+  label: Joi.string().max(100).required(),
+  minutes_avg: Joi.number().integer().min(0).default(0),
+  sms_avg: Joi.number().integer().min(0).default(0),
+  data_avg_gb: Joi.number().min(0).default(0),
+  night_usage_pct: Joi.number().min(0).max(100).default(0),
+  roaming_days: Joi.number().integer().min(0).default(0),
+  budget_max: Joi.number().min(0).default(0),
+  priority: Joi.string().valid('BALANCED', 'PRICE', 'QUALITY').default('BALANCED')
+});
+
+const profileController = require('../controllers/customerProfileController');
+
+router.use((req, res, next) => {
+  req.profileSchema = profileSchema;
+  next();
+});
 
 /**
  * @swagger
@@ -59,26 +77,7 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/CustomerProfile'
  */
 
-// GET / - List all profiles (all authenticated users)
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM customer_profiles');
-    const profiles = rows.map(p => {
-      let segment = 'POSTPAID';
-      if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
-        segment = 'DATA_ONLY';
-      } else if (p.budget_max <= 30) {
-        segment = 'PREPAID';
-      } else if (p.budget_max >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
-        segment = 'BUSINESS';
-      }
-      return { ...p, segment };
-    });
-    res.json(profiles);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', requireAuth, profileController.getAll);
 
 /**
  * @swagger
@@ -105,17 +104,7 @@ router.get('/', requireAuth, async (req, res) => {
  *         description: Profile not found
  */
 
-// GET /:id - Get single profile (all authenticated users)
-router.get('/:id', requireAuth, async (req, res) => {
-  try {
-    // Support both profile_id and id for backward compatibility
-    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Profile not found' });
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', requireAuth, profileController.getById);
 
 /**
  * @swagger
@@ -157,54 +146,12 @@ router.get('/:id', requireAuth, async (req, res) => {
  *                 type: string
  *                 enum: [BALANCED, PRICE, QUALITY]
  *                 default: BALANCED
-*     responses:
+ *     responses:
  *       201:
  *         description: Profile created
  */
 
-// POST / - Create profile (Admin/Analyst only)
-router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  const {
-    label,
-    minutes_avg = 0, sms_avg = 0, data_avg_gb = 0,
-    night_usage_pct = 0, roaming_days = 0, budget_max = 0,
-    priority = 'BALANCED'
-  } = req.body;
-
-  try {
-    const [result] = await db.query(
-      `INSERT INTO customer_profiles (label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority]
-    );
-    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [result.insertId]);
-    const p = rows[0];
-    let segment = 'POSTPAID';
-    if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
-      segment = 'DATA_ONLY';
-    } else if (Number(p.budget_max) <= 30) {
-      segment = 'PREPAID';
-    } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
-      segment = 'BUSINESS';
-    }
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'CREATE',
-      entity: 'customer_profile',
-      entity_id: result.insertId,
-      ip_address,
-      details: { label, segment }
-    });
-
-    res.status(201).json({ ...p, segment, message: 'Profile created' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post('/', requireRole('ADMIN', 'ANALYST'), profileController.create);
 
 /**
  * @swagger
@@ -233,45 +180,7 @@ router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
  *         description: Profile not found
  */
 
-// PUT /:id - Update profile (Admin/Analyst only)
-router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = req.body;
-  try {
-    // Support both profile_id and id for backward compatibility
-    const [result] = await db.query(
-      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=? OR id=?`,
-      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, req.params.id, req.params.id]
-    );
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
-
-    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
-    const p = rows[0];
-    let segment = 'POSTPAID';
-    if (p.data_avg_gb > 40 && p.minutes_avg === 0 && p.sms_avg === 0) {
-      segment = 'DATA_ONLY';
-    } else if (Number(p.budget_max) <= 30) {
-      segment = 'PREPAID';
-    } else if (Number(p.budget_max) >= 100 && (p.minutes_avg > 500 || p.data_avg_gb > 30)) {
-      segment = 'BUSINESS';
-    }
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'UPDATE',
-      entity: 'customer_profile',
-      entity_id: parseInt(req.params.id),
-      ip_address,
-      details: { label, priority }
-    });
-
-    res.json({ ...p, segment, message: 'Profile updated successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), profileController.update);
 
 /**
  * @swagger
@@ -294,28 +203,6 @@ router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
  *         description: Profile not found
  */
 
-// DELETE /:id - Delete profile (Admin only)
-router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
-  try {
-    // Support both profile_id and id for backward compatibility
-    const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ? OR id = ?', [req.params.id, req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Profile not found' });
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'DELETE',
-      entity: 'customer_profile',
-      entity_id: parseInt(req.params.id),
-      ip_address
-    });
-
-    res.json({ message: 'Profile deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', requireRole('ADMIN'), profileController.delete);
 
 module.exports = router;

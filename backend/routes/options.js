@@ -1,8 +1,8 @@
 const express = require('express');
-const db = require('../config/database');
-const { logAction } = require('./audit');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const router = express.Router();
+
+const optionController = require('../controllers/optionController');
 
 /**
  * @swagger
@@ -55,15 +55,7 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/Option'
  */
 
-// GET / - List all options (all authenticated users)
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM options');
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', requireAuth, optionController.getAll);
 
 /**
  * @swagger
@@ -90,16 +82,7 @@ router.get('/', requireAuth, async (req, res) => {
  *         description: Option not found
  */
 
-// GET /:id - Get single option (all authenticated users)
-router.get('/:id', requireAuth, async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM options WHERE option_id = ?', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Option not found' });
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', requireAuth, optionController.getById);
 
 /**
  * @swagger
@@ -137,37 +120,12 @@ router.get('/:id', requireAuth, async (req, res) => {
  *               validity_days:
  *                 type: integer
  *                 default: 30
-*     responses:
+ *     responses:
  *       201:
  *         description: Option created
  */
 
-// POST / - Create option (Admin/Analyst only)
-router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  const { name, type, price, data_gb = 0, minutes = 0, sms = 0, validity_days = 30 } = req.body;
-  try {
-    const [result] = await db.query(
-      `INSERT INTO options (name, type, price, data_gb, minutes, sms, validity_days) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, type, price, data_gb, minutes, sms, validity_days]
-    );
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'CREATE',
-      entity: 'option',
-      entity_id: result.insertId,
-      ip_address,
-      details: { name, type, price }
-    });
-
-    res.status(201).json({ option_id: result.insertId, message: 'Option created' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post('/', requireRole('ADMIN', 'ANALYST'), optionController.create);
 
 /**
  * @swagger
@@ -196,33 +154,7 @@ router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
  *         description: Option not found
  */
 
-// PUT /:id - Update option (Admin/Analyst only)
-router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  const { name, type, price, data_gb, minutes, sms, validity_days } = req.body;
-  try {
-    const [result] = await db.query(
-      `UPDATE options SET name=?, type=?, price=?, data_gb=?, minutes=?, sms=?, validity_days=? WHERE option_id=?`,
-      [name, type, price, data_gb, minutes, sms, validity_days, req.params.id]
-    );
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Option not found' });
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'UPDATE',
-      entity: 'option',
-      entity_id: parseInt(req.params.id),
-      ip_address,
-      details: { name, type, price }
-    });
-
-    res.json({ message: 'Option updated successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), optionController.update);
 
 /**
  * @swagger
@@ -245,27 +177,6 @@ router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
  *         description: Option not found
  */
 
-// DELETE /:id - Delete option (Admin only)
-router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
-  try {
-    const [result] = await db.query('DELETE FROM options WHERE option_id = ?', [req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Option not found' });
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'DELETE',
-      entity: 'option',
-      entity_id: parseInt(req.params.id),
-      ip_address
-    });
-
-    res.json({ message: 'Option deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', requireRole('ADMIN'), optionController.delete);
 
 module.exports = router;

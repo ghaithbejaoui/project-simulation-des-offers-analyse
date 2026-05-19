@@ -1,11 +1,9 @@
 const express = require('express');
-const db = require('../config/database');
-const { logAction } = require('./audit');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const Joi = require('joi');
+
 const router = express.Router();
 
-// Validation schemas
 const offerSchema = Joi.object({
   name: Joi.string().max(100).required(),
   segment: Joi.string().valid('PREPAID', 'POSTPAID', 'BUSINESS', 'DATA_ONLY').required(),
@@ -20,6 +18,13 @@ const offerSchema = Joi.object({
   over_data_price: Joi.number().min(0),
   roaming_included_days: Joi.number().integer().min(0),
   status: Joi.string().valid('PUBLISHED', 'DRAFT', 'RETIRED')
+});
+
+const offerController = require('../controllers/offerController');
+
+router.use((req, res, next) => {
+  req.offerSchema = offerSchema;
+  next();
 });
 
 /**
@@ -93,15 +98,7 @@ const offerSchema = Joi.object({
  *                 $ref: '#/components/schemas/Offer'
  */
 
-// GET / - List all offers (all authenticated users)
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM offers');
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', requireAuth, offerController.getAll);
 
 /**
  * @swagger
@@ -128,16 +125,34 @@ router.get('/', requireAuth, async (req, res) => {
  *         description: Offer not found
  */
 
-// GET /:id - Get single offer (all authenticated users)
-router.get('/:id', requireAuth, async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Offer not found' });
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', requireAuth, offerController.getById);
+
+/**
+ * @swagger
+ * /api/offers/{id}/with-options:
+ *   get:
+ *     summary: Get an offer with its options
+ *     tags: [Offers]
+ *     description: "EN: Get an offer along with all its associated options - FR: Obtenir une offre avec toutes ses options associées"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The offer ID
+ *     responses:
+ *       200:
+ *         description: An offer with its options
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       404:
+ *         description: Offer not found
+ */
+
+router.get('/:id/with-options', requireAuth, offerController.getWithOptions);
 
 /**
  * @swagger
@@ -195,112 +210,12 @@ router.get('/:id', requireAuth, async (req, res) => {
  *                 type: string
  *                 enum: [PUBLISHED, DRAFT, RETIRED]
  *                 default: PUBLISHED
-*     responses:
+ *     responses:
  *       201:
  *         description: Offer created
  */
 
-// POST / - Create offer (Admin/Analyst only)
-router.post('/', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  // Validate input
-  const { error, value } = offerSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-
-  const {
-    name,
-    segment,
-    monthly_price,
-    quota_minutes = 0,
-    quota_sms = 0,
-    quota_data_gb = 0,
-    validity_days = 30,
-    fair_use_gb = 0,
-    over_minute_price = 0.1000,
-    over_sms_price = 0.0500,
-    over_data_price = 0.5000,
-    roaming_included_days = 0,
-    status = 'PUBLISHED'
-  } = value;
-
-  try {
-    const [result] = await db.query(
-      `INSERT INTO offers (
-        name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
-        validity_days, fair_use_gb, over_minute_price, over_sms_price,
-        over_data_price, roaming_included_days, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
-        validity_days, fair_use_gb, over_minute_price, over_sms_price,
-        over_data_price, roaming_included_days, status
-      ]
-    );
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'CREATE',
-      entity: 'offer',
-      entity_id: result.insertId,
-      ip_address,
-      details: { name, segment, monthly_price }
-    });
-
-    res.status(201).json({ offer_id: result.insertId, message: 'Offer created' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * @swagger
- * /api/offers/{id}/with-options:
- *   get:
- *     summary: Get an offer with its options
- *     tags: [Offers]
- *     description: "EN: Get an offer along with all its associated options - FR: Obtenir une offre avec toutes ses options associées"
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: The offer ID
- *     responses:
- *       200:
- *         description: An offer with its options
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *       404:
- *         description: Offer not found
- */
-
-// GET /:id/with-options - Get offer with options (all authenticated users)
-router.get('/:id/with-options', requireAuth, async (req, res) => {
-  try {
-    const [offerRows] = await db.query('SELECT * FROM offers WHERE offer_id = ?', [req.params.id]);
-    if (offerRows.length === 0) {
-      return res.status(404).json({ message: 'Offer not found' });
-    }
-
-    const [optionsRows] = await db.query(
-      `SELECT o.* FROM options o JOIN offer_options oo ON o.option_id = oo.option_id WHERE oo.offer_id = ?`,
-      [req.params.id]
-    );
-
-    const offer = offerRows[0];
-    offer.options = optionsRows;
-    res.json(offer);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post('/', requireRole('ADMIN', 'ANALYST'), offerController.create);
 
 /**
  * @swagger
@@ -329,43 +244,7 @@ router.get('/:id/with-options', requireAuth, async (req, res) => {
  *         description: Offer not found
  */
 
-// PUT /:id - Update offer (Admin/Analyst only)
-router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
-  const {
-    name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
-    validity_days, fair_use_gb, over_minute_price, over_sms_price,
-    over_data_price, roaming_included_days, status
-  } = req.body;
-
-  try {
-    const [result] = await db.query(
-      `UPDATE offers SET name=?, segment=?, monthly_price=?, quota_minutes=?, quota_sms=?,
-       quota_data_gb=?, validity_days=?, fair_use_gb=?, over_minute_price=?, over_sms_price=?,
-       over_data_price=?, roaming_included_days=?, status=? WHERE offer_id=?`,
-      [name, segment, monthly_price, quota_minutes, quota_sms, quota_data_gb,
-       validity_days, fair_use_gb, over_minute_price, over_sms_price,
-       over_data_price, roaming_included_days, status, req.params.id]
-    );
-
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'UPDATE',
-      entity: 'offer',
-      entity_id: parseInt(req.params.id),
-      ip_address,
-      details: { name, segment, monthly_price, status }
-    });
-
-    res.json({ message: 'Offer updated successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.put('/:id', requireRole('ADMIN', 'ANALYST'), offerController.update);
 
 /**
  * @swagger
@@ -388,27 +267,6 @@ router.put('/:id', requireRole('ADMIN', 'ANALYST'), async (req, res) => {
  *         description: Offer not found
  */
 
-// DELETE /:id - Delete offer (Admin only)
-router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
-  try {
-    const [result] = await db.query('DELETE FROM offers WHERE offer_id = ?', [req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Offer not found' });
-
-    // Audit log
-    const user_id = req.user?.user_id || null;
-    const ip_address = req.ip || req.connection.remoteAddress;
-    await logAction({
-      user_id,
-      action: 'DELETE',
-      entity: 'offer',
-      entity_id: parseInt(req.params.id),
-      ip_address
-    });
-
-    res.json({ message: 'Offer deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', requireRole('ADMIN'), offerController.delete);
 
 module.exports = router;

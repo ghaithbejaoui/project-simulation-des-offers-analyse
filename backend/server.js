@@ -3,13 +3,28 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+
+const INSECURE_SECRETS = ['your-secret-key', 'your-super-secret-key-change-this', 'dev-secret-key', 'secret'];
+if (!process.env.JWT_SECRET || INSECURE_SECRETS.includes(process.env.JWT_SECRET)) {
+  console.warn('\x1b[33m⚠  WARNING: JWT_SECRET is missing or set to a placeholder. Set a strong random secret in .env before deploying.\x1b[0m');
+}
+
 const db = require('./config/database');
 const { authMiddleware } = require('./middleware/auth');
 const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:5173', 'http://localhost:4173'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -79,10 +94,6 @@ app.get('/api-docs.json', (req, res) => {
 });
 
 // Routes
-// TODO: Import and use routes here
-// const offersRoutes = require('./routes/offers');
-// app.use('/api/offers', offersRoutes);
-
 const offersRoutes = require('./routes/offers');
 app.use('/api/offers', offersRoutes);  // Attach the offers door at /api/offers.
 

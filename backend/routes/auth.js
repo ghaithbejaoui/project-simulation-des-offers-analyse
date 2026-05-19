@@ -458,10 +458,19 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Register new account (creates GUEST accounts)
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ message: 'All fields are required' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters' });
+  }
+  if (username.length < 2 || username.length > 50) {
+    return res.status(400).json({ message: 'Username must be between 2 and 50 characters' });
   }
   try {
     // Check if email already exists

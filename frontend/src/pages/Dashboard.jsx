@@ -227,7 +227,7 @@ useEffect(() => {
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
             {dailyVolume.length > 0 ? dailyVolume.map(d => (
               <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
-            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>No data</span>}
+            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>{t("common.noData")}</span>}
           </div>
         </div>
 
@@ -239,7 +239,7 @@ useEffect(() => {
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
             {dailyVolume.length > 0 ? dailyVolume.map(d => (
               <span key={d.label} style={{ fontSize: 10, color: "var(--text-dim)", flex: 1, textAlign: "center" }}>{d.label}</span>
-            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>No data</span>}
+            )) : <span style={{ fontSize: 10, color: "var(--text-dim)" }}>{t("common.noData")}</span>}
           </div>
           <div style={{ marginTop: 16, padding: "10px 14px", background: "rgba(67,199,139,0.08)", borderRadius: 8, border: "0.5px solid rgba(67,199,139,0.2)" }}>
             <p style={{ fontSize: 12, color: "var(--green)", fontWeight: 500 }}>{kpis?.recommendation_rate || 0}% {t("dashboard.recommended")}</p>

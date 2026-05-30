@@ -165,6 +165,10 @@ npm run dev
 | Endpoint | Methods | Auth | Purpose |
 |----------|---------|------|---------|
 | `/auth/login` | POST | No | Login → get JWT |
+| `/auth/guest` | POST | No | Guest login (no password) |
+| `/auth/register` | POST | No | Create GUEST account |
+| `/auth/forgot-password` | POST | No | Request password reset email |
+| `/auth/reset-password` | POST | No | Reset password with token |
 | `/auth/me` | GET | Yes | Get current user |
 | `/offers` | GET,POST,PUT,DELETE | Yes | Offer CRUD |
 | `/customer-profiles` | GET,POST,PUT,DELETE | Yes | Profile CRUD |
@@ -282,7 +286,6 @@ See `DATABASE_DOCUMENTATION.md` for full schema.
 
 **⚠️ Vulnerabilities (remaining for post-PFE hardening):**
 - Token in localStorage (XSS risk)
-- CORS configuration allows all origins in development
 - Consider migrating token to httpOnly cookies in production
 
 ✅ **Implemented:**
@@ -328,22 +331,18 @@ From the original **Cahier des Charges**:
 - Option ID 0 is duplicate of ID 1 (data anomaly)
 
 **Backend:**
-- No input validation (accepts any JSON)
-- No rate limiting
-- Hardcoded API URLs in frontend (`localhost:5000`)
-- No database migrations tool
-- Scenario results have no FK enforcement
+- No database migrations tool (migrations/ directory is empty)
+- Scenario results have no FK enforcement at DB level
 
 **Frontend:**
-- Dashboard.jsx uses hardcoded static data (no live BI)
 - Simulation.jsx (741 lines) too large — needs refactoring
 - All styles inline — difficult to maintain
 - Unused `Home.jsx` page
 - No error boundaries
 
 **DevOps:**
-- Zero tests
-- No Docker, CI/CD
+- Zero automated tests
+- No CI/CD pipeline
 - No error monitoring (Sentry)
 
 See `PROJECT_OVERVIEW.md` → "Known Issues" for exhaustive list.
@@ -426,11 +425,9 @@ WHERE o.offer_id IS NULL;
 
 | File | Purpose | Accuracy |
 |------|---------|----------|
-| `README.md` | This file — quick start guide | ✅ Updated (2026-04-20) |
-| `PROJECT_DOCUMENTATION.md` | Original detailed spec (French) | ⚠️ **Outdated** — Section 7 claims features missing that are done |
-| `PROJECT_OVERVIEW.md` | Comprehensive current state (all details) | ✅ **Authoritative** — supersedes PROJECT_DOCUMENTATION.md |
-| `DATABASE_DOCUMENTATION.md` | ERD + column types + sample data | ✅ Accurate (minor: says DATA_ONLY segment exists — it doesn't in DB) |
-| `POWER_BI_REQUIREMENTS.md` | BI integration plan (not yet created) | ❌ Missing — needs to be written |
+| `README.md` | This file — quick start guide | ✅ Current |
+| `PROJECT_OVERVIEW.md` | Comprehensive current state (all details) | ✅ **Authoritative** |
+| `DATABASE.md` | ERD + column types + sample data | ✅ Accurate |
 
 **If handing off to someone new:** Give them `PROJECT_OVERVIEW.md` first, then this README for quick start.
 
@@ -459,15 +456,14 @@ WHERE o.offer_id IS NULL;
 
 2. **Fix Technical Debt**
    - Add FK constraints to `offer_options` and `scenario_results`
-   - Add input validation (Joi/Zod)
-   - Add rate limiting
    - Replace inline styles with CSS modules
+   - Refactor Simulation.jsx (741 lines)
 
 3. **Production Hardening**
-   - Dockerize
-   - CI/CD pipeline
-   - Helmet.js, compression middleware
+   - CI/CD pipeline (GitHub Actions)
+   - Compression middleware
    - Move token to httpOnly cookies
+   - Generate a strong `JWT_SECRET` in `.env`
 
 See `PROJECT_OVERVIEW.md` → "Future Work" for complete roadmap.
 

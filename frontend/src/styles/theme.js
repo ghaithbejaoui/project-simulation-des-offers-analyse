@@ -20,21 +20,21 @@ export const colors = {
 };
 
 export const lightColors = {
-  bg:        '#f9fafb',
-  bgCard:    '#ffffff',
-  bgCard2:   '#f3f4f6',
-  border:    '#e5e7eb',
-  borderHov: '#d1d5db',
+  bg:        '#f4f5f7', // Softer, professional gray background
+  bgCard:    '#fcfcfc', // Slightly off-white to reduce glare
+  bgCard2:   '#eff1f5', // Subtly darker than bg for secondary cards/areas
+  border:    '#e1e4e8', // Softer borders
+  borderHov: '#cbd0d6',
   blue:      '#2563eb',
-  blueDim:   'rgba(37, 99, 235, 0.1)',
+  blueDim:   'rgba(37, 99, 235, 0.08)',
   blueMid:   'rgba(37, 99, 235, 0.15)',
   orange:    '#ea580c',
   green:     '#16a34a',
   yellow:    '#ca8a04',
   red:       '#dc2626',
-  text:      '#111827',
-  textMuted: '#6b7280',
-  textDim:   '#9ca3af',
+  text:      '#2c3e50', // Softer dark slate instead of harsh black
+  textMuted: '#64748b',
+  textDim:   '#94a3b8',
 };
 
 export const fonts = {
@@ -143,7 +143,7 @@ export const globalStyles = (theme = 'dark') => {
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { 
-      background: ${isLight ? '#f9fafb' : 'var(--bg)'}; 
+      background: var(--bg); 
       color: var(--text); 
       font-family: 'DM Sans', sans-serif; 
       font-weight: 400; 
@@ -164,16 +164,16 @@ export const globalStyles = (theme = 'dark') => {
     a:hover { color: var(--blue); filter: brightness(0.9); }
     button { font-family: 'DM Sans', sans-serif; }
     input, select, textarea { font-family: 'DM Sans', sans-serif; color: var(--text); }
-    select option { background: ${isLight ? '#ffffff' : '#0f1621'}; color: var(--text); }
+    select option { background: var(--bg-card); color: var(--text); }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue) !important; background: var(--blue-dim) !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: ${isLight ? 'rgba(107, 114, 128, 0.3)' : 'rgba(26,143,255,0.25)'}; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: ${isLight ? 'rgba(107, 114, 128, 0.5)' : 'rgba(26,143,255,0.4)'}; }
+    ::-webkit-scrollbar-thumb { background: ${isLight ? 'rgba(100, 116, 139, 0.3)' : 'rgba(26,143,255,0.25)'}; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: ${isLight ? 'rgba(100, 116, 139, 0.5)' : 'rgba(26,143,255,0.4)'}; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
     @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-    input:-webkit-autofill { -webkit-box-shadow: 0 0 0px 1000px ${isLight ? '#ffffff' : '#0f1621'} inset !important; -webkit-text-fill-color: var(--text) !important; }
+    input:-webkit-autofill { -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important; -webkit-text-fill-color: var(--text) !important; }
   `;
 };

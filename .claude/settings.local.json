@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse -Directory -Depth 2)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Head -50)",
+      "Bash(cd \"/c/Users/ghait/OneDrive/Desktop/pfe/pfe/project_pfe\" && find . -type d -maxdepth 3 | head -50)",
+      "Read(//c/c/Users/ghait/OneDrive/Desktop/pfe/pfe/**)"
+    ]
+  }
+}

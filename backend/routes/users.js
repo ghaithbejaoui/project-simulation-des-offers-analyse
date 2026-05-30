@@ -44,6 +44,65 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT user_id, username, email, role FROM users WHERE user_id = ?', [req.user.user_id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/me', requireAuth, async (req, res) => {
+  const { username, email, password, currentPassword } = req.body;
+  const userId = req.user.user_id;
+
+  try {
+    const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
+
+    if (email && email !== rows[0].email) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: 'Current password is required to change email' });
+      }
+      const valid = await bcrypt.compare(currentPassword, rows[0].password_hash);
+      if (!valid) return res.status(400).json({ message: 'Incorrect current password' });
+
+      const [existing] = await db.query('SELECT user_id FROM users WHERE email = ? AND user_id != ?', [email, userId]);
+      if (existing.length > 0) return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    const updates = [];
+    const params = [];
+    if (username) { updates.push('username = ?'); params.push(username); }
+    if (email) { updates.push('email = ?'); params.push(email); }
+    if (password) {
+      const hash = await bcrypt.hash(password, 10);
+      updates.push('password_hash = ?');
+      params.push(hash);
+    }
+
+    if (updates.length === 0) return res.status(400).json({ message: 'No fields to update' });
+
+    params.push(userId);
+    await db.query(`UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE user_id = ?`, params);
+
+    await logAction({
+      user_id: userId,
+      action: 'UPDATE',
+      entity: 'user',
+      entity_id: userId,
+      ip_address: req.ip,
+      details: { username, self_update: true }
+    });
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 /**
  * @swagger
  * /api/users/{id}:

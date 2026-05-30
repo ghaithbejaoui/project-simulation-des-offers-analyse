@@ -9,11 +9,12 @@ services:
       - NODE_ENV=development
       - DB_HOST=host.docker.internal
       - DB_USER=root
-      - DB_PASSWORD=password
+      - DB_PASSWORD=        # set to your MySQL root password (empty = no password)
       - DB_NAME=bd_pfe
       - DB_PORT=3306
-      - JWT_SECRET=dev-secret-key
+      - JWT_SECRET=dev-secret-key-change-before-deploying
       - PORT=5000
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:4173
     volumes:
       - ./backend:/app
       - /app/node_modules

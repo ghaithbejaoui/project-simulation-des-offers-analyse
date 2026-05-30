@@ -33,7 +33,14 @@
     "inactive": "Inactive",
     "draft": "Draft",
     "saveSuccess": "Saved successfully",
-    "required": "required"
+    "required": "required",
+    "saving": "Saving...",
+    "close": "Close",
+    "copy": "Copy",
+    "view": "View",
+    "running": "Running...",
+    "confirm": "Confirm",
+    "cannotUndo": "This action cannot be undone."
   },
   "dashboard": {
     "welcome": "Good morning 👋",
@@ -131,7 +138,9 @@
       "dataOnly": "Data Only"
     },
     "noOffers": "No offers found.",
-    "loading": "Loading offers..."
+    "loading": "Loading offers...",
+    "confirmDeleteTitle": "Delete Offer",
+    "confirmDeleteMessage": "Are you sure you want to delete this offer? This action cannot be undone."
   },
   "options": {
     "title": "Options & Add-ons",
@@ -163,7 +172,9 @@
       "validity": "Validity"
     },
     "noOptions": "No options found.",
-    "loading": "Loading options..."
+    "loading": "Loading options...",
+    "confirmDeleteTitle": "Delete Option",
+    "confirmDeleteMessage": "Are you sure you want to delete this option? This action cannot be undone."
   },
   "profiles": {
     "title": "Customer Profiles",
@@ -206,13 +217,49 @@
       "simulate": "Simulate"
     },
     "noProfiles": "No profiles found.",
-    "loading": "Loading profiles..."
+    "loading": "Loading profiles...",
+    "confirmDeleteTitle": "Delete Customer Profile",
+    "confirmDeleteMessage": "Are you sure you want to delete this customer profile? This action cannot be undone."
   },
   "simulation": {
     "title": "Simulation",
+    "engineTitle": "Simulation Engine",
+    "engineSubtitle": "Run cost simulations and compare offers for customer profiles",
     "selectProfile": "Select a customer profile to simulate",
     "selectOffer": "Select an offer to evaluate",
     "runSimulation": "Run Simulation",
+    "customerProfile": "Customer Profile",
+    "custom": "Custom",
+    "selectProfilePlaceholder": "— Select a profile —",
+    "selectOfferSingle": "Select Offer",
+    "selectOffersCompare": "Select Offers to Compare",
+    "selected": "{count} selected",
+    "clearSelection": "Clear Selection",
+    "offerToAnalyze": "Offer to Analyze",
+    "selectOfferPlaceholder": "— Select offer —",
+    "batchProfiles": "Will run across {count} profiles in database.",
+    "getRecommendations": "Get Recommendations",
+    "runBatch": "Run Batch Analysis",
+    "readyTitle": "Ready to simulate",
+    "readySubtitle": "Configure a profile and click Run to see cost analysis and offer comparisons.",
+    "runningMsg": "Running simulation…",
+    "runningBtn": "Running…",
+    "offersAnalyzed": "Offers Analyzed",
+    "bestScore": "Best Score",
+    "bestPrice": "Best Price",
+    "saveToScenario": "Save to Scenario",
+    "batchSummary": "Batch Summary",
+    "avgTotalCost": "Avg Total Cost",
+    "avgSatisfaction": "Avg Satisfaction",
+    "profilesOverBudget": "Profiles Over Budget",
+    "avgOverageCost": "Avg Overage Cost",
+    "scenarioSaved": "Scenario Saved",
+    "savedMessage": "Your simulation results have been saved successfully.",
+    "saveDescription": "This will save your simulation results to a new scenario that you can view later.",
+    "scenarioName": "Scenario Name",
+    "scenarioPlaceholder": "My Comparison Scenario",
+    "scenarioNameRequired": "Please enter a scenario name",
+    "saveScenario": "Save Scenario",
     "modes": {
       "single": "Single Offer",
       "compare": "Compare",
@@ -236,20 +283,94 @@
   "scenarios": {
     "title": "Scenarios",
     "newScenario": "New Scenario",
+    "editScenario": "Edit Scenario",
     "lastRun": "Last run",
-    "results": "Results"
+    "results": "Results",
+    "status": "Status",
+    "close": "Close",
+    "offer": "Offer",
+    "cost": "Cost",
+    "score": "Score",
+    "rank": "Rank",
+    "metric": "Metric",
+    "value": "Value",
+    "profile": "Profile",
+    "budget": "Budget",
+    "updated": "Updated",
+    "allStatus": "All Status",
+    "total": "{count} total",
+    "empty": "No scenarios yet. Create one to save your simulation comparisons.",
+    "viewBtn": "View",
+    "simulateBtn": "Simulate",
+    "runSave": "Run & Save",
+    "runningBtn": "Running...",
+    "copyBtn": "Copy",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "namePlaceholder": "My Scenario",
+    "descriptionPlaceholder": "Optional description",
+    "selectProfilePlaceholder": "Select a profile...",
+    "offerIds": "Offer IDs",
+    "offerIdsPlaceholder": "1, 2, 3 (comma separated)",
+    "saving": "Saving...",
+    "saveScenario": "Save Scenario",
+    "resultsTitle": "Results",
+    "noResults": "No results saved. Run a comparison from the Simulation page to generate results.",
+    "noResultsOffer": "Offer #",
+    "confirmDeleteTitle": "Delete Scenario",
+    "confirmDeleteMessage": "Are you sure you want to delete this scenario? This action cannot be undone."
   },
   "compare": {
-    "title": "Compare Offers"
+    "title": "Compare Offers",
+    "readyToCompare": "Ready to compare",
+    "metric": "Metric",
+    "recommendation": "Recommendation"
   },
   "audit": {
     "title": "Audit Log",
     "user": "User",
     "action": "Action",
     "timestamp": "Timestamp",
-    "details": "Details"
+    "details": "Details",
+    "entity": "Entity",
+    "allEntities": "All entities",
+    "allActions": "All actions",
+    "from": "From",
+    "to": "To",
+    "simulateCompare": "Compare",
+    "simulateRecommend": "Recommend",
+    "simulateBatch": "Batch"
   },
   "users": {
-    "title": "User Management"
+    "title": "User Management",
+    "username": "Username",
+    "email": "Email",
+    "role": "Role",
+    "created": "Created",
+    "manage": "Manage system users and roles",
+    "noUsers": "No users found",
+    "newUser": "New User",
+    "editUser": "Edit User",
+    "confirmDeleteTitle": "Delete User",
+    "confirmDeleteMessage": "Are you sure you want to delete this user? This action cannot be undone."
+  },
+  "account": {
+    "title": "Edit Profile",
+    "editProfile": "Edit profile",
+    "username": "Username",
+    "email": "Email",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "optional": "optional",
+    "passwordPlaceholder": "Leave blank to keep current password",
+    "requiredFields": "Username and email are required",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
+    "currentPasswordRequired": "Current password is required to change your email",
+    "confirmPasswordRequired": "Please confirm your new password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "updateFailed": "Update failed",
+    "updateSuccess": "Profile updated successfully!"
   }
 }

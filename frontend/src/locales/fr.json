@@ -33,7 +33,14 @@
     "inactive": "Inactif",
     "draft": "Brouillon",
     "saveSuccess": "Enregistré avec succès",
-    "required": "obligatoire"
+    "required": "obligatoire",
+    "saving": "Enregistrement...",
+    "close": "Fermer",
+    "copy": "Copier",
+    "view": "Voir",
+    "running": "En cours...",
+    "confirm": "Confirmer",
+    "cannotUndo": "Cette action est irréversible."
   },
   "dashboard": {
     "welcome": "Bonjour 👋",
@@ -131,7 +138,9 @@
       "dataOnly": "Data Only"
     },
     "noOffers": "Aucune offre trouvée.",
-    "loading": "Chargement des offres..."
+    "loading": "Chargement des offres...",
+    "confirmDeleteTitle": "Supprimer l'offre",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer cette offre ? Cette action est irréversible."
   },
   "options": {
     "title": "Options & Add-ons",
@@ -163,7 +172,9 @@
       "validity": "Validité"
     },
     "noOptions": "Aucune option trouvée.",
-    "loading": "Chargement des options..."
+    "loading": "Chargement des options...",
+    "confirmDeleteTitle": "Supprimer l'option",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer cette option ? Cette action est irréversible."
   },
   "profiles": {
     "title": "Profils clients",
@@ -206,13 +217,49 @@
       "simulate": "Simuler"
     },
     "noProfiles": "Aucun profil trouvé.",
-    "loading": "Chargement des profils..."
+    "loading": "Chargement des profils...",
+    "confirmDeleteTitle": "Supprimer le profil client",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer ce profil client ? Cette action est irréversible."
   },
   "simulation": {
     "title": "Simulation",
+    "engineTitle": "Moteur de simulation",
+    "engineSubtitle": "Exécuter des simulations de coûts et comparer les offres pour les profils clients",
     "selectProfile": "Sélectionner un profil client à simuler",
     "selectOffer": "Sélectionner une offre à évaluer",
     "runSimulation": "Lancer la simulation",
+    "customerProfile": "Profil client",
+    "custom": "Personnalisé",
+    "selectProfilePlaceholder": "— Sélectionner un profil —",
+    "selectOfferSingle": "Sélectionner une offre",
+    "selectOffersCompare": "Sélectionner les offres à comparer",
+    "selected": "{count} sélectionnée(s)",
+    "clearSelection": "Effacer la sélection",
+    "offerToAnalyze": "Offre à analyser",
+    "selectOfferPlaceholder": "— Sélectionner une offre —",
+    "batchProfiles": "S'exécutera sur {count} profils en base de données.",
+    "getRecommendations": "Obtenir des recommandations",
+    "runBatch": "Lancer l'analyse en lot",
+    "readyTitle": "Prêt à simuler",
+    "readySubtitle": "Configurez un profil et cliquez sur Exécuter pour voir l'analyse des coûts et les comparaisons d'offres.",
+    "runningMsg": "Simulation en cours…",
+    "runningBtn": "En cours…",
+    "offersAnalyzed": "Offres analysées",
+    "bestScore": "Meilleur score",
+    "bestPrice": "Meilleur prix",
+    "saveToScenario": "Enregistrer en scénario",
+    "batchSummary": "Résumé du lot",
+    "avgTotalCost": "Coût total moyen",
+    "avgSatisfaction": "Satisfaction moyenne",
+    "profilesOverBudget": "Profils hors budget",
+    "avgOverageCost": "Coût moyen de dépassement",
+    "scenarioSaved": "Scénario enregistré",
+    "savedMessage": "Vos résultats de simulation ont été enregistrés avec succès.",
+    "saveDescription": "Cela enregistrera vos résultats de simulation dans un nouveau scénario que vous pourrez consulter ultérieurement.",
+    "scenarioName": "Nom du scénario",
+    "scenarioPlaceholder": "Mon scénario de comparaison",
+    "scenarioNameRequired": "Veuillez saisir un nom de scénario",
+    "saveScenario": "Enregistrer le scénario",
     "modes": {
       "single": "Offre unique",
       "compare": "Comparer",
@@ -236,20 +283,94 @@
   "scenarios": {
     "title": "Scénarios",
     "newScenario": "Nouveau scénario",
+    "editScenario": "Modifier le scénario",
     "lastRun": "Dernière exécution",
-    "results": "Résultats"
+    "results": "Résultats",
+    "status": "Statut",
+    "close": "Fermer",
+    "offer": "Offre",
+    "cost": "Coût",
+    "score": "Score",
+    "rank": "Rang",
+    "metric": "Métrique",
+    "value": "Valeur",
+    "profile": "Profil",
+    "budget": "Budget",
+    "updated": "Mis à jour",
+    "allStatus": "Tous les statuts",
+    "total": "{count} au total",
+    "empty": "Aucun scénario. Créez-en un pour enregistrer vos comparaisons de simulation.",
+    "viewBtn": "Voir",
+    "simulateBtn": "Simuler",
+    "runSave": "Exécuter & Enregistrer",
+    "runningBtn": "En cours...",
+    "copyBtn": "Copier",
+    "nameLabel": "Nom",
+    "descriptionLabel": "Description",
+    "namePlaceholder": "Mon scénario",
+    "descriptionPlaceholder": "Description facultative",
+    "selectProfilePlaceholder": "Sélectionner un profil...",
+    "offerIds": "IDs des offres",
+    "offerIdsPlaceholder": "1, 2, 3 (séparés par des virgules)",
+    "saving": "Enregistrement...",
+    "saveScenario": "Enregistrer le scénario",
+    "resultsTitle": "Résultats",
+    "noResults": "Aucun résultat enregistré. Exécutez une comparaison depuis la page Simulation pour générer des résultats.",
+    "noResultsOffer": "Offre #",
+    "confirmDeleteTitle": "Supprimer le scénario",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer ce scénario ? Cette action est irréversible."
   },
   "compare": {
-    "title": "Comparer les offres"
+    "title": "Comparer les offres",
+    "readyToCompare": "Prêt à comparer",
+    "metric": "Métrique",
+    "recommendation": "Recommandation"
   },
   "audit": {
     "title": "Journal d'audit",
     "user": "Utilisateur",
     "action": "Action",
     "timestamp": "Horodatage",
-    "details": "Détails"
+    "details": "Détails",
+    "entity": "Entité",
+    "allEntities": "Toutes les entités",
+    "allActions": "Toutes les actions",
+    "from": "De",
+    "to": "À",
+    "simulateCompare": "Comparer",
+    "simulateRecommend": "Recommander",
+    "simulateBatch": "Lot"
   },
   "users": {
-    "title": "Gestion des utilisateurs"
+    "title": "Gestion des utilisateurs",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "role": "Rôle",
+    "created": "Créé",
+    "manage": "Gérer les utilisateurs et les rôles du système",
+    "noUsers": "Aucun utilisateur trouvé",
+    "newUser": "Nouvel utilisateur",
+    "editUser": "Modifier l'utilisateur",
+    "confirmDeleteTitle": "Supprimer l'utilisateur",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+  },
+  "account": {
+    "title": "Modifier le profil",
+    "editProfile": "Modifier le profil",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "optional": "facultatif",
+    "passwordPlaceholder": "Laisser vide pour conserver le mot de passe actuel",
+    "requiredFields": "Le nom d'utilisateur et l'email sont obligatoires",
+    "currentPassword": "Mot de passe actuel",
+    "currentPasswordPlaceholder": "Entrez votre mot de passe actuel",
+    "currentPasswordRequired": "Le mot de passe actuel est requis pour changer l'email",
+    "confirmPasswordRequired": "Veuillez confirmer votre nouveau mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+    "updateFailed": "La mise à jour a échoué",
+    "updateSuccess": "Profil mis à jour avec succès !"
   }
 }

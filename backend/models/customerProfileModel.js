@@ -7,7 +7,7 @@ class CustomerProfileModel {
   }
 
   static async findById(id) {
-    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ? OR id = ?', [id, id]);
+    const [rows] = await db.query('SELECT * FROM customer_profiles WHERE profile_id = ?', [id]);
     if (rows.length === 0) return null;
     return this._addSegment(rows[0]);
   }
@@ -30,14 +30,14 @@ class CustomerProfileModel {
     const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = data;
 
     const [result] = await db.query(
-      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=? OR id=?`,
-      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, id, id]
+      `UPDATE customer_profiles SET label=?, minutes_avg=?, sms_avg=?, data_avg_gb=?, night_usage_pct=?, roaming_days=?, budget_max=?, priority=? WHERE profile_id=?`,
+      [label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority, id]
     );
     return result.affectedRows > 0;
   }
 
   static async delete(id) {
-    const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ? OR id = ?', [id, id]);
+    const [result] = await db.query('DELETE FROM customer_profiles WHERE profile_id = ?', [id]);
     return result.affectedRows > 0;
   }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { fonts } from "../styles/theme";
 import { useLanguage } from "../context/LanguageContext";
+import AccountModal from "./AccountModal";
 
 const NAV_ITEMS = [
   {
@@ -117,6 +118,7 @@ export default function Layout({ children, theme = "dark" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -266,23 +268,25 @@ const isAdmin = user?.role === "ADMIN";
 
          {/* User info */}
          <div style={{ ...s.userBox, padding: collapsed ? "12px 8px" : "12px 14px" }}>
-           <div style={s.avatar}>
-             {user?.role?.[0]?.toUpperCase() || "A"}
-           </div>
-           {!collapsed && (
-             <div style={s.userInfo}>
-               <p style={s.userName}>
-                 {user?.role
-                   ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
-                   : "User"}
-               </p>
-               <p style={s.userRole}>
-                 {user?.role
-                   ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
-                   : "Analyst"}
-               </p>
+           <button
+             onClick={() => setShowAccountModal(true)}
+             title={t("account.editProfile")}
+             style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", flex: collapsed ? undefined : 1, minWidth: 0, padding: 0, borderRadius: 8 }}
+           >
+             <div style={s.avatar}>
+               {user?.username?.[0]?.toUpperCase() || "U"}
              </div>
-           )}
+             {!collapsed && (
+               <div style={s.userInfo}>
+                 <p style={s.userName}>{user?.username || "User"}</p>
+                 <p style={s.userRole}>
+                   {user?.role
+                     ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
+                     : "Analyst"}
+                 </p>
+               </div>
+             )}
+           </button>
            {!collapsed && (
              <button onClick={handleLogout} style={s.logoutBtn} title="Sign out">
                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -294,6 +298,13 @@ const isAdmin = user?.role === "ADMIN";
            )}
          </div>
       </aside>
+
+      {showAccountModal && (
+        <AccountModal
+          onClose={() => setShowAccountModal(false)}
+          onSave={(updated) => setUser(updated)}
+        />
+      )}
 
       {/* Main content */}
       <main style={{ ...s.main, marginLeft: collapsed ? 64 : 220 }}>
@@ -311,14 +322,18 @@ const isAdmin = user?.role === "ADMIN";
               <span style={s.statusDot} />
               <span style={s.statusText}>{t("app.connected")}</span>
             </div>
-            <div style={s.userChip}>
+            <button
+              onClick={() => setShowAccountModal(true)}
+              title={t("account.editProfile")}
+              style={{ ...s.userChip, background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 8 }}
+            >
               <div style={{ ...s.avatar, width: 30, height: 30, fontSize: 12 }}>
-                {user?.role?.[0]?.toUpperCase() || "A"}
+                {user?.username?.[0]?.toUpperCase() || "U"}
               </div>
               <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase() : "Analyst"}
+                {user?.username || (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase() : "User")}
               </span>
-            </div>
+            </button>
           </div>
         </header>
 

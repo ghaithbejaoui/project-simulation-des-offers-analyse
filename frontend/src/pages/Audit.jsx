@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { fonts } from "../styles/theme";
 
@@ -68,6 +69,7 @@ const API = "http://localhost:5000/api";
 
 // ─── Single activity row (used by dashboard too) ──────────────────────────────
 function ActivityRow({ icon, text, time, user, color }) {
+  const { t } = useLanguage();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: `0.5px solid rgba(26,143,255,0.1)` }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: `${color}15`, border: `0.5px solid ${color}35`, display: "flex", alignItems: "center", justifyContent: "center", color, flexShrink: 0, fontSize: 16 }}>
@@ -82,6 +84,7 @@ function ActivityRow({ icon, text, time, user, color }) {
 }
 
 export default function Audit() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,27 +200,27 @@ export default function Audit() {
       <div style={{ ...cardStyleStyle, padding: "18px 20px", marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Entity</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>{t("audit.entity")}</label>
             <select value={filters.entity} onChange={(e) => setFilters({ ...filters, entity: e.target.value })} style={{ ...selectStyleStyle, height: 36, fontSize: 13 }}>
-              <option value="">All entities</option>
-              <option value="offer">Offers</option>
-              <option value="customer_profile">Profiles</option>
-              <option value="option">Options</option>
-              <option value="simulation">Simulations</option>
+              <option value="">{t("audit.allEntities")}</option>
+              <option value="offer">{t("nav.offers")}</option>
+              <option value="customer_profile">{t("nav.profiles")}</option>
+              <option value="option">{t("nav.options")}</option>
+              <option value="simulation">{t("nav.simulation")}</option>
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>Action</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>{t("audit.action")}</label>
             <select value={filters.action} onChange={(e) => setFilters({ ...filters, action: e.target.value })} style={{ ...selectStyleStyle, height: 36, fontSize: 13 }}>
-              <option value="">All actions</option>
-              <option value="CREATE">Create</option>
-              <option value="UPDATE">Update</option>
-              <option value="DELETE">Delete</option>
+              <option value="">{t("audit.allActions")}</option>
+              <option value="CREATE">{t("common.create")}</option>
+              <option value="UPDATE">{t("common.edit")}</option>
+              <option value="DELETE">{t("common.delete")}</option>
               <option value="SIMULATE_SINGLE">Simulate (Single)</option>
-              <option value="SIMULATE_COMPARE">Compare</option>
-              <option value="SIMULATE_RECOMMEND">Recommend</option>
-              <option value="SIMULATE_BATCH">Batch</option>
-              <option value="LOGIN">Login</option>
+              <option value="SIMULATE_COMPARE">{t("audit.simulateCompare")}</option>
+              <option value="SIMULATE_RECOMMEND">{t("audit.simulateRecommend")}</option>
+              <option value="SIMULATE_BATCH">{t("audit.simulateBatch")}</option>
+              <option value="LOGIN">{t("nav.login") || "Login"}</option>
               <option value="LOGIN_FAILED">Login Failed</option>
             </select>
           </div>
@@ -226,11 +229,11 @@ export default function Audit() {
             <input type="number" value={filters.user_id} onChange={(e) => setFilters({ ...filters, user_id: e.target.value })} placeholder="Filter by user..." style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>From</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>{t("audit.from")}</label>
             <input type="date" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>To</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 6 }}>{t("audit.to")}</label>
             <input type="date" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} style={{ ...inputStyleStyle, height: 36, fontSize: 13 }} />
           </div>
         </div>

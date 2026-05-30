@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { fonts } from "../styles/theme";
 import { isAdmin } from "../App";
+import { useLanguage } from "../context/LanguageContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 const cardStyle = {
   background: "var(--bg-card)",
@@ -92,7 +94,7 @@ function UsageBar({ value, max, color }) {
 
 // ─── Profile card ─────────────────────────────────────────────────────────────
 function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
-  // Map API fields to display fields
+  const { t } = useLanguage();
   const displayName = profile.label || profile.name || "Unknown";
   const displayMinutes = profile.minutes_avg ?? profile.avg_minutes ?? 0;
   const displaySms = profile.sms_avg ?? profile.avg_sms ?? 0;
@@ -164,11 +166,11 @@ function ProfileCard({ profile, onEdit, onDelete, onSimulate, showActions }) {
 
       <div style={{ display: "flex", gap: 8, paddingTop: 4, borderTop: `0.5px solid rgba(26,143,255,0.08)` }}>
         <button onClick={() => onSimulate(profile)} style={{ ...btnPrimaryStyle, flex: 1, height: 34, fontSize: 12, justifyContent: "center" }}>
-          Simulate
+          {t("profiles.card.simulate")}
         </button>
         {showActions && (
           <>
-            <button onClick={() => onEdit(profile)} style={{ ...btnGhostStyle, height: 34, padding: "0 14px", fontSize: 12 }}>Edit</button>
+            <button onClick={() => onEdit(profile)} style={{ ...btnGhostStyle, height: 34, padding: "0 14px", fontSize: 12 }}>{t("common.edit")}</button>
             <button onClick={() => onDelete(profile.profile_id || profile.id)} style={{ ...btnDangerStyle, height: 34, padding: "0 12px", fontSize: 12 }}>✕</button>
           </>
         )}
@@ -190,6 +192,7 @@ function FormField({ label, value, onChange, type = "text", placeholder }) {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function ProfileModal({ profile, onClose, onSave }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(profile || EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -202,8 +205,13 @@ function ProfileModal({ profile, onClose, onSave }) {
       const profileId = profile?.profile_id;
       const method = profileId ? "PUT" : "POST";
       const url = profileId ? `${API}/customer-profiles/${profileId}` : `${API}/customer-profiles`;
-      const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(form) });
-      if (!res.ok) throw new Error("Save failed");
+      const { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority } = form;
+      const payload = { label, minutes_avg, sms_avg, data_avg_gb, night_usage_pct, roaming_days, budget_max, priority };
+      const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || body.message || "Save failed");
+      }
       onSave();
     } catch (e) { setError(e.message); }
     finally { setSaving(false); }
@@ -214,30 +222,30 @@ return (
       <div style={{ ...cardStyle, width: "100%", maxWidth: 580, maxHeight: "90vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
            <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
-             {profile?.profile_id ? "Edit Profile" : "New Customer Profile"}
+             {profile?.profile_id ? t("profiles.editProfile") : t("profiles.newProfile")}
            </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20 }}>×</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          <div style={{ gridColumn: "span 2" }}><FormField label="Profile Label" value={form.label} onChange={v => set("label", v)} placeholder="e.g. Ahmed Bejaoui" /></div>
+          <div style={{ gridColumn: "span 2" }}><FormField label={t("profiles.form.profileLabel")} value={form.label} onChange={v => set("label", v)} placeholder="e.g. Ahmed Bejaoui" /></div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>Priority</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", display: "block", marginBottom: 5 }}>{t("profiles.form.priority")}</label>
             <select value={form.priority} onChange={e => set("priority", e.target.value)} style={{ ...inputStyle, height: 38, fontSize: 13 }}>
               {["BALANCED","PRICE","QUALITY"].map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <FormField label="Avg. Data (GB/mo)" value={form.data_avg_gb} onChange={v => set("data_avg_gb", v)} type="number" placeholder="e.g. 20" />
-          <FormField label="Avg. Minutes/mo" value={form.minutes_avg} onChange={v => set("minutes_avg", v)} type="number" placeholder="e.g. 200" />
-          <FormField label="Avg. SMS/mo" value={form.sms_avg} onChange={v => set("sms_avg", v)} type="number" placeholder="e.g. 50" />
-          <FormField label="Max Budget (TND)" value={form.budget_max} onChange={v => set("budget_max", v)} type="number" placeholder="e.g. 60" />
-          <FormField label="Night Usage %" value={form.night_usage_pct} onChange={v => set("night_usage_pct", v)} type="number" placeholder="0–100" />
-          <FormField label="Roaming Days/mo" value={form.roaming_days} onChange={v => set("roaming_days", v)} type="number" placeholder="0" />
+          <FormField label={t("profiles.form.avgData")} value={form.data_avg_gb} onChange={v => set("data_avg_gb", v)} type="number" placeholder="e.g. 20" />
+          <FormField label={t("profiles.form.avgMinutes")} value={form.minutes_avg} onChange={v => set("minutes_avg", v)} type="number" placeholder="e.g. 200" />
+          <FormField label={t("profiles.form.avgSms")} value={form.sms_avg} onChange={v => set("sms_avg", v)} type="number" placeholder="e.g. 50" />
+          <FormField label={t("profiles.form.maxBudget")} value={form.budget_max} onChange={v => set("budget_max", v)} type="number" placeholder="e.g. 60" />
+          <FormField label={t("profiles.form.nightUsage")} value={form.night_usage_pct} onChange={v => set("night_usage_pct", v)} type="number" placeholder="0–100" />
+          <FormField label={t("profiles.form.roamingDays")} value={form.roaming_days} onChange={v => set("roaming_days", v)} type="number" placeholder="0" />
         </div>
         {error && <p style={{ marginTop: 12, fontSize: 13, color: "var(--red)" }}>{error}</p>}
         <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={btnGhostStyle}>Cancel</button>
+          <button onClick={onClose} style={btnGhostStyle}>{t("common.cancel")}</button>
           <button onClick={handleSave} disabled={saving} style={{ ...btnPrimaryStyle, opacity: saving ? 0.7 : 1 }}>
-            {saving ? "Saving…" : "Save Profile"}
+            {saving ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </div>
@@ -247,21 +255,33 @@ return (
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Profiles() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch]     = useState("");
   const [segment, setSegment]   = useState("ALL");
   const [modal, setModal]       = useState(null);
   const [view, setView]         = useState("grid"); // "grid" | "table"
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await fetch(`${API}/customer-profiles`, { headers: getHeaders() });
-      setProfiles(res.ok ? await res.json() : MOCK_PROFILES);
-    } catch { setProfiles(MOCK_PROFILES); }
-    finally { setLoading(false); }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `Server error ${res.status}`);
+      }
+      setProfiles(await res.json());
+    } catch (e) {
+      setFetchError(e.message);
+      setProfiles([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
    useEffect(() => { load(); }, [load]);
@@ -278,10 +298,10 @@ export default function Profiles() {
 
    const handleDelete = async (id) => {
     try {
-      const deleteId = id || id; // Handle both profile_id and id
-      await fetch(`${API}/customer-profiles/${deleteId}`, { method: "DELETE", headers: getHeaders() });
-      setProfiles(p => p.filter(x => (x.profile_id || x.id) !== deleteId));
+      await fetch(`${API}/customer-profiles/${id}`, { method: "DELETE", headers: getHeaders() });
+      setProfiles(p => p.filter(x => (x.profile_id || x.id) !== id));
     } catch {}
+    finally { setConfirmDelete(null); }
   };
 
   const handleSimulate = (profile) => {
@@ -300,15 +320,15 @@ export default function Profiles() {
     <div style={{ animation: "fadeUp 0.4s ease both" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
         <div>
-          <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Customer Profiles</h2>
+          <h2 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>{t("profiles.title")}</h2>
           <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-            {profiles.length} profiles · Manage usage patterns and budgets
+            {t("profiles.subtitle").replace("{count}", profiles.length)}
           </p>
         </div>
         {isAdmin() && (
           <button onClick={() => setModal("new")} style={{ ...btnPrimaryStyle, height: 40 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Profile
+            {t("profiles.newProfile")}
           </button>
         )}
       </div>
@@ -319,7 +339,7 @@ export default function Profiles() {
           <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-dim)" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search profiles…"
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("profiles.searchPlaceholder")}
             style={{ ...inputStyle, height: 36, paddingLeft: 36, fontSize: 13 }} />
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -328,7 +348,7 @@ export default function Profiles() {
               style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `0.5px solid ${segment === s ? "var(--blue)" : "var(--border)"}`,
                 background: segment === s ? "rgba(26,143,255,0.15)" : "transparent", color: segment === s ? "var(--blue)" : "var(--text-muted)",
                 cursor: "pointer", fontSize: 12, transition: "all 0.18s" }}>
-              {s === "ALL" ? "All" : s.replace("_"," ")}
+              {s === "ALL" ? t("common.all") : s.replace("_"," ")}
             </button>
           ))}
         </div>
@@ -337,19 +357,25 @@ export default function Profiles() {
             <button key={v} onClick={() => setView(v)}
               style={{ height: 28, padding: "0 12px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, transition: "all 0.18s",
                 background: view === v ? "rgba(26,143,255,0.15)" : "transparent", color: view === v ? "var(--blue)" : "var(--text-dim)" }}>
-              {v === "grid" ? "⊞ Grid" : "☰ List"}
+              {v === "grid" ? `⊞ ${t("profiles.view.grid")}` : `☰ ${t("profiles.view.list")}`}
             </button>
           ))}
         </div>
-        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{filtered.length} results</span>
+        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{t("profiles.results").replace("{count}", filtered.length)}</span>
       </div>
 
+      {fetchError && (
+        <div style={{ ...cardStyle, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", borderColor: "rgba(227,91,91,0.4)" }}>
+          <span style={{ fontSize: 13, color: "var(--red, #e35b5b)" }}>Connection error: {fetchError}</span>
+          <button onClick={load} style={{ ...btnPrimaryStyle, height: 32, fontSize: 12 }}>Retry</button>
+        </div>
+      )}
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>Loading profiles…</div>
+        <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>{t("profiles.loading")}</div>
       ) : view === "grid" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {filtered.map(p => (
-            <ProfileCard key={p.id} profile={p} onEdit={setModal} onDelete={handleDelete} onSimulate={handleSimulate} showActions={isAdmin()} />
+            <ProfileCard key={p.id} profile={p} onEdit={setModal} onDelete={(id) => setConfirmDelete(id)} onSimulate={handleSimulate} showActions={isAdmin()} />
           ))}
         </div>
       ) : (
@@ -357,7 +383,7 @@ export default function Profiles() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: `0.5px solid var(--border)` }}>
-                {["Name","Segment","Data (GB)","Minutes","SMS","Budget (TND)","Night %","Roaming","Actions"].map(h => (
+                {[t("profiles.table.name"),t("profiles.table.segment"),t("profiles.table.data"),t("profiles.table.minutes"),t("profiles.table.sms"),t("profiles.table.budget"),t("profiles.table.nightPercent"),t("profiles.table.roaming"),t("profiles.table.actions")].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</th>
                 ))}
               </tr>
@@ -379,11 +405,11 @@ export default function Profiles() {
                   <td style={{ padding: "11px 16px", color: "var(--text-muted)" }}>{p.roaming_days}d</td>
                   <td style={{ padding: "11px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => handleSimulate(p)} style={{ ...btnPrimaryStyle, height: 30, padding: "0 10px", fontSize: 12 }}>Simulate</button>
+                      <button onClick={() => handleSimulate(p)} style={{ ...btnPrimaryStyle, height: 30, padding: "0 10px", fontSize: 12 }}>{t("profiles.card.simulate")}</button>
                       {isAdmin() && (
                         <>
-                          <button onClick={() => setModal(p)} style={{ ...btnGhostStyle, height: 30, padding: "0 10px", fontSize: 12 }}>Edit</button>
-                          <button onClick={() => handleDelete(p.id)} style={{ ...btnDangerStyle, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
+                          <button onClick={() => setModal(p)} style={{ ...btnGhostStyle, height: 30, padding: "0 10px", fontSize: 12 }}>{t("common.edit")}</button>
+                          <button onClick={() => setConfirmDelete(p.id)} style={{ ...btnDangerStyle, height: 30, padding: "0 10px", fontSize: 12 }}>✕</button>
                         </>
                       )}
                     </div>
@@ -403,15 +429,16 @@ export default function Profiles() {
          />,
          document.body
        )}
+
+       {confirmDelete && (
+         <ConfirmModal
+           title={t("profiles.confirmDeleteTitle")}
+           message={t("profiles.confirmDeleteMessage")}
+           onConfirm={() => handleDelete(confirmDelete)}
+           onCancel={() => setConfirmDelete(null)}
+         />
+       )}
     </div>
   );
 }
 
-const MOCK_PROFILES = [
-  { id: 1, name: "Ahmed Bejaoui", segment: "POSTPAID", avg_data_gb: 22, avg_minutes: 350, avg_sms: 80, budget_max: 65, night_usage_pct: 15, roaming_days: 2, priority: "quality" },
-  { id: 2, name: "Sana Trabelsi", segment: "PREPAID", avg_data_gb: 8, avg_minutes: 120, avg_sms: 200, budget_max: 25, night_usage_pct: 30, roaming_days: 0, priority: "price" },
-  { id: 3, name: "Mohamed Chaabane", segment: "BUSINESS", avg_data_gb: 45, avg_minutes: 800, avg_sms: 50, budget_max: 150, night_usage_pct: 5, roaming_days: 8, priority: "quality" },
-  { id: 4, name: "Yasmine Hamdi", segment: "DATA_ONLY", avg_data_gb: 60, avg_minutes: 0, avg_sms: 0, budget_max: 40, night_usage_pct: 60, roaming_days: 0, priority: "price" },
-  { id: 5, name: "Karim Bouaziz", segment: "POSTPAID", avg_data_gb: 35, avg_minutes: 500, avg_sms: 150, budget_max: 90, night_usage_pct: 10, roaming_days: 5, priority: "balanced" },
-  { id: 6, name: "Lina Mansour", segment: "PREPAID", avg_data_gb: 5, avg_minutes: 60, avg_sms: 300, budget_max: 18, night_usage_pct: 40, roaming_days: 0, priority: "price" },
-];

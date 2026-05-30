@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../context/LanguageContext";
 import { fonts } from "../styles/theme";
+import ConfirmModal from "../components/ConfirmModal";
 
 const API = "http://localhost:5000/api";
 const getToken = () => localStorage.getItem("token");
@@ -76,6 +78,7 @@ const inputStyle = {
 const ROLES = ["ADMIN", "ANALYST", "GUEST"];
 
 function UserModal({ user, onClose, onSave }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(user || { username: "", email: "", password: "", role: "GUEST" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -101,18 +104,18 @@ function UserModal({ user, onClose, onSave }) {
       <div style={{ ...cardStyle, width: "100%", maxWidth: 420, padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
-            {user?.user_id ? "Edit User" : "New User"}
+            {user?.user_id ? t("users.editUser") : t("users.newUser")}
           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20 }}>×</button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>Username</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>{t("users.username")}</label>
             <input type="text" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} style={{ ...inputStyle, height: 38, fontSize: 13 }} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>Email</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>{t("users.email")}</label>
             <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={{ ...inputStyle, height: 38, fontSize: 13 }} />
           </div>
           <div>
@@ -120,7 +123,7 @@ function UserModal({ user, onClose, onSave }) {
             <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} style={{ ...inputStyle, height: 38, fontSize: 13 }} placeholder={user ? "Leave empty to keep current" : ""} />
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>Role</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, textTransform: "uppercase" }}>{t("users.role")}</label>
             <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} style={{ ...inputStyle, height: 38, fontSize: 13 }}>
               {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -130,9 +133,9 @@ function UserModal({ user, onClose, onSave }) {
         {error && <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>Cancel</button>
+          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>{t("common.cancel")}</button>
           <button onClick={handleSave} disabled={saving} style={{ ...btnPrimaryStyle, flex: 1, opacity: saving ? 0.6 : 1 }}>
-            {saving ? "Saving..." : "Save User"}
+            {saving ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </div>
@@ -141,11 +144,13 @@ function UserModal({ user, onClose, onSave }) {
 }
 
 export default function Users() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -165,40 +170,40 @@ export default function Users() {
   useEffect(() => { fetchUsers(); }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this user?")) return;
     try {
       await fetch(`${API}/users/${id}`, { method: "DELETE", headers: headers() });
       showToast("User deleted successfully");
       fetchUsers();
     } catch (e) { showToast(e.message, "error"); }
+    finally { setConfirmDelete(null); }
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>User Management</h1>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Manage system users and roles</p>
+          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>{t("users.title")}</h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>{t("users.manage")}</p>
         </div>
         <button onClick={() => { setSelected(null); setShowModal(true); }} style={{ ...btnPrimaryStyle, height: 40 }}>
-          + New User
+          + {t("users.newUser")}
         </button>
       </div>
 
       <div style={{ ...cardStyle, overflow: "hidden", padding: 0 }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>{t("common.loading")}</div>
         ) : users.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>No users found</div>
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>{t("users.noUsers")}</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "rgba(0,0,0,0.25)" }}>
-                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>Username</th>
-                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>Email</th>
-                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>Role</th>
-                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>Created</th>
-                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>Actions</th>
+                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>{t("users.username")}</th>
+                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>{t("users.email")}</th>
+                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>{t("users.role")}</th>
+                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>{t("users.created")}</th>
+                <th style={{ padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--text-dim)", textTransform: "uppercase" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -217,8 +222,8 @@ export default function Users() {
                   </td>
                   <td style={{ padding: "12px", color: "var(--text-muted)" }}>{new Date(u.created_at).toLocaleDateString()}</td>
                   <td style={{ padding: "12px", display: "flex", gap: 8 }}>
-                    <button onClick={() => { setSelected(u); setShowModal(true); }} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Edit</button>
-                    <button onClick={() => handleDelete(u.user_id)} style={{ ...btnDangerStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Delete</button>
+                    <button onClick={() => { setSelected(u); setShowModal(true); }} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("common.edit")}</button>
+                    <button onClick={() => setConfirmDelete(u.user_id)} style={{ ...btnDangerStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("common.delete")}</button>
                   </td>
                 </tr>
               ))}
@@ -229,6 +234,15 @@ export default function Users() {
 
       {showModal && (
         <UserModal user={selected} onClose={() => { setShowModal(false); setSelected(null); }} onSave={() => { setShowModal(false); setSelected(null); showToast("User saved successfully"); fetchUsers(); }} />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t("users.confirmDeleteTitle")}
+          message={t("users.confirmDeleteMessage")}
+          onConfirm={() => handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
 
       {toast && (

@@ -79,15 +79,15 @@ Ce projet implémente intégralement le cahier des charges définissant une appl
 ┌───────────────────────────────────────────────────────────┴─────┐
 │                      BACKEND (Node.js / Express)               │
 │  • Express 5 • MySQL2 • JWT • bcrypt • Swagger/OpenAPI         │
-│  • Validation (Joi) • Sécurité (Helmet, rate limiting)         │
-│  • 12 modules de routes • Winston (logs)                       │
+│  • Validation (Joi) • Sécurité (Helmet, rate limiting, CORS)  │
+│  • 12 modules de routes • Nodemailer (email) • PDFKit • XLSX   │
 └───────────────────────────────────────────────────────────┬─────┘
                                                     MySQL
 ┌───────────────────────────────────────────────────────────┴─────┐
 │                      BASE DE DONNÉES (MySQL/InnoDB)             │
 │  • 9 tables principales + 5 vues BI                             │
 │  • Modèle normalisé • Contraintes FK (niveau application)      │
-│  • Migrations Sequelize/Prisma                                  │
+│  • Pas de migrations — appliquer bd_pfe.sql manuellement       │
 └───────────────────────────────────────────────────────────┬─────┘
                                                     Power BI
 ┌───────────────────────────────────────────────────────────┴─────┐
@@ -541,7 +541,7 @@ score = Math.max(0, Math.min(100, score)); // Borné [0, 100]
 - ✅ Rate limiting (auth, simulation)
 - ✅ bcrypt (hashing)
 - ✅ JWT 24h expiry
-- ✅ CORS config
+- ✅ CORS config (origines restreintes via `ALLOWED_ORIGINS`)
 - ⚠️ Token en localStorage (XSS risk - à améliorer)
 
 ---
@@ -696,7 +696,7 @@ project_pfe/
 │   │   ├── auth.js              # JWT + roles
 │   │   └── biLogger.js          # Logger BI
 │   ├── routes/
-│   │   ├── auth.js              # Login, me (121 lignes)
+│   │   ├── auth.js              # Login, register, guest, forgot/reset-password
 │   │   ├── offers.js            # CRUD offres (390 lignes)
 │   │   ├── customer_profiles.js # CRUD profils (321 lignes)
 │   │   ├── options.js           # CRUD options (271 lignes)
@@ -758,12 +758,16 @@ project_pfe/
   "mysql2": "^3.17.0",
   "bcrypt": "^6.0.0",
   "jsonwebtoken": "^9.0.3",
+  "nodemailer": "^8.0.7",
+  "pdfkit": "^0.15.0",
+  "xlsx": "^0.18.5",
+  "joi": "^17.12.0",
   "cors": "^2.8.6",
   "helmet": "^7.1.0",
   "express-rate-limit": "^7.1.5",
+  "dotenv": "^17.2.4",
   "swagger-jsdoc": "^6.2.8",
-  "swagger-ui-express": "^5.0.1",
-  "winston": "^3.11.0"
+  "swagger-ui-express": "^5.0.1"
 }
 ```
 
@@ -775,7 +779,9 @@ project_pfe/
   "react-router-dom": "^7.13.0",
   "vite": "^7.3.1",
   "tailwindcss": "^4.2.0",
-  "recharts": "^2.12.0"
+  "recharts": "^3.8.1",
+  "@reduxjs/toolkit": "^2.11.2",
+  "axios": "^1.13.5"
 }
 ```
 
@@ -817,19 +823,19 @@ npm run dev           # → http://localhost:5173
 ### 17. Points d'Attention
 
 #### Problèmes Connus
-1. **FK non forcées** : Tables sans contraintes FK niveau DB (risque d'orphelins)
-2. **Segment DATA_ONLY** : Calculé en app, pas dans ENUM DB
+1. **FK non forcées** : Tables `offer_options` et `scenario_results` sans contraintes FK niveau DB (risque d'orphelins)
+2. **Segment DATA_ONLY** : Calculé en app, pas dans ENUM DB (DB supporte PREPAID/POSTPAID/BUSINESS uniquement)
 3. **Token localStorage** : Vulnérable XSS (passer à httpOnly cookies en prod)
-4. **Dashboard statique** : Données figées (à connecter à l'API BI)
+4. **Simulation.jsx** : Composant de 741 lignes à refactoriser
 
 #### Améliorations Post-PFE
-- [ ] Dockeriser (Dockerfile existe mais non testé)
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Tests e2e (Cypress)
 - [ ] Monitoring (Sentry)
 - [ ] Power BI Desktop dashboards
 - [ ] Migration FK au niveau DB
-- [ ] Input validation complète (Joi/Zod)
+- [ ] Refactoriser Simulation.jsx (741 lignes)
+- [ ] Passer le token de localStorage vers httpOnly cookies
 
 ---
 

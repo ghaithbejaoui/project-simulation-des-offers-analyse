@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import { useState, useEffect } from "react";
 import { fonts } from "../styles/theme";
 
@@ -87,6 +88,7 @@ const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `
 
 // ─── Comparison Row ───────────────────────────────────────────────────────────
 function ComparisonRow({ label, values, highlight }) {
+  const { t } = useLanguage();
   return (
     <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${values.length}, 1fr)`, borderBottom: `0.5px solid ${"var(--border)"}` }}>
       <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>{label}</div>
@@ -119,6 +121,7 @@ function WinnerBadge({ type, value }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Compare() {
+  const { t } = useLanguage();
   const [offers, setOffers] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -316,7 +319,7 @@ export default function Compare() {
           {!comparison && !comparing && (
             <div style={{ ...cardStyleStyle, padding: 48, textAlign: "center" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>⚖️</div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)", marginBottom: 8 }}>Ready to compare</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)", marginBottom: 8 }}>{t("compare.readyToCompare")}</p>
               <p style={{ fontSize: 13, color: "var(--text-dim)" }}>Select at least 2 offers and a customer profile, then click Compare.</p>
             </div>
           )}
@@ -332,7 +335,7 @@ export default function Compare() {
             <div style={{ ...cardStyleStyle, overflow: "hidden" }}>
               {/* Header Row */}
               <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, background: "var(--blue-dim)", borderBottom: `0.5px solid ${"var(--border)"}` }}>
-                <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Metric</div>
+                <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("compare.metric")}</div>
                 {comparison.map((c, i) => (
                   <div key={i} style={{ padding: "14px 16px", textAlign: "center" }}>
                     <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{c.offer_name || c.offer?.name}</p>
@@ -389,7 +392,7 @@ export default function Compare() {
 
               {/* Justification Row */}
               <div style={{ display: "grid", gridTemplateColumns: `180px repeat(${comparison.length}, 1fr)`, borderBottom: `0.5px solid ${"var(--border)"}` }}>
-                <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>Recommendation</div>
+                <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>{t("compare.recommendation")}</div>
                 {comparison.map((c, i) => (
                   <div key={i} style={{ padding: "12px 16px", textAlign: "center" }}>
                     <p style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>

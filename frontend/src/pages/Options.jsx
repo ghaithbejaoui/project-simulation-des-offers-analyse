@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { fonts } from "../styles/theme";
 import { isAdmin } from "../App";
 import { useLanguage } from "../context/LanguageContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 const cardStyleStyle = {
   background: "var(--bg-card)",
@@ -236,17 +237,28 @@ export default function Options() {
   const { t } = useLanguage();
   const [options, setOptions]   = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch]     = useState("");
   const [typeFilter, setType]   = useState("ALL");
   const [modal, setModal]       = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await fetch(`${API}/options`, { headers: getHeaders() });
-      setOptions(res.ok ? await res.json() : MOCK_OPTIONS);
-    } catch { setOptions(MOCK_OPTIONS); }
-    finally { setLoading(false); }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `Server error ${res.status}`);
+      }
+      setOptions(await res.json());
+    } catch (e) {
+      setFetchError(e.message);
+      setOptions([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
    useEffect(() => { load(); }, [load]);
@@ -266,6 +278,7 @@ export default function Options() {
        await fetch(`${API}/options/${id}`, { method: "DELETE", headers: getHeaders() });
        setOptions(o => o.filter(x => x.option_id !== id));
      } catch {}
+     finally { setConfirmDelete(null); }
    };
 
   const filtered = options.filter(o => {
@@ -322,13 +335,20 @@ export default function Options() {
         <span style={{ fontSize: 12, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{t("options.optionsFound").replace("{count}", filtered.length)}</span>
       </div>
 
+      {fetchError && (
+        <div style={{ padding: "14px 18px", marginBottom: 16, borderRadius: 12, border: "0.5px solid rgba(227,91,91,0.4)", background: "rgba(227,91,91,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 13, color: "var(--red, #e35b5b)" }}>Connection error: {fetchError}</span>
+          <button onClick={load} style={{ height: 32, padding: "0 14px", borderRadius: 8, background: "linear-gradient(135deg,#0d5fd4,#1a8fff)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer" }}>Retry</button>
+        </div>
+      )}
+
       {/* Grid */}
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>{t("options.loading")}</div>
       ) : (
          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
            {filtered.map(o => (
-             <OptionCard key={o.option_id} option={o} onEdit={setModal} onDelete={handleDelete} showActions={isAdmin()} />
+             <OptionCard key={o.option_id} option={o} onEdit={setModal} onDelete={(id) => setConfirmDelete(id)} showActions={isAdmin()} />
            ))}
           {filtered.length === 0 && (
             <div style={{ ...cardStyleStyle, padding: 40, textAlign: "center", gridColumn: "span 3" }}>
@@ -346,15 +366,16 @@ export default function Options() {
          />,
          document.body
        )}
+
+       {confirmDelete && (
+         <ConfirmModal
+           title={t("options.confirmDeleteTitle")}
+           message={t("options.confirmDeleteMessage")}
+           onConfirm={() => handleDelete(confirmDelete)}
+           onCancel={() => setConfirmDelete(null)}
+         />
+       )}
     </div>
   );
 }
 
-const MOCK_OPTIONS = [
-  { option_id: 1, name: "Night Data 5GB", type: "DATA_ADDON", price: 3.5, data_gb: 5, minutes: 0, sms: 0, validity_days: 30 },
-  { option_id: 2, name: "Roaming Pack EU", type: "ROAMING", price: 12, data_gb: 2, minutes: 100, sms: 50, validity_days: 15 },
-  { option_id: 3, name: "SMS Pack 500", type: "SMS_ADDON", price: 5, data_gb: 0, minutes: 0, sms: 500, validity_days: 30 },
-  { option_id: 4, name: "Loyalty Bonus", type: "LOYALTY", price: 0, data_gb: 2, minutes: 60, sms: 100, validity_days: 30 },
-  { option_id: 5, name: "Data Boost 10GB", type: "DATA_ADDON", price: 8, data_gb: 10, minutes: 0, sms: 0, validity_days: 30 },
-  { option_id: 6, name: "Voice Extra 200min", type: "VOICE_ADDON", price: 6, data_gb: 0, minutes: 200, sms: 0, validity_days: 30 },
-];

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { fonts } from "../styles/theme";
 import { isAdmin } from "../App";
 import { useLanguage } from "../context/LanguageContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 const cardStyleStyle = {
   background: "var(--bg-card)",
@@ -219,20 +220,30 @@ export default function Offers() {
   const { t } = useLanguage();
   const [offers, setOffers]     = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch]     = useState("");
   const [segment, setSegment]   = useState("ALL");
   const [status, setStatus]     = useState("ALL");
   const [modal, setModal]       = useState(null); // null | "new" | offer obj
   const [deleting, setDeleting] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
-      const res  = await fetch(`${API}/offers`, { headers: headers() });
-      const data = res.ok ? await res.json() : MOCK_OFFERS;
-      setOffers(data);
-    } catch { setOffers(MOCK_OFFERS); }
-    finally { setLoading(false); }
+      const res = await fetch(`${API}/offers`, { headers: headers() });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `Server error ${res.status}`);
+      }
+      setOffers(await res.json());
+    } catch (e) {
+      setFetchError(e.message);
+      setOffers([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
    useEffect(() => { load(); }, [load]);
@@ -254,7 +265,7 @@ export default function Offers() {
        setOffers(o => o.filter(x => x.offer_id !== id));
      } catch (e) {
        console.error("Delete failed:", e);
-     } finally { setDeleting(null); }
+     } finally { setDeleting(null); setConfirmDelete(null); }
    };
 
   const filtered = offers.filter(o => {
@@ -318,6 +329,13 @@ export default function Offers() {
          <span style={{ fontSize: 12, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{t("offers.offersFound").replace("{count}", filtered.length)}</span>
       </div>
 
+      {fetchError && (
+        <div style={{ padding: "14px 18px", marginBottom: 16, borderRadius: 12, border: "0.5px solid rgba(227,91,91,0.4)", background: "rgba(227,91,91,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 13, color: "var(--red, #e35b5b)" }}>Connection error: {fetchError}</span>
+          <button onClick={load} style={{ height: 32, padding: "0 14px", borderRadius: 8, background: "linear-gradient(135deg,#0d5fd4,#1a8fff)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer" }}>Retry</button>
+        </div>
+      )}
+
       {/* Table */}
       <div style={{ ...cardStyleStyle, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
@@ -361,7 +379,7 @@ export default function Offers() {
                     {isAdmin() && (
                       <>
                         <button onClick={() => setModal(o)} style={{ ...btnGhostStyleStyle, height: 30, padding: "0 10px", fontSize: 12 }}>{t("common.edit")}</button>
-                        <button onClick={() => handleDelete(o.offer_id)} disabled={deleting === o.offer_id}
+                        <button onClick={() => setConfirmDelete(o.offer_id)} disabled={deleting === o.offer_id}
                           style={{ ...btnDangerStyleStyle, height: 30, padding: "0 10px", fontSize: 12, opacity: deleting === o.offer_id ? 0.6 : 1 }}>
                           {deleting === o.offer_id ? "…" : t("common.delete")}
                         </button>
@@ -384,16 +402,16 @@ export default function Offers() {
          />,
          document.body
        )}
+
+       {confirmDelete && (
+         <ConfirmModal
+           title={t("offers.confirmDeleteTitle")}
+           message={t("offers.confirmDeleteMessage")}
+           onConfirm={() => handleDelete(confirmDelete)}
+           onCancel={() => setConfirmDelete(null)}
+         />
+       )}
      </div>
    );
 }
 
-// Fallback mock data
-const MOCK_OFFERS = [
-  { offer_id: 1, name: "PREPAID STARTER", segment: "PREPAID", monthly_price: 15, quota_data_gb: 5, quota_minutes: 60, quota_sms: 100, validity_days: 30, status: "PUBLISHED" },
-  { offer_id: 2, name: "POSTPAID CLASSIC", segment: "POSTPAID", monthly_price: 39, quota_data_gb: 20, quota_minutes: 300, quota_sms: 500, validity_days: 30, status: "PUBLISHED" },
-  { offer_id: 3, name: "POSTPAID PRO 50GB", segment: "POSTPAID", monthly_price: 69, quota_data_gb: 50, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { offer_id: 4, name: "BUSINESS UNLIMITED", segment: "BUSINESS", monthly_price: 149, quota_data_gb: 100, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { offer_id: 5, name: "DATA ONLY 30GB", segment: "DATA_ONLY", monthly_price: 29, quota_data_gb: 30, quota_minutes: 0, quota_sms: 0, validity_days: 30, status: "PUBLISHED" },
-  { offer_id: 6, name: "PREPAID NIGHT", segment: "PREPAID", monthly_price: 8, quota_data_gb: 10, quota_minutes: 30, quota_sms: 50, validity_days: 15, status: "DRAFT" },
-];

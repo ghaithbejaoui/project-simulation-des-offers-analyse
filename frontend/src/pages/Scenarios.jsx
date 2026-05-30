@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 import { fonts } from "../styles/theme";
+import ConfirmModal from "../components/ConfirmModal";
 
 const cardStyle = {
   background: "var(--bg-card)",
@@ -83,6 +86,7 @@ const EMPTY_FORM = {
 };
 
 function StatusBadge({ status }) {
+  const { t } = useLanguage();
   const map = {
     ACTIVE: { bg: "rgba(67,199,139,0.12)", border: "rgba(67,199,139,0.3)", color: "var(--green)", label: "Active" },
     DRAFT: { bg: "rgba(240,180,41,0.12)", border: "rgba(240,180,41,0.3)", color: "var(--yellow)", label: "Draft" },
@@ -112,6 +116,7 @@ function FormField({ label, value, onChange, type = "text", placeholder }) {
 }
 
 function ScenarioModal({ scenario, profiles, onClose, onSave }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(scenario ? {
     ...scenario,
     offer_ids: scenario.offer_ids?.join(", ") || ""
@@ -153,42 +158,42 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
       <div style={{ ...cardStyle, width: "100%", maxWidth: 500, padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
-            {scenario?.scenario_id ? "Edit Scenario" : "New Scenario"}
+            {scenario?.scenario_id ? t("scenarios.editScenario") : t("scenarios.newScenario")}
           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <FormField label="Name" value={form.name} onChange={v => set("name", v)} placeholder="My Scenario" />
-          <FormField label="Description" value={form.description} onChange={v => set("description", v)} placeholder="Optional description" />
-          
+          <FormField label={t("scenarios.nameLabel")} value={form.name} onChange={v => set("name", v)} placeholder={t("scenarios.namePlaceholder")} />
+          <FormField label={t("scenarios.descriptionLabel")} value={form.description} onChange={v => set("description", v)} placeholder={t("scenarios.descriptionPlaceholder")} />
+
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Customer Profile</label>
+            <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{t("profiles.title")}</label>
             <select
               value={form.profile_id || ""}
               onChange={e => set("profile_id", e.target.value)}
               style={{ ...inputStyle, height: 38, fontSize: 13 }}
             >
-              <option value="">Select a profile...</option>
+              <option value="">{t("scenarios.selectProfilePlaceholder")}</option>
               {profiles.map(p => (
                 <option key={p.profile_id} value={p.profile_id}>{p.label}</option>
               ))}
             </select>
           </div>
 
-          <FormField label="Offer IDs" value={form.offer_ids} onChange={v => set("offer_ids", v)} placeholder="1, 2, 3 (comma separated)" />
+          <FormField label={t("scenarios.offerIds")} value={form.offer_ids} onChange={v => set("offer_ids", v)} placeholder={t("scenarios.offerIdsPlaceholder")} />
 
           {scenario && (
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Status</label>
+              <label style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{t("scenarios.status")}</label>
               <select
                 value={form.status || "DRAFT"}
                 onChange={e => set("status", e.target.value)}
                 style={{ ...inputStyle, height: 38, fontSize: 13 }}
               >
-                <option value="DRAFT">Draft</option>
-                <option value="ACTIVE">Active</option>
-                <option value="ARCHIVED">Archived</option>
+                <option value="DRAFT">{t("common.draft")}</option>
+                <option value="ACTIVE">{t("common.active")}</option>
+                <option value="ARCHIVED">{t("common.inactive")}</option>
               </select>
             </div>
           )}
@@ -197,9 +202,9 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
         {error && <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>Cancel</button>
+          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>{t("common.cancel")}</button>
           <button onClick={handleSave} disabled={saving} style={{ ...btnPrimaryStyle, flex: 1, opacity: saving ? 0.6 : 1 }}>
-            {saving ? "Saving..." : "Save Scenario"}
+            {saving ? t("scenarios.saving") : t("scenarios.saveScenario")}
           </button>
         </div>
       </div>
@@ -208,6 +213,7 @@ function ScenarioModal({ scenario, profiles, onClose, onSave }) {
 }
 
 function ResultsModal({ scenario, onClose, onSave, onExport, onExportPDF }) {
+  const { t } = useLanguage();
   const [results, setResults] = useState(scenario?.results || []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -231,29 +237,29 @@ function ResultsModal({ scenario, onClose, onSave, onExport, onExportPDF }) {
       <div style={{ ...cardStyle, width: "100%", maxWidth: 700, maxHeight: "80vh", overflowY: "auto", padding: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
-            Results: {scenario?.name}
+            {t("scenarios.resultsTitle")}: {scenario?.name}
           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
 
         {results.length === 0 ? (
           <div style={{ textAlign: "center", padding: 40, color: "var(--text-dim)" }}>
-            No results saved. Run a comparison from the Simulation page to generate results.
+            {t("scenarios.noResults")}
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: `0.5px solid var(--border)` }}>
-                <th style={{ ...th, textAlign: "left" }}>Offer</th>
-                <th style={{ ...th, textAlign: "right" }}>Cost</th>
-                <th style={{ ...th, textAlign: "right" }}>Score</th>
-                <th style={{ ...th, textAlign: "center" }}>Rank</th>
+                <th style={{ ...th, textAlign: "left" }}>{t("scenarios.offer")}</th>
+                <th style={{ ...th, textAlign: "right" }}>{t("scenarios.cost")}</th>
+                <th style={{ ...th, textAlign: "right" }}>{t("scenarios.score")}</th>
+                <th style={{ ...th, textAlign: "center" }}>{t("scenarios.rank")}</th>
               </tr>
             </thead>
             <tbody>
               {results.map((r, i) => (
                 <tr key={i} style={{ borderBottom: `0.5px solid var(--border)` }}>
-                  <td style={{ ...td }}>Offer #{r.offer_id}</td>
+                  <td style={{ ...td }}>{t("scenarios.noResultsOffer")}{r.offer_id}</td>
                   <td style={{ ...td, textAlign: "right", color: "var(--text)" }}>{Number(r.total_cost || 0).toFixed(2)} TND</td>
                   <td style={{ ...td, textAlign: "right", color: Number(r.satisfaction_score || 0) >= 70 ? "var(--green)" : Number(r.satisfaction_score || 0) >= 50 ? "var(--yellow)" : "var(--red)" }}>
                     {r.satisfaction_score}/100
@@ -268,7 +274,7 @@ function ResultsModal({ scenario, onClose, onSave, onExport, onExportPDF }) {
         {error && <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>Close</button>
+          <button onClick={onClose} style={{ ...btnGhostStyle, flex: 1 }}>{t("scenarios.close")}</button>
           <button onClick={() => onExportPDF(scenario)} style={{ ...btnGhostStyle, flex: 1 }}>
             PDF
           </button>
@@ -287,6 +293,8 @@ const th = { padding: "14px 12px", fontSize: 11, fontWeight: 500, color: "var(--
 const td = { padding: "12px", fontSize: 13, color: "var(--text-muted)", verticalAlign: "middle" };
 
 export default function Scenarios() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const [scenarios, setScenarios] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -297,6 +305,7 @@ export default function Scenarios() {
   const [pagination, setPagination] = useState({ total: 0, limit: 50, offset: 0 });
   const [toast, setToast] = useState(null);
   const [runningId, setRunningId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Show toast message (success or error)
   const showToast = (message, type = "success") => {
@@ -332,12 +341,12 @@ export default function Scenarios() {
   useEffect(() => { fetchProfiles(); }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this scenario?")) return;
     try {
       await fetch(`${API}/scenarios/${id}`, { method: "DELETE", headers: headers() });
       showToast("Scenario deleted");
       fetchScenarios();
     } catch (e) { showToast(e.message, "error"); }
+    finally { setConfirmDelete(null); }
   };
 
   const handleDuplicate = async (id) => {
@@ -389,17 +398,17 @@ export default function Scenarios() {
         
         <h2>Customer Profile</h2>
         <table>
-          <tr><th>Metric</th><th>Value</th></tr>
-          <tr><td>Profile</td><td>${profile?.label || 'N/A'}</td></tr>
+          <tr><th>{t("scenarios.metric")}</th><th>{t("scenarios.value")}</th></tr>
+          <tr><td>{t("scenarios.profile")}</td><td>${profile?.label || 'N/A'}</td></tr>
           <tr><td>Minutes (avg)</td><td>${profile?.minutes_avg || 0}</td></tr>
           <tr><td>SMS (avg)</td><td>${profile?.sms_avg || 0}</td></tr>
           <tr><td>Data GB</td><td>${profile?.data_avg_gb || 0}</td></tr>
-          <tr><td>Budget</td><td>${profile?.budget_max || 0} TND</td></tr>
+          <tr><td>{t("scenarios.budget")}</td><td>${profile?.budget_max || 0} TND</td></tr>
         </table>
         
         <h2>Results</h2>
         <table>
-          <tr><th>#</th><th>Offer</th><th>Base</th><th>Overage</th><th>Total</th><th>Score</th><th>Recommendation</th></tr>
+          <tr><th>#</th><th>{t("scenarios.offer")}</th><th>Base</th><th>Overage</th><th>Total</th><th>{t("scenarios.score")}</th><th>Recommendation</th></tr>
           ${scenario.results.map(r => {
             const rec = r.satisfaction_score >= 70 ? 'Good Match' : r.satisfaction_score >= 50 ? 'Okay' : 'Not Recommended';
             const recClass = r.satisfaction_score >= 70 ? 'green' : r.satisfaction_score >= 50 ? 'yellow' : 'red';
@@ -541,20 +550,36 @@ export default function Scenarios() {
     } catch (e) { console.error(e); }
   };
 
+  const navigateToSimulation = (scenario) => {
+    const desc = (scenario.description || "").toLowerCase();
+    let mode = "recommend";
+    if (desc.includes("compare")) mode = "compare";
+    else if (desc.includes("single")) mode = "single";
+    else if (desc.includes("batch")) mode = "batch";
+    else if (desc.includes("recommend")) mode = "recommend";
+
+    localStorage.setItem("sim_state", JSON.stringify({
+      mode,
+      profileId: scenario.profile_id || null,
+      offerIds: scenario.offer_ids || []
+    }));
+    navigate("/simulation");
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Scenarios</h1>
-          <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{pagination.total} total</span>
+          <h1 style={{ fontFamily: fonts.heading, fontSize: 20, fontWeight: 600, color: "var(--text)" }}>{t("scenarios.title")}</h1>
+          <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{t("scenarios.total").replace("{count}", pagination.total)}</span>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <select value={filter} onChange={e => setFilter(e.target.value)} style={{ ...inputStyle, height: 36, fontSize: 13 }}>
-            {STATUSES.map(s => <option key={s} value={s}>{s === "ALL" ? "All Status" : s}</option>)}
+            {STATUSES.map(s => <option key={s} value={s}>{s === "ALL" ? t("scenarios.allStatus") : s}</option>)}
           </select>
           <button onClick={() => { setSelected(null); setShowModal(true); }} style={{ ...btnPrimaryStyle, height: 36 }}>
-            + New Scenario
+            + {t("scenarios.newScenario")}
           </button>
         </div>
       </div>
@@ -562,19 +587,19 @@ export default function Scenarios() {
       {/* Table */}
       <div style={{ ...cardStyle, overflow: "hidden", padding: 0 }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>{t("common.loading")}</div>
         ) : scenarios.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
-            No scenarios yet. Create one to save your simulation comparisons.
+            {t("scenarios.empty")}
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "rgba(0,0,0,0.25)" }}>
-                <th style={{ ...th, width: "35%" }}>Name</th>
-                <th style={{ ...th, width: "15%", textAlign: "center" }}>Status</th>
-                <th style={{ ...th, width: "15%" }}>Updated</th>
-                <th style={{ ...th, width: "35%", textAlign: "center" }}>Actions</th>
+                <th style={{ ...th, width: "35%" }}>{t("common.name")}</th>
+                <th style={{ ...th, width: "15%", textAlign: "center" }}>{t("scenarios.status")}</th>
+                <th style={{ ...th, width: "15%" }}>{t("scenarios.updated")}</th>
+                <th style={{ ...th, width: "35%", textAlign: "center" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -586,14 +611,17 @@ export default function Scenarios() {
                   </td>
                   <td style={{ ...td, textAlign: "center" }}><StatusBadge status={s.status} /></td>
                   <td style={{ ...td, color: "var(--text-muted)" }}>{new Date(s.updated_at).toLocaleDateString()}</td>
-                  <td style={{ ...td, textAlign: "center", display: "flex", gap: 8, justifyContent: "center" }}>
-                    <button onClick={() => openScenario(s)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>View</button>
-                    <button onClick={() => { setSelected(s); setShowModal(true); }} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Edit</button>
-                    <button onClick={() => runAndUpdateResults(s)} disabled={runningId === s.scenario_id} style={{ ...btnPrimaryStyle, height: 28, fontSize: 12, padding: "0 12px", opacity: runningId === s.scenario_id ? 0.6 : 1 }}>
-                      {runningId === s.scenario_id ? "Running..." : "Run & Save"}
+                  <td style={{ ...td, textAlign: "center", display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                    <button onClick={() => openScenario(s)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("scenarios.viewBtn")}</button>
+                    <button onClick={() => navigateToSimulation(s)} title={t("scenarios.simulateBtn")} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px", color: "var(--blue)", borderColor: "rgba(26,143,255,0.35)" }}>
+                      ↗ {t("scenarios.simulateBtn")}
                     </button>
-                    <button onClick={() => handleDuplicate(s.scenario_id)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Copy</button>
-                    <button onClick={() => handleDelete(s.scenario_id)} style={{ ...btnDangerStyle, height: 28, fontSize: 12, padding: "0 12px" }}>Delete</button>
+                    <button onClick={() => { setSelected(s); setShowModal(true); }} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("common.edit")}</button>
+                    <button onClick={() => runAndUpdateResults(s)} disabled={runningId === s.scenario_id} style={{ ...btnPrimaryStyle, height: 28, fontSize: 12, padding: "0 12px", opacity: runningId === s.scenario_id ? 0.6 : 1 }}>
+                      {runningId === s.scenario_id ? t("scenarios.runningBtn") : t("scenarios.runSave")}
+                    </button>
+                    <button onClick={() => handleDuplicate(s.scenario_id)} style={{ ...btnGhostStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("scenarios.copyBtn")}</button>
+                    <button onClick={() => setConfirmDelete(s.scenario_id)} style={{ ...btnDangerStyle, height: 28, fontSize: 12, padding: "0 12px" }}>{t("common.delete")}</button>
                   </td>
                 </tr>
               ))}
@@ -619,6 +647,15 @@ export default function Scenarios() {
           onSave={() => { setShowResults(false); setSelected(null); fetchScenarios(); }}
           onExport={handleExportScenarioCSV}
           onExportPDF={handleExportScenarioPDF}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t("scenarios.confirmDeleteTitle")}
+          message={t("scenarios.confirmDeleteMessage")}
+          onConfirm={() => handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
         />
       )}
 
